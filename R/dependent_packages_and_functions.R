@@ -1,0 +1,26 @@
+
+suppressPackageStartupMessages({
+
+  library(mvtnorm)
+  library(extraDistr)
+  library(SciViews)
+  library(doParallel)
+  library(foreach)
+  library(ggplot2)
+  library(tidyverse)
+  library(ggpubr)
+  library(fields)
+  library(Matrix)
+  library(Rtsne)
+  library(DescTools)
+  library(ggpubr)
+  library(ggrepel)
+  library(parallel)
+  library(progress)
+  library(SBMSplitMerge)
+  library(pheatmap)
+  library(RColorBrewer)
+  library(readxl)
+})
+
+`%notin%` <- Negate(`%in%`)
