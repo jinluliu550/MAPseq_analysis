@@ -8,6 +8,7 @@ ddirmultinomial <- function(x, n, alpha, log = FALSE){
   if(isFALSE(log)){
 
     return(exp(log.prob))
+    
   }else{
 
     return(log.prob)
