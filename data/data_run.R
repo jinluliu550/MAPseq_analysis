@@ -35,8 +35,6 @@ data_by_mouse <- lapply(1:6,
 # Load everything
 load('data/mcmc_all_sample.RData')
 load('data/psm.RData')
-load('data/mcmc_unique.RData')
-load('data/omega_JM_mcmc.RData')
 load('data/opt.clust0.RData')
 
 # MCMC run

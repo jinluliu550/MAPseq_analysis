@@ -174,7 +174,7 @@ mcmc_run_post <- function(mcmc_run_all_output,
   neuron_projection_df$J <- J
   
   q_tilde_001 <- q_tilde(neuron_projection_df = neuron_projection_df,
-                         epsilon = 0.05)
+                         epsilon = 0.01)
   
   
   unicast.index <- (1:J)[apply(q_tilde_001,
@@ -444,7 +444,7 @@ mcmc_run_post <- function(mcmc_run_all_output,
                       function(i) col[which(colnames(cluster.label.summary)[2:4] == unique.class[i])])
       
       plot.by.region$back <- estimated.projection.df %>%
-        filter(cluster %in% paste('cluster', (1:J)[label.changing.table$original.label %in% project.to.back])) %>%
+        filter(cluster %in% paste('cluster', (1:J)[original.label %in% project.to.back])) %>%
         ggplot(mapping = aes(x = factor(region, levels = regions.name),
                              y = projection.mean,
                              group = cluster,
