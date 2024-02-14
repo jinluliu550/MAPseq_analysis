@@ -103,8 +103,19 @@ opt.clustering.frequency(clustering = mcmc_unique$Z)
 # Plot of estimated projection strength
 mcmc_unique$estimated.pp.plot
 
+
 # Plot of q tilde
 mcmc_unique$q_tilde_plot
+
+# unique to one mouse
+unique.to.one.mouse <- sapply(1:118,
+                              function(j){
+                                
+                                length(which(sapply(1:6, 
+                                                    function(m) length(which(mcmc_unique$Z[[m]]==j))) != 0))
+                              })
+
+length(which(unique.to.one.mouse==1))
 
 # Function below obtains posterior samples of mouse-specific component probabilities
 omega_JM_mcmc <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_sample,
@@ -125,6 +136,13 @@ difference_omega_JM$probability_plot
 difference_in_omega_jm_plot(difference_in_omega_jm_output = difference_omega_JM,
                             mcmc_run_omega_output = omega_JM_mcmc,
                             N = 20)
+
+sapply(1:M, 
+       function(m){
+         
+         length(which((difference_omega_JM$significant_obs$data1 == m)|
+                        difference_omega_JM$significant_obs$data2 == m))
+       })
 
 
 # Heat-map of projection strengths of each neuron

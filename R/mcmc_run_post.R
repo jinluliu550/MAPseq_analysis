@@ -395,7 +395,7 @@ mcmc_run_post <- function(mcmc_run_all_output,
   
   # Manually set the color
   col <- c('red','green','blue')
-  unique.class <- unique(estimated.projection.df$class)
+  unique.class <- sort(unique(estimated.projection.df$class))
   col.i <- sapply(1:length(unique.class),
                   function(i) col[which(colnames(cluster.label.summary)[2:4] == unique.class[i])])
   
