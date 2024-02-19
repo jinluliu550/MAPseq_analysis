@@ -36,6 +36,7 @@ data_by_mouse <- lapply(1:6,
 load('data/mcmc_all_sample.RData')
 load('data/psm.RData')
 load('data/opt.clust0.RData')
+load('data/mcmc_unique.RData')
 
 # MCMC run
 mcmc_all_sample <- mcmc_run_all(Y = data_by_mouse,
@@ -83,6 +84,7 @@ plotpsm(psm.ind = psm$psm.within,
 opt.clust0 <- opt.clustering(mcmc_run_all_output = mcmc_all_sample,
                              post_similarity = psm)
 
+
 # MCMC of unique parameters
 mcmc_unique <- mcmc_run_post(mcmc_run_all_output = mcmc_all_sample,
                              Z = opt.clust0,
@@ -103,6 +105,7 @@ opt.clustering.frequency(clustering = mcmc_unique$Z)
 # Plot of estimated projection strength
 mcmc_unique$estimated.pp.plot
 
+mcmc_unique$plot.by.region$front
 
 # Plot of q tilde
 mcmc_unique$q_tilde_plot

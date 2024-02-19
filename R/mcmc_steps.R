@@ -557,11 +557,11 @@ gamma_mcmc <- function(Y,
 
 
 q_star_logprob <- function(Y,
-                           Z,
-                           q_j_star,
-                           gamma_j_star,
-                           alpha_h,
-                           j){
+                          Z,
+                          q_j_star,
+                          gamma_j_star,
+                          alpha_h,
+                          j){
 
 
   # Bind Y by columns
@@ -579,16 +579,6 @@ q_star_logprob <- function(Y,
   # Number of regions
   R <- nrow(Y[[1]])
 
-  # log - probability
-  # log_prob <- log_prob + sum(lgamma(sum(q_j_star*gamma_j_star)) + lgamma(N_CM_j + 1) - lgamma(N_CM_j + sum(q_j_star*gamma_j_star)) +
-  #
-  #                              colSums(lgamma(as.matrix(Y_bind[,cell_index_j]) + matrix(rep(q_j_star*gamma_j_star,
-  #                                                                                           length(cell_index_j)),
-  #                                                                                       nrow = R)
-  #                              )) - sum(lgamma(q_j_star*gamma_j_star)) - colSums(lgamma(as.matrix(Y_bind[,cell_index_j] + 1)))
-  #
-  #
-  # )
 
   log_prob <- log_prob + sum(lgamma(sum(q_j_star*gamma_j_star)) + lgamma(N_CM_j + 1) - lgamma(N_CM_j + sum(q_j_star*gamma_j_star))) +
 
@@ -598,8 +588,6 @@ q_star_logprob <- function(Y,
                                ))) - sum(lgamma(q_j_star*gamma_j_star))*length(cell_index_j) -
 
     sum(colSums(lgamma(as.matrix(Y_bind[,cell_index_j] + 1))))
-
-
 
 
   return(log_prob)
