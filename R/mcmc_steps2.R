@@ -668,8 +668,8 @@ alpha_r_logprob <- function(alpha_r,
 }
 
 alpha_r_mcmc <- function(alpha_r,
-                         mean_X_alpha_r,
-                         tilde_s_alpha_r,
+                         mean_X,
+                         tilde_s,
                          q_star,
                          iter_num,
                          a_alpha,
@@ -681,33 +681,35 @@ alpha_r_mcmc <- function(alpha_r,
   
   ##-- Dimensions
   R <- length(alpha_r)
-  J <- nrow(v)
+  J <- nrow(q_star)
   n <- iter_num
   
   ##-- Previous Covariance structure
-  mean_X_alpha_r_old <- mean_X_alpha_r
-  tilde_s_alpha_r_old <- tilde_s_alpha_r
+  mean_X_old <- mean_X
+  tilde_s_old <- tilde_s
   covariance_old <- covariance
   
   ##-- Previous alpha_r
   alpha_r_old <- alpha_r
-  X_alpha_r_old <- log(alpha_r_old)
+  X_old <- log(alpha_r_old)
   
   ##-- Simulation
   if(n <= 100){
     
-    X_alpha_r_new <- rmvnorm(n = 1,
-                             mean = X_alpha_r_old,
-                             sigma = diag(1,nrow = R, ncol = R))
+    X_new <- rmvnorm(n = 1,
+                     mean = X_old,
+                     sigma = diag(1,nrow = R, ncol = R))
+    
   }else{
     
-    X_alpha_r_new <- rmvnorm(n = 1,
-                             mean = X_alpha_r_old,
-                             sigma = (2.4^2)/2*(covariance_old + adaptive_prop*diag(1,nrow = R, ncol = R)))
+    X_new <- rmvnorm(n = 1,
+                     mean = X_old,
+                     sigma = (2.4^2)/2*(covariance_old + adaptive_prop*diag(1,nrow = R, ncol = R))
+                     )
   }
   
   ##-- alpha_r_new
-  alpha_r_new <- exp(X_alpha_r_new)
+  alpha_r_new <- exp(X_new)
   
   ##-- Acceptance probability
   accep.log.prob <- alpha_r_logprob(alpha_r = as.vector(alpha_r_new),
@@ -729,24 +731,24 @@ alpha_r_mcmc <- function(alpha_r,
   
   if(outcome == 0){
     
-    X_alpha_r_new <- X_alpha_r_old
+    X_new <- X_old
     alpha_r_new <- alpha_r_old
   }
   
   ##-- Update Covariance Structure
-  tilde_s_alpha_r_new <- tilde_s_alpha_r_old + matrix(X_alpha_r_new, ncol=1) %*%
-    matrix(X_alpha_r_new, nrow=1)
+  tilde_s_new <- tilde_s_old + matrix(X_new, ncol=1) %*%
+    matrix(X_new, nrow=1)
   
-  mean_X_alpha_r_new <- mean_X_alpha_r_old*(1-1/n) + 1/n*matrix(X_alpha_r_new, nrow=1)
+  mean_X_new <- mean_X_old*(1-1/n) + 1/n*matrix(X_new, nrow=1)
   
-  covariance_new <- 1/(n-1)*tilde_s_alpha_r_new - n/(n-1)*t(mean_X_alpha_r_new)%*%mean_X_alpha_r_new
+  covariance_new <- 1/(n-1)*tilde_s_new - n/(n-1)*t(mean_X_new)%*%mean_X_new
   
   ##-- Output
   return(list('alpha_r_new' = alpha_r_new,
-              'accept' = outcome,
-              'tilde_s_alpha_r_new' = tilde_s_alpha_r_new,
-              'mean_X_alpha_r_new' = mean_X_alpha_r_new,
-              'covariance_alpha_r_new' = covariance_new))
+              'tilde_s_new' = tilde_s_new,
+              'mean_X_new' = mean_X_new,
+              'covariance_new' = covariance_new,
+              'accept' = outcome))
 }
 
 
@@ -925,9 +927,9 @@ gamma_mcmc2 <- function(Y,
   
   # Return
   return(list('gamma_star_new' = gamma_star_new,
-              'variance_gamma_new' = variance_new,
-              'M_2_gamma_new' = M_2_new,
-              'X_mean_gamma_new' = X_mean_new,
+              'variance_new' = variance_new,
+              'M_2_new' = M_2_new,
+              'X_mean_new' = X_mean_new,
               'gamma_count' = gamma_count))
   
 }

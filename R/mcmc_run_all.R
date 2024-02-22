@@ -112,7 +112,7 @@ mcmc_run_all <- function(Y,
   mean_x_q_new <- lapply(1:J, function(j) matrix(log(q_star_1_J_new[j,1:(R-1)]/q_star_1_J_new[j,R]),
                                                  nrow = 1))
   tilde_s_q_new <- lapply(1:J, function(j) t(mean_x_q_new[[j]])%*%mean_x_q_new[[j]])
-  covariance_q_new <- lapply(1:J, function(j) matrix(0, nrow = R, ncol = R))
+  covariance_q_new <- lapply(1:J, function(j) matrix(0, nrow = R-1, ncol = R-1))
 
   # gamma star
   X_mean_gamma_new <- log(gamma_1_J_star_new)
