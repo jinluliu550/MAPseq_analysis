@@ -230,10 +230,10 @@ alpha_mcmc2 <- function(w,
   variance_new <- 1/(n-1)*M_2_new
   
   # Output
-  return(list('alpha_new' = alpha_new,
-              'X_mean_new' = X_mean_new,
-              'M_2_new' = M_2_new,
-              'variance_new' = variance_new,
+  return(list('alpha' = alpha_new,
+              'X_mean' = X_mean_new,
+              'M_2' = M_2_new,
+              'variance' = variance_new,
               'accept' = outcome))
 }
 
@@ -241,111 +241,17 @@ alpha_mcmc2 <- function(w,
 
 
 #--------------------------------------------- Simulation of beta ---------------------------------------------
-b_beta_prior1 <- function(beta,
-                          pi_cons,
-                          s1_2,
-                          s2_2){
-  
-  density_beta_prior <- pi_cons*dlaplace(x = beta,
-                                         mu = 0,
-                                         sigma = sqrt(s1_2))+
-    
-    (1-pi_cons)*dlaplace(x = beta,
-                         mu = 0,
-                         sigma = sqrt(s2_2))
-  
-  return(density_beta_prior)
-}
 
-# log probability
-beta_log_prob <- function(beta,
-                          x,
-                          u,
-                          xi,
-                          delta,
-                          pi_cons,
-                          z,
-                          s1_2,
-                          s2_2,
-                          num.cores){
-  
-  # Dimension
-  J <- length(beta)
-  M <- length(x)
-  
-  # log prob
-  cl <- makeCluster(num.cores)
-  registerDoParallel(cl)
-  
-  log_prob <- foreach(j = 1:J,
-                      .export = 'b_beta_prior1',
-                      .packages = 'extraDistr') %dopar% {
-                        
-                        
-                        # subsets
-                        subset.i <- lapply(1:M, 
-                                           function(m) which(z[[m]]==j))
-                        
-                        subset.u <- lapply(1:M,
-                                           function(m) u[[m]][subset.i[[m]], j])
-                        
-                        subset.xi <- lapply(1:M,
-                                            function(m) xi[[m]][subset.i[[m]]])
-                        
-                        subset.delta <- sapply(1:M,
-                                               function(m) delta[j,m])
-                        
-                        
-                        
-                        if(beta[j] < min(log(-log(unlist(subset.u))/(unlist(subset.xi)*rep(subset.delta, 
-                                                                                           each = sapply(1:M,
-                                                                                                         function(m) length(subset.i[[m]]))
-                                                                                           )
-                                                                     )
-                                             )
-                                         )
-                           ){
-                          
-                          return_item <- beta[j]*length(which(unlist(x) == 1))*log(b_beta_prior1(beta = beta[j],
-                                                                                                 pi_cons = pi_cons,
-                                                                                                 s1_2 = s1_2,
-                                                                                                 s2_2 = s2_2)
-                          )
-                          
-                          }else{
-                            
-                            return_item <- 0
-                            
-                            }
-                        
-                        return(return_item)
-                      }
-  
-  # Stop parallel computing
-  stopCluster(cl)
-  
-  # Return
-  return(unlist(log_prob))
-}
 
 beta_mcmc <- function(beta,
                       delta,
                       xi,
                       x,
-                      M2,
-                      z,
-                      pi_cons,
-                      beta_mean,
-                      beta_variance,
-                      iter_num,
-                      adaptive_prop,
-                      num.cores){
+                      Z,
+                      num.cores,
+                      tau,
+                      lambda){
   
-  # Record of previous statistics
-  beta_old <- beta
-  M2_old <- M2
-  beta_mean_old <- beta_mean
-  beta_variance_old <- beta_variance
   
   # Dimensions
   M <- ncol(delta)
@@ -380,65 +286,49 @@ beta_mcmc <- function(beta,
               })
   
   #-------------------------------- Second step: simulate from the posterior of beta given u
-  n <- iter_num
   
-  # Simulate new beta
-  if(n <= 100){
-    
-    beta_new <- rnorm(n = J,
-                      mean = beta_old,
-                      sd = 1)
-    
-  }else{
-    
-    beta_new <- rnorm(n = J,
-                      mean = beta_old,
-                      sd = sqrt(2.4^2*(beta_variance_old + adaptive_prop))
-    )
-    
-  }
+  u_rbind <- do.call(rbind, u)
+  xi_bind <- unlist(xi)
   
-  # Calculate acceptance probability
-  log_acceptance <- beta_log_prob(beta = beta_new,
-                                  x = x,
-                                  u = u,
-                                  xi = xi,
-                                  delta = delta,
-                                  pi_cons = pi_cons,
-                                  z = z,
-                                  num.cores = num.cores)-
-    
-    beta_log_prob(beta = beta_old,
-                  x = x,
-                  u = u,
-                  xi = xi,
-                  delta = delta,
-                  pi_cons = pi_cons,
-                  z = z,
-                  num.cores = num.cores)
+  # Register Cores
+  cl <- makeCluster(num.cores)
+  registerDoParallel(cl)
+  
+  beta <- foreach(j = 1:J,
+                  .packages = 'truncnorm') %dopar% {
+                    
+                    
+                    # If there exists neurons with injection in the MEC region
+                    if(any(unlist(x)) == 1){
+                      
+                      subset.i <- which(unlist(x)==1)
+                      
+                      length.i <- sapply(1:M, 
+                                         function(m) length(which(x[[m]]==1)))
+                      
+                      max_beta_j <- min(log(-log(as.vector(u_rbind[subset.i,j]))/(xi_bind[subset.i]*rep(delta[j,], each = length.i))))
+                      
+                      # Simulate from a truncated normal
+                      beta_j <- rtruncnorm(n = 1,
+                                           a = -Inf,
+                                           b = max_beta_j,
+                                           mean = tau^2*lambda[j]^2*length(which(unlist(x)[which(unlist(Z)=j)]==1)),
+                                           sd = tau*lambda[j])
+                      
+                    }else{
+                      
+                      beta_j <- NA
+                    }
+                    
+                    beta_j
+                  }
+  
+  # Stop parallel computing
+  stopCluster(cl)
   
   
-  # Random Bernoulli
-  outcome <- rbinom(n = J,
-                    size = 1,
-                    prob = min(1, exp(log_acceptance)))
-  
-  if(outcome == 0){
-    
-    beta_new <- beta_old
-  }
-  
-  # update variance-covariance
-  beta_mean_new <- (1-1/n)*beta_mean_old + 1/n*beta_new
-  M2_new <- M2_old + (beta_new-beta_mean_old)*(beta_new-beta_mean_new)
-  variance_new <- 1/(n-1)*M2_new
-  
-  return(list('beta_new' = beta_new,
-              'beta_mean_new' = beta_mean_new,
-              'M2_new' = M2_new,
-              'variance_new' = variance_new,
-              'accept' = length(which(outcome==1)))
-         )
+  # Return beta
+  return(unlist(beta))
   
 }
 
@@ -544,10 +434,10 @@ w_mcmc <- function(w,
   covariance_new <- 1/(n-1)*tilde_s_new - n/(n-1)*t(mean_x_new)%*%mean_x_new
   
   # Return a list of output
-  return(list('w_new' = w_new,
-              'tilde_s_new' = tilde_s_new,
-              'mean_x_new' = mean_x_new,
-              'covariance_new' = covariance_new,
+  return(list('w' = w_new,
+              'tilde_s' = tilde_s_new,
+              'mean_x' = mean_x_new,
+              'covariance' = covariance_new,
               'accept' = outcome))
 }
 
@@ -637,10 +527,10 @@ alpha_zero_mcmc2 <- function(w,
   variance_new <- 1/(n-1)*M_2_new
   
   # Output
-  return(list('alpha_zero_new' = alpha_zero_new,
-              'X_mean_new' = X_mean_new,
-              'M_2_new' = M_2_new,
-              'variance_new' = variance_new,
+  return(list('alpha_zero' = alpha_zero_new,
+              'X_mean' = X_mean_new,
+              'M_2' = M_2_new,
+              'variance' = variance_new,
               'accept' = outcome))
 }
 
@@ -650,14 +540,13 @@ alpha_zero_mcmc2 <- function(w,
 #---------------------------------------- Simulation of alpha_r ---------------------------------------------
 alpha_r_logprob <- function(alpha_r,
                             q_star,
-                            a_alpha,
-                            b_alpha){
+                            a_r,
+                            b_r){
   
   R <- length(alpha_r)
   J <- nrow(q_star)
   
-  # value <- -sum(alpha_r)
-  value <- sum((a_alpha-1)*log(alpha_r)-b_alpha*alpha_r)
+  value <- sum((a_r-1)*log(alpha_r)-b_r*alpha_r)
   
   for(j in 1:J){
     
@@ -672,8 +561,8 @@ alpha_r_mcmc <- function(alpha_r,
                          tilde_s,
                          q_star,
                          iter_num,
-                         a_alpha,
-                         b_alpha,
+                         a_r,
+                         b_r,
                          covariance,
                          adaptive_prop){
                           
@@ -714,13 +603,13 @@ alpha_r_mcmc <- function(alpha_r,
   ##-- Acceptance probability
   accep.log.prob <- alpha_r_logprob(alpha_r = as.vector(alpha_r_new),
                                     q_star = q_star,
-                                    a_alpha = a_alpha,
-                                    b_alpha = b_alpha)-
+                                    a_r = a_r,
+                                    b_r = b_r)-
     
     alpha_r_logprob(alpha_r = alpha_r_old,
                     q_star = q_star,
-                    a_alpha = a_alpha,
-                    b_alpha = b_alpha)-
+                    a_r = a_r,
+                    b_r = b_r)-
     
     sum(log(alpha_r_old)) + sum(log(alpha_r_new))
   
@@ -744,10 +633,10 @@ alpha_r_mcmc <- function(alpha_r,
   covariance_new <- 1/(n-1)*tilde_s_new - n/(n-1)*t(mean_X_new)%*%mean_X_new
   
   ##-- Output
-  return(list('alpha_r_new' = alpha_r_new,
-              'tilde_s_new' = tilde_s_new,
-              'mean_X_new' = mean_X_new,
-              'covariance_new' = covariance_new,
+  return(list('alpha_r' = alpha_r_new,
+              'tilde_s' = tilde_s_new,
+              'mean_X' = mean_X_new,
+              'covariance' = covariance_new,
               'accept' = outcome))
 }
 
@@ -926,10 +815,10 @@ gamma_mcmc2 <- function(Y,
   
   
   # Return
-  return(list('gamma_star_new' = gamma_star_new,
-              'variance_new' = variance_new,
-              'M_2_new' = M_2_new,
-              'X_mean_new' = X_mean_new,
+  return(list('gamma_star' = gamma_star_new,
+              'variance' = variance_new,
+              'M_2' = M_2_new,
+              'X_mean' = X_mean_new,
               'gamma_count' = gamma_count))
   
 }
@@ -1123,12 +1012,99 @@ q_star_mcmc2 <- function(Y,
   
   
   # Return items
-  return(list('tilde_s_new' = tilde_s_new,
-              'mean_x_new' = mean_x_new,
-              'covariance_new' = covariance_new,
-              'q_star_count' = q_star_count,
-              'q_star_new' = q_star_new))
+  return(list('q_star' = q_star_new,
+              'tilde_s' = tilde_s_new,
+              'mean_x' = mean_x_new,
+              'covariance' = covariance_new,
+              'q_star_count' = q_star_count))
   
   
 }
 
+
+
+#------------------------------------- Simulation of tau -------------------------------------------
+
+tau_log_prob <- function(beta,
+                         tau,
+                         s,
+                         lambda){
+  
+  log_prob <- -log(1+(tau^2)/(s^2)) + sum(-log(tau) - 1/(2*tau^2*lambda^2)*beta^2)
+}
+
+
+tau_mcmc <- function(lambda,
+                     tau,
+                     beta,
+                     s,
+                     M_2,
+                     X_mean,
+                     variance,
+                     adaptive_prop){
+  
+  # previous values
+  tau_old <- tau
+  X_old <- log(tau_old)
+  
+  variance_old <- variance
+  M_2_old <- M_2
+  X_mean_old <- X_mean
+  
+  
+  # Simulate new values
+  if(n <= 100){
+    
+    X_new <- rnorm(n = 1,
+                   mean = X_old,
+                   sd = 1)
+    
+    
+  }else{
+    
+    X_new <- rnorm(n = 1,
+                   mean = X_old,
+                   sd = sqrt((2.4^2)/2*(variance_old + adaptive_prop)))
+    
+  }
+  
+  tau_new <- exp(X_new)
+  
+  
+  # Acceptance probability
+  log_acceptance <- tau_log_prob(beta = beta,
+                                 tau = tau_new,
+                                 s = s,
+                                 lambda = lambda) -
+    
+    tau_log_prob(beta = beta,
+                 tau = tau_old,
+                 s = s,
+                 lambda = lambda) +
+    
+    log(tau_new) - log(tau_old)
+  
+  # Random sampling
+  outcome <- rbinom(n = 1,
+                    size = 1,
+                    prob = min(1,exp(log_acceptance)))
+  
+  
+  if(outcome == 0){
+    
+    X_new <- X_old
+    tau_new <- tau_old
+  }
+  
+  X_mean_new <- (1-1/n)*X_mean_old + 1/n*X_new
+  M_2_new <- M_2_old + (X_new-X_mean_old)*(X_new-X_mean_new)
+  variance_new <- 1/(n-1)*M_2_new
+  
+  
+  # Return a list of items
+  return(list('tau' = tau_new,
+              'X_mean' = X_mean_new,
+              'M_2' = M_2_new,
+              'variance' = variance_new,
+              'accept' = outcome))
+}

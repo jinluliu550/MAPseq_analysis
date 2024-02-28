@@ -14,10 +14,8 @@ mcmc_run_all2 <- function(Y,
                           b0 = 1,
                           a_alpha = 1,
                           b_alpha = 1,
-                          num.cores = 1,
-                          pi_cons,
-                          s1_2,
-                          s2_2){
+                          s,
+                          num.cores = 1){
   
   
   
@@ -56,107 +54,113 @@ mcmc_run_all2 <- function(Y,
   acceptance_prob_list <- data.frame(w = rep(0, number_iter-1),
                                      alpha_zero = rep(0, number_iter-1),
                                      alpha = rep(0, number_iter-1),
-                                     beta = rep(0, number_iter-1),
                                      q_star = rep(0, number_iter-1),
                                      gamma_star = rep(0, number_iter-1),
-                                     alpha_r = rep(0, number_iter-1))
+                                     alpha_r = rep(0, number_iter-1),
+                                     tau = rep(0, number_iter-1))
   
-  beta_count <- 0
   alpha_count <- 0
   alpha_zero_count <- 0
   w_count <- 0
   alpha_r_count <- 0
   q_star_count <- 0
   gamma_star_count <- 0
+  tau_count <- 0
   
   
   #----------------------- Step 2: Set starting values ----------------------------
   
   # beta
-  beta_new <- rep(1,J)
+  beta <- rep(1,J)
   
   # delta
-  delta_new <- matrix(rgamma(n = J*M,
-                             shape = rep(a_alpha/b_alpha*rep(1/J,J),
-                                         M),
-                             rate = 1),
-                      nrow = J,
-                      ncol = M)
+  delta <- matrix(rgamma(n = J*M,
+                         shape = rep(a_alpha/b_alpha*rep(1/J,J),
+                                     M),
+                         rate = 1),
+                  nrow = J,
+                  ncol = M)
   
   # q_star
-  q_star_new <- matrix(1/R,
-                       nrow = J,
-                       ncol = R)
+  q_star <- matrix(1/R,
+                   nrow = J,
+                   ncol = R)
   
   # gamma_star
   gamma_star <- rep(a_gamma/b_gamma,
                     J)
   
   # alpha
-  alpha_new <- a_alpha/b_alpha
+  alpha <- a_alpha/b_alpha
   
   # alpha0
-  alpha_zero_new <- a0/b0
+  alpha_zero <- a0/b0
   
   # w
-  w_new <- rep(1/J,
-               J)
+  w <- rep(1/J, J)
   
   # xi
-  xi_new <- lapply(1:M,
-                   function(m) rep(1,C[m]))
+  xi <- lapply(1:M,
+               function(m) rep(1,C[m]))
   
+  # lambda
+  lambda <- rep(0.5,J)
   
+  # tau
+  tau <- 5
   
   #----------------------- Step 3: Prepare for the covariance update -----------------------------
   
   # w
-  mean_x_w_new <- matrix(log(w_new[1:(J-1)]/w_new[J]),
-                         nrow = 1)
-  tilde_s_w_new <- t(mean_x_w_new)%*%mean_x_w_new
-  covariance_w_new <- matrix(0,
-                             nrow = J-1,
-                             ncol = J-1)
+  mean_x_w <- matrix(log(w[1:(J-1)]/w[J]),
+                     nrow = 1)
+  tilde_s_w <- t(mean_x_w)%*%mean_x_w
+  covariance_w <- matrix(0,
+                         nrow = J-1,
+                         ncol = J-1)
   
   # alpha
-  X_mean_alpha_new <- log(alpha_new)
-  M_2_alpha_new <- 0
-  variance_alpha_new <- 0
+  X_mean_alpha <- log(alpha)
+  M_2_alpha <- 0
+  variance_alpha <- 0
   
   # alpha0
-  X_mean_alpha0_new <- log(alpha_zero_new)
-  M_2_alpha_zero_new <- 0
-  variance_alpha_zero_new <- 0
+  X_mean_alpha0 <- log(alpha_zero)
+  M_2_alpha_zero <- 0
+  variance_alpha_zero <- 0
   
   # q star
-  mean_x_q_star_new <- lapply(1:J,
-                              function(j) matrix(log(q_star_new[j,1:(R-1)]/q_star_new[j,R]),
-                                                 nrow = 1))
-  tilde_s_q_star_new <- lapply(1:J,
-                               function(j) t(mean_x_q_star_new[[j]])%*%mean_x_q_star_new[[j]])
+  mean_x_q_star <- lapply(1:J,
+                          function(j) matrix(log(q_star[j,1:(R-1)]/q_star[j,R]),
+                                             nrow = 1))
+  tilde_s_q_star <- lapply(1:J,
+                           function(j) t(mean_x_q_star[[j]])%*%mean_x_q_star[[j]])
   
-  covariance_q_star_new <- lapply(1:J,
-                                  function(j) matrix(0,
-                                                     nrow = R-1,
-                                                     ncol = R-1))
+  covariance_q_star <- lapply(1:J,
+                              function(j) matrix(0,
+                                                 nrow = R-1,
+                                                 ncol = R-1))
+                                  
   
   # gamma star
-  X_mean_gamma_new <- log(gamma_star_new)
+  X_mean_gamma <- log(gamma_star)
   M_2_gamma_new <- rep(0,J)
-  variance_gamma_new <- rep(0,J)
+  variance_gamma <- rep(0,J)
   
   
   # alpha r
-  mean_X_alpha_r_new <- alpha_r_output$mean_X_new
-  tilde_s_alpha_r_new <- t(mean_X_alpha_r_new)%*%mean_X_alpha_r_new
-  covariance_alpha_r_new <- matrix(0, nrow = R, ncol = R)
+  mean_X_alpha_r <- matrix(log(rep(a_r/b_r, R)),
+                           nrow = 1)
+  tilde_s_alpha_r <- t(mean_X_alpha_r)%*%mean_X_alpha_r
+  covariance_alpha_r <- matrix(0, nrow = R, ncol = R)
   
   
-  # beta
-  beta_mean_new <- beta_new
-  M2_beta_new <- rep(0,J)
-  beta_variance_new <- rep(0,J)
   
+  # tau
+  mean_tau <- tau
+  X_mean_tau <- log(tau)
+  M_2_tau <- 0
+  variance_tau <- 0
   
   
   #----------------------- Step 4: Updates -----------------------------
@@ -182,107 +186,110 @@ mcmc_run_all2 <- function(Y,
     
     ##----------------------------------- Allocation variables ------------------------------------
     
-    z_output <- allocation_variables_dirmult_mcmc2(beta = beta_new,
-                                                   delta = delta_new,
-                                                   q_star = q_star_new,
-                                                   gamma_star = gamma_star_new,
+    z_output <- allocation_variables_dirmult_mcmc2(beta = beta,
+                                                   delta = delta,
+                                                   q_star = q_star,
+                                                   gamma_star = gamma_star,
                                                    Y = Y,
                                                    x = x,
                                                    num.cores = num.cores)
     
-    Z_new <- z_output$Z
+    Z <- z_output$Z
     allocation.prob <- z_output$allocation.prob
     
     ##-- Print table(Z) if TRUE
     if(isTRUE(print_Z)){
-      for(m in 1:M) print(table(Z_new[[m]]))
+      for(m in 1:M) print(table(Z[[m]]))
     }
     
     
     #--------------------------------------- Delta -------------------------------------------------
     
-    delta_new <- delta_mcmc(alpha = alpha_new,
-                            w = w_new,
-                            z = Z_new,
-                            xi = xi_new,
-                            beta = beta_new,
-                            x = x)
+    delta <- delta_mcmc(alpha = alpha,
+                        w = w,
+                        z = Z,
+                        xi = xi,
+                        beta = beta,
+                        x = x)
+                            
     
     
     #----------------------------------------- Beta ------------------------------------------------
     
-    beta_output <- beta_mcmc(beta = beta_new,
-                             delta = delta_new,
-                             xi = xi_new,
-                             x = x,
-                             M2 = M2_beta_new,
-                             z = Z_new,
-                             pi_cons = pi_cons,
-                             s1_2 = s1_2,
-                             s2_2 = s2_2,
-                             beta_mean = beta_mean_new,
-                             beta_variance = beta_variance_new,
-                             iter_num = iter,
-                             adaptive_prop = adaptive_prop,
-                             num.cores = num.cores)
+    beta <- beta_mcmc(beta = beta,
+                      delta = delta,
+                      xi = xi,
+                      x = x,
+                      Z = Z,
+                      tau = tau,
+                      lambda = lambda,
+                      num.cores = num.cores)
+                             
     
-    beta_new <- beta_output$beta_new
-    beta_mean_new <- beta_output$beta_mean_new
-    M2_beta_new <- beta_output$M2_new
-    beta_variance_new <- beta_output$variance_new
+    #---------------------------------------- tau ---------------------------------------------------
     
-    # Cumulative acceptance probability
-    beta_count <- beta_count + beta_output$accept
-    acceptance_prob_list$beta[iter-1] <- beta_count/((iter-1)*J)
+    tau_mcmc <- tau_mcmc(lambda = lambda,
+                         tau = tau,
+                         beta = beta,
+                         s = s,
+                         variance = variance_tau,
+                         M_2 = M_2_tau,
+                         X_mean = X_mean_tau,
+                         adaptive_prop = adaptive_prop)
     
+    tau <- tau_mcmc$tau
+    X_mean_tau <- tau_mcmc$X_mean
+    M_2_tau <- tau_mcmc$M_2
+    variance_tau <- tau_mcmc$variance
+    
+    tau_count <- tau_count + tau_output$accept
+    acceptance_prob_list$tau[iter-1] <- tau_count/(iter-1)
     
     #----------------------------------------- xi ----------------------------------------------------
     
-    xi_new <- xi_mcmc(delta = delta_new,
-                      beta = beta_new,
-                      x = x)
+    xi <- xi_mcmc(delta = delta,
+                  beta = beta,
+                  x = x)
     
     
     #---------------------------------------- w ------------------------------------------------------
     
-    w_output <- w_mcmc(w = w_new,
-                       delta = delta_new,
-                       alpha_zero = alpha_zero_new,
-                       alpha = alpha_new,
-                       covariance = covariance_w_new,
-                       mean_x = mean_x_w_new,
-                       tilde_s = tilde_s_w_new,
+    w_output <- w_mcmc(w = w,
+                       delta = delta,
+                       alpha_zero = alpha_zero,
+                       alpha = alpha,
+                       covariance = covariance_w,
+                       mean_x = mean_x_w,
+                       tilde_s = tilde_s_w,
                        iter_num = iter_num,
                        adaptive_prop = adaptive_prop)
     
-    w_new <- w_output$w_new
-    tilde_s_w_new <- w_output$tilde_s_new
-    mean_x_w_new <- w_output$mean_x_new
-    covariance_w_new <- w_output$covariance_new
+    w <- w_output$w
+    tilde_s_w <- w_output$tilde_s
+    mean_x_w <- w_output$mean_x
+    covariance_w <- w_output$covariance
     
-    # Cumulative acceptance probability
     w_count <- w_count + w_output$accept
     acceptance_prob_list$w[iter-1] <- w_count/(iter-1)
     
     #---------------------------------------- alpha --------------------------------------------------
     
-    alpha_output <- alpha_mcmc2(w = w_new,
-                                delta = delta_new,
+    alpha_output <- alpha_mcmc2(w = w,
+                                delta = delta,
                                 a_alpha = a_alpha,
                                 b_alpha = b_alpha,
-                                alpha = alpha_new,
-                                X_mean = X_mean_alpha_new,
-                                M_2 = M_2_alpha_new,
-                                variance = variance_alpha_new,
+                                alpha = alpha,
+                                X_mean = X_mean_alpha,
+                                M_2 = M_2_alpha,
+                                variance = variance_alpha,
                                 iter_num = iter_num,
                                 adaptive_prop = adaptive_prop)
     
-    alpha_new <- alpha_output$alpha_new
-    X_mean_alpha_new <- alpha_output$X_mean_new
-    M_2_alpha_new <- alpha_output$M_2_new
-    variance_alpha_new <- alpha_output$variance_new
+    alpha <- alpha_output$alpha
+    X_mean_alpha <- alpha_output$X_mean
+    M_2_alpha <- alpha_output$M_2
+    variance_alpha <- alpha_output$variance
     
-    # Cumulative acceptance probability
     alpha_count <- alpha_count + alpha_output$accept
     acceptance_prob_list$alpha[iter-1] <- alpha_count/(iter-1)
     
@@ -290,45 +297,43 @@ mcmc_run_all2 <- function(Y,
     
     #---------------------------------------- alpha_0 -------------------------------------------------
     
-    alpha_zero_output <- alpha_zero_mcmc2(w = w_new,
-                                          alpha_zero = alpha_zero_new,
+    alpha_zero_output <- alpha_zero_mcmc2(w = w,
+                                          alpha_zero = alpha_zero,
                                           a0 = a0,
                                           b0 = b0,
-                                          X_mean = X_mean_alpha_zero_new,
-                                          M_2 = M_2_alpha_zero_new,
-                                          variance = variance_alpha_zero_new,
+                                          X_mean = X_mean_alpha_zero,
+                                          M_2 = M_2_alpha_zero,
+                                          variance = variance_alpha_zero,
                                           iter_num = iter_num,
                                           adaptive_prop = adaptive_prop)
                                        
     
-    alpha_zero_new <- alpha_zero_output$alpha_zero_new
-    X_mean_alpha0_new <- alpha_zero_output$X_mean_new
-    M_2_alpha_zero_new <- alpha_zero_output$M_2_new
-    variance_alpha_zero_new <- alpha_zero_output$variance_new
+    alpha_zero <- alpha_zero_output$alpha_zero
+    X_mean_alpha_zero <- alpha_zero_output$X_mean
+    M_2_alpha_zero <- alpha_zero_output$M_2
+    variance_alpha_zero <- alpha_zero_output$variance
     
-    # Cumulative acceptance probability
     alpha_zero_count <- alpha_zero_count + alpha_zero_output$accept
     acceptance_prob_list$alpha_zero[iter-1] <- alpha_zero_count/(iter-1)
     
     
     #----------------------------------- alpha_r -------------------------------------------------------
     
-    alpha_r_output <- alpha_r_mcmc(alpha_r = alpha_r_new,
-                                   mean_X = mean_X_alpha_r_new,
-                                   tilde_s = tilde_s_alpha_r_new,
-                                   q_star = q_star_new,
+    alpha_r_output <- alpha_r_mcmc(alpha_r = alpha_r,
+                                   q_star = q_star,
                                    iter_num = iter_num,
-                                   a_alpha = a_alpha,
-                                   b_alpha = b_alpha,
-                                   covariance = covariance_alpha_r_new,
+                                   a_r = a_r,
+                                   b_r = b_r,
+                                   mean_X = mean_X_alpha_r,
+                                   tilde_s = tilde_s_alpha_r,
+                                   covariance = covariance_alpha_r,
                                    adaptive_prop = adaptive_prop)
     
-    alpha_r_new <- alpha_r_output$alpha_r_new
-    mean_X_alpha_r_new <- alpha_r_output$mean_X_new
-    tilde_s_alpha_r_new <- alpha_r_output$tilde_s_new
-    covariance_alpha_r_new <- alpha_r_output$covariance_new
+    alpha_r <- alpha_r_output$alpha_r
+    mean_X_alpha_r <- alpha_r_output$mean_X
+    tilde_s_alpha_r <- alpha_r_output$tilde_s
+    covariance_alpha_r <- alpha_r_output$covariance
     
-    # Cumulative acceptance probability
     alpha_r_count <- alpha_r_count + alpha_r_output$accept
     acceptance_prob_list$alpha_r[iter-1] <- alpha_r_count/(iter-1)
     
@@ -336,21 +341,21 @@ mcmc_run_all2 <- function(Y,
     #--------------------------------------- q -------------------------------------------------------
     
     q_star_output <- q_star_mcmc2(Y = Y,
-                                  Z = Z_new,
-                                  q_star = q_star_new,
-                                  gamma_star = gamma_star_new,
-                                  alpha_r = alpha_r_new,
-                                  covariance = covariance_q_star_new,
-                                  mean_x = mean_x_q_star_new,
-                                  tilde_s = tilde_s_q_star_new,
+                                  Z = Z,
+                                  q_star = q_star,
+                                  gamma_star = gamma_star,
+                                  alpha_r = alpha_r,
+                                  covariance = covariance_q_star,
+                                  mean_x = mean_x_q_star,
+                                  tilde_s = tilde_s_q_star,
                                   iter_num = iter_num,
                                   adaptive_prop = adaptive_prop,
                                   num.cores = num.cores)
     
-    q_star_new <- q_star_output$q_star_new
-    mean_x_q_star_new <- q_star_output$mean_x_new
-    tilde_s_q_star_new <- q_star_output$tilde_s_new
-    covariance_q_star_new <- q_star_output$covariance_new
+    q_star <- q_star_output$q_star
+    mean_x_q_star <- q_star_output$mean_x
+    tilde_s_q_star <- q_star_output$tilde_s
+    covariance_q_star <- q_star_output$covariance
     
     # Cumulative acceptance probability
     q_star_count <- q_star_count + q_star_output$q_star_count
@@ -360,24 +365,23 @@ mcmc_run_all2 <- function(Y,
     #------------------------------------ gamma ---------------------------------------------------------
     
     gamma_star_output <- gamma_mcmc2(Y = Y,
-                                     Z = Z_new,
-                                     q_star = q_star_new,
-                                     gamma_star = gamma_star_new,
+                                     Z = Z,
+                                     q_star = q_star,
+                                     gamma_star = gamma_star,
                                      a_gamma = a_gamma,
                                      b_gamma = b_gamma,
-                                     X_mean = X_mean_gamma_new,
-                                     M_2 = M_2_gamma_new,
-                                     variance = variance_gamma_new,
+                                     X_mean = X_mean_gamma,
+                                     M_2 = M_2_gamma,
+                                     variance = variance_gamma,
                                      iter_num = iter_num,
                                      adaptive_prop = adaptive_prop,
                                      num.cores = num.cores)
     
-    gamma_star_new <- gamma_star_output$gamma_star_new
-    variance_gamma_new <- gamma_star_output$variance_new
-    M_2_gamma_new <- gamma_star_output$M_2_new
-    X_mean_gamma_new <- gamma_star_output$X_mean_new
-    
-    # Cumulative acceptance probability
+    gamma_star <- gamma_star_output$gamma_star
+    variance_gamma <- gamma_star_output$variance
+    M_2_gamma <- gamma_star_output$M_2
+    X_mean_gamma <- gamma_star_output$X_mean
+
     gamma_star_count <- gamma_star_count + gamma_star_output$gamma_count
     acceptance_prob_list$gamma_star[iter-1] <- gamma_star_count/((iter-1)*J)
     
@@ -388,31 +392,31 @@ mcmc_run_all2 <- function(Y,
     w_m_0 <- matrix(0, nrow = J, ncol = M)
     for(m in 1:M){
       
-      w_m_0[,m] <- delta_new[,m]/sum(delta_new[,m])
+      w_m_0[,m] <- delta[,m]/sum(delta[,m])
     }
     
     # For x = 1, for region MEC
     w_m_1 <- matrix(0, nrow = J, ncol = M)
     for(m in 1:M){
       
-      w_m_1[,m] <- delta_new[,m]*exp(beta_new)/sum(delta_new[,m]*exp(beta_new))
+      w_m_1[,m] <- delta[,m]*exp(beta)/sum(delta[,m]*exp(beta))
     }
     
     
     #-------------------------- Step 5: Update simulated values ------------------------
     if(update == TRUE){
       
-      Z_output[[output_index]] <- Z_new
-      w_output[[output_index]] <- w_new 
-      alpha_output[output_index] <- alpha_new
-      alpha_zero_output[output_index] <- alpha_zero_new
-      q_star_output[[output_index]] <- q_star_new
+      Z_output[[output_index]] <- Z
+      w_output[[output_index]] <- w
+      alpha_output[output_index] <- alpha
+      alpha_zero_output[output_index] <- alpha_zero
+      q_star_output[[output_index]] <- q_star
       gamma_star_output[[output_index]] <- gamma_star
       alpha_r_ouput[[output_index]] <- alpha_r
       allocation_prob_output[[output_index]] <- allocation.prob
-      xi_output[[output_index]] <- xi_new
-      delta_output[[output_index]] <- delta_new
-      beta_output[[output_index]] <- beta_new
+      xi_output[[output_index]] <- xi
+      delta_output[[output_index]] <- delta
+      beta_output[[output_index]] <- beta
       w_m_0_output[[output_index]] <- w_m_0
       w_m_1_output[[output_index]] <- w_m_1
       

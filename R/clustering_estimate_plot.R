@@ -28,3 +28,48 @@ opt.clustering.frequency <- function(clustering,
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     ggtitle(main)
 }
+
+
+
+opt.clustering.frequency <- function(clustering,
+                                     main='',
+                                     EC_label){
+  
+  
+  cluster.names <- paste('cluster', 
+                         1:length(unique(unlist(clustering))))
+  
+  
+  # Table of LEC and MEC
+  LEC_df <- data.frame(cluster = factor(cluster.names,
+                                        levels = cluster.names),
+                       EC_label = 'LEC',
+                       counts = as.vector(table(factor(unlist(clustering)[which(unlist(EC_label) == 'LEC')],
+                                                       levels = 1:length(cluster.names)))))
+  
+  MEC_df <- data.frame(cluster = factor(cluster.names,
+                                        levels = cluster.names),
+                       EC_label = 'MEC',
+                       counts = as.vector(table(factor(unlist(clustering)[which(unlist(EC_label) == 'MEC')],
+                                                       levels = 1:length(cluster.names)))))
+  
+  df <- rbind(LEC_df, MEC_df)
+  
+  # Plot to show proportion
+  
+  df2 <- df %>%
+    group_by(cluster) %>%
+    summarise(sum_counts = sum(counts))
+  
+  ggplot(df, 
+         aes(x = cluster, y = counts, fill = EC_label)) +
+    geom_col(position = "fill")+
+    theme_bw()+
+    ylab('Proportion of LEC and MEC neurons')+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    annotate(geom = 'text', 
+             label = df2$sum_counts,
+             x = (1:nrow(df2) - 0.5), y = 0.95, hjust = 0, vjust = 1, size = 3,
+             angle = 90)
+  
+}

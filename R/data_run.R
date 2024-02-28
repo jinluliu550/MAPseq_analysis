@@ -32,11 +32,25 @@ data_by_mouse <- lapply(1:6,
                         function(m) t(data_by_mouse[[m]]))
 
 
+# Label of LEC and MEC
+LEC$EC_label <- 'LEC'
+MEC$EC_label <- 'MEC'
+
+data2 <- rbind(LEC,MEC)
+data_by_mouse2 <- lapply(1:6,
+                         function(m) data2 %>%
+                           filter(brain == m) %>%
+                           select(EC_label) %>%
+                           pull())
+
+
 # Load everything
 load('data/mcmc_all_sample.RData')
 load('data/psm.RData')
 load('data/opt.clust0.RData')
 load('data/mcmc_unique.RData')
+
+
 
 # MCMC run
 mcmc_all_sample <- mcmc_run_all(Y = data_by_mouse,

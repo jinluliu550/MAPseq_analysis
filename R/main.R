@@ -21,6 +21,7 @@ suppressPackageStartupMessages({
   library(pheatmap)
   library(RColorBrewer)
   library(readxl)
+  library(truncnorm)
 })
 
 `%notin%` <- Negate(`%in%`)
