@@ -22,6 +22,16 @@ MEC$brain <- sapply(1:nrow(MEC),
 # round data
 data <- round(rbind(LEC, MEC), 0)
 
+data2 <- data %>%
+  mutate(neuron = c(paste('LEC neuron', 1:nrow(LEC)),
+                    paste('MEC neuron', 1:nrow(MEC))))
+
+neuron_in_each_mouse <- lapply(1:6, 
+                               function(m) data2 %>%
+                                 filter(brain == m) %>%
+                                 select(neuron) %>%
+                                 pull())
+
 data_by_mouse <- lapply(1:6,
                         function(m) data %>%
                           filter(brain == m) %>%
@@ -30,6 +40,12 @@ data_by_mouse <- lapply(1:6,
 
 data_by_mouse <- lapply(1:6,
                         function(m) t(data_by_mouse[[m]]))
+
+
+
+# Allocations
+allocation_bayesian <- data.frame(neuron = unlist(neuron_in_each_mouse),
+                                  allocation_bayes = unlist(mcmc_unique$Z))
 
 
 # Label of LEC and MEC
@@ -144,6 +160,11 @@ omega_JM_mcmc <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_sample,
 
 omega_JM_mcmc$omega_JM_plot
 
+# Projection strength of each neuron in each cluster, colour-coded by the injection site
+projection_by_EC(Y = data_by_mouse,
+                 EC_label = data_by_mouse2,
+                 Z = mcmc_unique$Z,
+                 region_name = rownames(data_by_mouse[[1]]))
 
 # Examining the difference of omega_jm between any 2 mice:
 difference_omega_JM <- difference_in_omega_jm(mcmc_run_omega_output = omega_JM_mcmc)
