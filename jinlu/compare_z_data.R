@@ -20,7 +20,7 @@ motifs_union_summary <- lapply(1:length(motifs_union),
                                             region_name = region_names,
                                             projecting = sapply(region_names,
                                                                 function(region_name) str_detect(motifs_union[i], region_name))
-                                            )
+                                 )
                                })
 
 motifs_union_summary <- do.call(rbind, motifs_union_summary)
@@ -33,19 +33,6 @@ motifs_union_summary$motif_label <- factor(motifs_union_summary$motif_label,
 motifs_union_summary$region_name <- factor(motifs_union_summary$region_name,
                                            levels = region_names)
 
-motifs_union_summary %>%
-  ggplot(mapping = aes(x = motif_label,
-                       y = region_name,
-                       fill = projecting))+
-  geom_tile(color = "gray")+
-  theme_bw()+
-  scale_fill_gradientn(colours = c('white', 'yellow', 'red'),
-                       values = scales::rescale(c(0, 0.25, 1)),
-                       limits = c(0,1))+
-  xlab('cluster')+
-  ylab('regions')+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-        legend.position = "none")
 
 # Index of motif in LEC
 motifs_LEC_index <- sapply(1:length(z_binomial_LEC$Motif), 
@@ -87,8 +74,13 @@ for(i in 1:length(z_binomial_MEC$Motif)){
 binomial_allocation <- rbind(LEC_allocation, MEC_allocation)
 
 # Reordered Binomial Motifs
-binomial_allocation$allocation_binom <- binom_cluster_reorder(Y = data,
-                                                              Z = binomial_allocation$allocation_binom)
+df <- binom_cluster_reorder(Y = data,
+                            Z = binomial_allocation$allocation_binom)
+
+binomial_allocation$allocation_binom <- df$Z
+
+# Old cluster index
+old_cluster_index <- df$old_ordering
 
 
 # A combined data frame
@@ -127,3 +119,28 @@ df_combined_summary %>%
   ylab('bayesian motif')+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+
+
+# Heat-map of reordered clusters in the binomial model
+list00 <- lapply(1:length(motifs_union),
+                 function(i) motifs_union_summary[((i-1)*8 + 1):(i*8),])
+
+list0 <- lapply(old_cluster_index,
+                function(i) list00[[i]])
+
+df0 <- do.call(rbind, list0)
+df0$motif_label <- rep(1:length(motifs_union), each = R)
+
+df0 %>%
+  ggplot(mapping = aes(x = motif_label,
+                       y = region_name,
+                       fill = projecting))+
+  geom_tile(color = "gray")+
+  theme_bw()+
+  scale_fill_gradientn(colours = c('white', 'yellow', 'red'),
+                       values = scales::rescale(c(0, 0.25, 1)),
+                       limits = c(0,1))+
+  xlab('cluster')+
+  ylab('regions')+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        legend.position = "none")
