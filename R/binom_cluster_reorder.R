@@ -52,11 +52,12 @@ binom_cluster_reorder <- function(Y,
                 }
   )
   
-  new_ordering <- unlist(df0)
+  old_ordering <- unlist(df0)
   
   Z_new <- sapply(1:length(Z),
-                  function(i) which(new_ordering == Z[i]))
+                  function(i) which(old_ordering == Z[i]))
   
-  return(Z_new)
+  return(list('Z' = Z_new,
+              'old_ordering' = old_ordering))
 }
 

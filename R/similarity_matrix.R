@@ -1,18 +1,16 @@
 
 #' Posterior similarity matrix
-#'
 
 similarity_matrix <- function(mcmc_run_all_output,
                               num.cores,
                               run.on.pc = TRUE){
   
+  
+  
   # Input from MCMC
   M <- mcmc_run_all_output$M
   C <- mcmc_run_all_output$C
-  
-  # Allocations
-  allocation_list <- mcmc_run_all_output$Z_output
-  
+  Z_trace <- mcmc_run_all_output$Z_output
   
   
   ##-- Cumulative sums of cells
@@ -27,31 +25,7 @@ similarity_matrix <- function(mcmc_run_all_output,
   for(m1 in rev(1:M)){
     for(m2 in 1:m1){
       
-      
-      
-      # Allocation of mouse m1
-      allocation_df_m1 <- lapply(1:length(allocation_list),
-                                 function(t){
-                                   
-                                   allocation_list[[t]][[m1]]
-                                 })
-      
-      allocation_df_m1 <- do.call(rbind, allocation_df_m1)
-      
-      # Allocation of mouse m2
-      allocation_df_m2 <- lapply(1:length(allocation_list),
-                                 function(t){
-                                   
-                                   allocation_list[[t]][[m2]]
-                                 })
-      
-      allocation_df_m2 <- do.call(rbind, allocation_df_m2)
-      
-      # Combine the matrix
-      allocation_df_m1_m2 <- cbind(allocation_df_m1,
-                                   allocation_df_m2)
-      
-      # # Register Cores
+      # Register Cores
       if(run.on.pc == FALSE){
         
         cl <- makeCluster(num.cores,
@@ -61,23 +35,31 @@ similarity_matrix <- function(mcmc_run_all_output,
         cl <- makeCluster(num.cores)
       }
       
-      # Calculate similarity in each iteration
-      similarity <- t(pbapply(allocation_df_m1_m2,
-                              1,
-                              function(x) ifelse(rep(x[1:C[m1]], each = C[m2]) == rep(x[(C[m1]+1):(C[m1]+C[m2])], C[m1]),
-                                                 1,
-                                                 0),
-                              cl = cl)
-      )
+      loop.result <- pblapply(1:length(Z_trace),
+                              cl = cl,
+                              FUN = function(iter){
+                                
+                                Z_trace_m1_iter <- Z_trace[[iter]][[m1]]
+                                Z_trace_m2_iter <- Z_trace[[iter]][[m2]]
+                                
+                                psm.empty <- matrix(0, nrow = C[m1], ncol = C[m2])
+                                for(i in 1:C[m1]){
+                                  psm.empty[i,] <- psm.empty[i,] + ifelse(Z_trace_m2_iter == Z_trace_m1_iter[i],
+                                                                          1,
+                                                                          0)
+                                }
+                                
+                                psm.empty
+                                
+                              })
       
+      # Stop parallel computing
       stopCluster(cl)
       
-      # Combine everything
-      psm.within[[m1]][[m2]] <- matrix(colSums(similarity)/length(allocation_list),
-                                       nrow = C[m1],
-                                       ncol = C[m2],
-                                       byrow = TRUE)
       
+      # Sum
+      loop.result <- Reduce('+', loop.result)
+      psm.within[[m1]][[m2]] <- loop.result/length(Z_trace)
       
     }
   }
@@ -106,3 +88,4 @@ similarity_matrix <- function(mcmc_run_all_output,
               'psm.combined' = combined_matrix))
   
 }
+
