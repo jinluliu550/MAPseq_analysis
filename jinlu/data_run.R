@@ -22,12 +22,9 @@ MEC$brain <- sapply(1:nrow(MEC),
 # round data
 data <- round(rbind(LEC, MEC), 0)
 
-data2 <- data %>%
-  mutate(neuron = c(paste('LEC neuron', 1:nrow(LEC)),
-                    paste('MEC neuron', 1:nrow(MEC))))
 
 neuron_in_each_mouse <- lapply(1:6, 
-                               function(m) data2 %>%
+                               function(m) data3 %>%
                                  filter(brain == m) %>%
                                  select(neuron) %>%
                                  pull())
@@ -48,17 +45,27 @@ allocation_bayesian <- data.frame(neuron = unlist(neuron_in_each_mouse),
                                   allocation_bayes = unlist(mcmc_unique$Z))
 
 
-# Label of LEC and MEC
+# Label of LEC and MEC of each mouse
 LEC$EC_label <- 'LEC'
 MEC$EC_label <- 'MEC'
 
-data2 <- rbind(LEC,MEC)
 data_by_mouse2 <- lapply(1:6,
-                         function(m) data2 %>%
+                         function(m) rbind(LEC,MEC) %>%
                            filter(brain == m) %>%
                            select(EC_label) %>%
                            pull())
 
+# A summary data frame
+data3 <- data %>%
+  mutate(neuron = c(paste('LEC neuron', 1:nrow(LEC)),
+                    paste('MEC neuron', 1:nrow(MEC))))
+
+data3_rowsums <- rowSums(data3[,1:8])
+
+for(i in 1:8){
+  
+  data3[,i] <- data3[,i]/data3_rowsums
+}
 
 # Load everything
 load('data/mcmc_all_sample.RData')
@@ -122,20 +129,20 @@ mcmc_unique <- mcmc_run_post(mcmc_run_all_output = mcmc_all_sample,
                              burn_in = 1500,
                              number_iter = 3000,
                              Y = data_by_mouse,
-                             a_gamma = 50,
-                             b_gamma = 1,
-                             front.regions = c(1,2),
-                             middle.regions = c(3,4,5),
-                             back.regions = c(6,7,8),
+                             a_gamma = 500,
+                             b_gamma = 10,
                              regions.name = rownames(data_by_mouse[[1]]))
 
 # Number of neurons in each cluster
 opt.clustering.frequency(clustering = mcmc_unique$Z)
 
+# Proportion of LEC and MEC in each cluster
+opt.clustering.frequency2(clustering = mcmc_unique$Z,
+                          EC_label = data_by_mouse2)
+
 # Plot of estimated projection strength
 mcmc_unique$estimated.pp.plot
 
-mcmc_unique$plot.by.region$front
 
 # Plot of q tilde
 mcmc_unique$q_tilde_plot
@@ -184,10 +191,10 @@ sapply(1:M,
 
 
 # Heat-map of projection strengths of each neuron
-pp.reordered(qj_estimate = mcmc_unique$proj_prob_mean,
-             Y = data_by_mouse,
-             Z = mcmc_unique$Z,
-             regions.name = rownames(data_by_mouse[[1]]))
+pp.standard.ordering(Y = data_by_mouse,
+                     Z = mcmc_unique$Z,
+                     regions.name = rownames(data_by_mouse[[1]]))
+
 
 # Posterior predictive checks
 ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_sample,
