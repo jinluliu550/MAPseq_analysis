@@ -83,7 +83,12 @@ for(i in 1:length(z_binomial_MEC$Motif)){
   MEC_allocation$allocation_binom[label_string+1] <- motifs_MEC_index[i]
 }
 
+# Binomial Motifs
 binomial_allocation <- rbind(LEC_allocation, MEC_allocation)
+
+# Reordered Binomial Motifs
+binomial_allocation$allocation_binom <- binom_cluster_reorder(Y = data,
+                                                              Z = binomial_allocation$allocation_binom)
 
 
 # A combined data frame
@@ -122,22 +127,3 @@ df_combined_summary %>%
   ylab('bayesian motif')+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
-
-# To show percentages
-df_combined_summary %>%
-  group_by(allocation_bayes) %>%
-  summarize(percentage = count/sum(count),
-            allocation_binom = allocation_binom) %>%
-  
-  ggplot(mapping = aes(x = allocation_binom,
-                       y = allocation_bayes,
-                       fill = percentage))+
-  geom_tile(color = "gray")+
-  theme_bw()+
-  scale_fill_gradientn(colours = c('white', 'yellow', 'red'),
-                       values = scales::rescale(c(0, 0.05, 1)),
-                       limits = c(0,1))+
-  xlab('binomial motif')+
-  ylab('bayesian motif')+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))

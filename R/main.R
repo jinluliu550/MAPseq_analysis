@@ -45,6 +45,9 @@ source('R/clustering_estimate_plot.R')
 source('R/difference_in_omega_jm.R')
 source('R/difference_in_omega_jm_plot.R')
 
+# Cluster labeling
+source('R/cluster_label.R')
+source('R/projection_by_EC.R')
 
 # Projection probability by cluster
 source('R/pp_by_z_no_reordering.R')

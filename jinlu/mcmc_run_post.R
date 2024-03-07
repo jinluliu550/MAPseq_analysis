@@ -146,14 +146,13 @@ mcmc_run_post <- function(mcmc_run_all_output,
   
   
   
-  #----------------------- Label clusters
+  #----------------------- Total number of projecting regions ---------------------------------
   
-  # How many areas are each cluster projecting
-  neuron_projection_df <- list('q_star_1_J_output' = q_star_1_J_output,
-                               'gamma_star_1_J_output' = gamma_star_1_J_output,
-                               'Z' = Z,
-                               'J' = J)
-  
+  neuron_projection_df <- NULL
+  neuron_projection_df$q_star_1_J_output <- q_star_1_J_output
+  neuron_projection_df$gamma_star_1_J_output <- gamma_star_1_J_output
+  neuron_projection_df$Z <- Z
+  neuron_projection_df$J <- J
   
   q_tilde_001 <- q_tilde(neuron_projection_df = neuron_projection_df,
                          epsilon = 0.01)
@@ -171,98 +170,105 @@ mcmc_run_post <- function(mcmc_run_all_output,
   bicast.and.more.index <- (1:J)[-unique(c(unicast.index,
                                            broadcast.index))]
   
-  # Summary table of clusters
+  
+  # Cluster labels
   cluster.label.summary <- data.frame(cluster = 1:J,
                                       
                                       unicast = ifelse((1:J) %in% unicast.index, 'Yes', 'No'),
                                       bicast.and.more = ifelse((1:J) %in% bicast.and.more.index, 'Yes', 'No'),
                                       broadcast = ifelse((1:J) %in% broadcast.index, 'Yes', 'No')
+                                      
   )
   
-  # Relabel
+  # Relabel clusters based on the strength of projection
   strong.proj <- apply(proj_prob_mean,
                        1,
                        function(x) which(x == max(x)))
   
   
-  df0 <- lapply(1:ncol(proj_prob_mean),
-                function(i){
+  df0 <- lapply(1:R,
+                function(r){
                   
-                  # Clusters with the strongest projection to region i
-                  strong.proj.i <- which(strong.proj==i)
+                  # Clusters with the strongest projection to region r
+                  strong.proj.r <- which(strong.proj==r)
                   
-                  if(length(strong.proj.i) != 0){
+                  
+                  if(length(strong.proj.r) != 0){
                     
-                    qj_estimate_i <- matrix(proj_prob_mean[strong.proj.i,],
-                                            nrow = length(strong.proj.i))
+                    qj_estimate_r <- matrix(proj_prob_mean[strong.proj.r,],
+                                            nrow = length(strong.proj.r))
                     
-                    output <- strong.proj.i[order(-qj_estimate_i[,i])]
+                    output <- strong.proj.r[order(-qj_estimate_r[,r])]
                   }else{
                     
                     output <- NULL
+                    
                   }
-                  
-                  
-                }
-  )
-  
-  original.label <- unlist(df0)
-  
-  
-  
-  
-  
-  # Relabel the summary table
-  cluster.label.summary <- cluster.label.summary[original.label,]
-  cluster.label.summary$cluster <- 1:J
-  
-  
-  # Change to the new labeling system
-  q_star_1_J_output <- lapply(1:length(q_star_1_J_output),
-                              function(t) q_star_1_J_output[[t]][original.label,])
-  
-  gamma_star_1_J_output <- lapply(1:length(gamma_star_1_J_output),
-                                  function(t) gamma_star_1_J_output[[t]][original.label])
-  
-  proj_prob_mean <- proj_prob_mean[original.label,]
-  proj_prob_lower <- proj_prob_lower[original.label,]
-  proj_prob_upper <- proj_prob_upper[original.label,]
-  
-  gamma_mean <- gamma_mean[original.label]
-  
-  
-  
-  Z <- lapply(1:M,
-              function(m){
+                  }
                 
-                sapply(1:C[m], function(c) which(original.label == Z[[m]][c]))
-              })
-  
-  
-  
-  # Summary table of projection probabilities
-  loop.result <- lapply(1:J, function(j){
+                )
     
-    data.frame(cluster = paste('cluster', j),
-               region = regions.name,
-               projection.mean = proj_prob_mean[j,],
-               projection.lower = proj_prob_lower[j,],
-               projection.upper = proj_prob_upper[j,])
-  })
+    
+    # Reorder original label
+    original.label <- unlist(df0)
+    
+    
+    # Relabel the summary table
+    cluster.label.summary <- cluster.label.summary[original.label,]
+    cluster.label.summary$cluster <- 1:J
+    
+    
+    # Change to the new labeling system
+    q_star_1_J_output <- lapply(1:length(q_star_1_J_output),
+                                function(t) q_star_1_J_output[[t]][original.label,])
+    
+    gamma_star_1_J_output <- lapply(1:length(gamma_star_1_J_output),
+                                    function(t) gamma_star_1_J_output[[t]][original.label])
+    
+    proj_prob_mean <- proj_prob_mean[original.label,]
+    proj_prob_lower <- proj_prob_lower[original.label,]
+    proj_prob_upper <- proj_prob_upper[original.label,]
+    
+    gamma_mean <- gamma_mean[original.label]
+    
+    
+    
+    Z <- lapply(1:M,
+                function(m){
+                  
+                  sapply(1:C[m], function(c) which(original.label == Z[[m]][c]))
+                })
+    
+    
+    # Summary of projection probabilities
+    loop.result <- lapply(1:J, function(j){
+      
+      data.frame(cluster = paste('cluster', j),
+                 region = regions.name,
+                 projection.mean = proj_prob_mean[j,],
+                 projection.lower = proj_prob_lower[j,],
+                 projection.upper = proj_prob_upper[j,])
+    })
+    
+    estimated.projection.df <- do.call(rbind, loop.result)
+    
+    
+    
+    
   
-  estimated.projection.df <- do.call(rbind, loop.result)
   
   
   #---------------------------------------- Plot of projection strengths ------------------------------------
   
   
-  # Label the number of projecting regions
+  
   cluster_label_vec <- sapply(1:J,
                               function(j){
                                 
                                 colnames(cluster.label.summary)[2:4][which(cluster.label.summary[j,2:4]=='Yes')[1]]
                               })
   
+  # Label the number of projecting regions
   estimated.projection.df$class <- rep(cluster_label_vec, each = R)
   estimated.projection.df$class <- factor(estimated.projection.df$class,
                                           levels = colnames(cluster.label.summary)[2:4])
@@ -287,11 +293,18 @@ mcmc_run_post <- function(mcmc_run_all_output,
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
     theme(axis.text=element_text(size=axis.text.size),
           axis.title=element_text(size=axis.title.size),
-          plot.title = element_text(size=plot.title.size))
+          plot.title = element_text(size=plot.title.size))+
+    scale_color_manual(values = col.i)
   
   
   
-  q_tilde_001 <- q_tilde_001[original.label,]
+  
+  #--------------------------------------- Plot of q_tilde ----------------------------------
+  
+  if(relabel == TRUE){
+    
+    q_tilde_001 <- q_tilde_001[original.label,]
+  }
   
   colnames(q_tilde_001) <- regions.name
   rownames(q_tilde_001) <- paste('cluster', 1:J)
@@ -339,5 +352,5 @@ mcmc_run_post <- function(mcmc_run_all_output,
               'q_tilde_001' = q_tilde_001,
               'q_tilde_plot' = q_tilde_plot)
   )
-}
+  }
 

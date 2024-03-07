@@ -34,3 +34,8 @@ mcmc_all_barseq <- mcmc_run_all(Y = data_barseq,
                                 num.cores = 10)
 
 
+
+psm_barseq <- similarity_matrix(mcmc_run_all_output = mcmc_all_barseq,
+                                num.cores = 10,
+                                run.on.pc = FALSE)
+

@@ -31,9 +31,9 @@ opt.clustering.frequency <- function(clustering,
 
 
 
-opt.clustering.frequency <- function(clustering,
-                                     main='',
-                                     EC_label){
+opt.clustering.frequency2 <- function(clustering,
+                                      main='',
+                                      EC_label){
   
   
   cluster.names <- paste('cluster', 

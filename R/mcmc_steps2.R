@@ -312,8 +312,9 @@ beta_mcmc <- function(beta,
                       beta_j <- rtruncnorm(n = 1,
                                            a = -Inf,
                                            b = max_beta_j,
-                                           mean = tau^2*lambda[j]^2*length(which(unlist(x)[which(unlist(Z)=j)]==1)),
-                                           sd = tau*lambda[j])
+                                           mean = (1/tau)*(1/lambda[j])*length(which(unlist(x)[which(unlist(Z)=j)]==1)),
+                                           sd = sqrt((1/tau)*(1/lambda[j]))
+                                           )
                       
                     }else{
                       
@@ -982,7 +983,6 @@ q_star_mcmc2 <- function(Y,
                 'outcome' = outcome))
   }
   
-  # Stop parallel computing
   stopCluster(cl)
   
   
@@ -1030,7 +1030,7 @@ tau_log_prob <- function(beta,
                          s,
                          lambda){
   
-  log_prob <- -log(1+(tau^2)/(s^2)) + sum(-log(tau) - 1/(2*tau^2*lambda^2)*beta^2)
+  log_prob <- log(1/tau) - log(1+(1/tau)/(s^2)) - sum(tau*lambda/2*beta^2)
 }
 
 
@@ -1107,4 +1107,119 @@ tau_mcmc <- function(lambda,
               'M_2' = M_2_new,
               'variance' = variance_new,
               'accept' = outcome))
+}
+
+
+# MCMC of lambda
+f_epsilon_x <- function(epsilon,
+                        x){
+  
+  return(epsilon*x + log(1+x))
+}
+
+lambda_mcmc <- function(max.iter,
+                        beta,
+                        tau,
+                        num.cores){
+  
+  # Set some fixed parameters
+  J <- length(beta)
+  a = 1/5
+  b = 10
+  epsilon = 1e-04
+  
+  
+  # Register cores
+  cl <- makeCluster(num.cores)
+  registerDoParallel(cl)
+  
+  # For each component j
+  loop.result <- foreach(j = 1:J,
+                         .packages = c('base',
+                                       'stats'),
+                         .export = 'f_epsilon_x') %dopar% {
+                           
+                           
+                           # calculate normalizing constant v
+                           A = f_epsilon_x(epsilon = epsilon,
+                                           x = a/epsilon)
+                           
+                           I <- f_epsilon_x(epsilon = epsilon,
+                                            x = 1/epsilon)
+                           
+                           B <- f_epsilon_x(epsilon = epsilon,
+                                            x = b/epsilon)
+                           
+                           lambda2 <- (I-A)/((1-a)/epsilon)
+                           lambda3 <- (B-I)/((b-1)/epsilon)
+                           
+                           v1 = log(1+a/epsilon)
+                           v2 = 1/lambda2*exp(-A)*(1-exp(-(I-A)))
+                           v2 = 1/lamnda3*exp(-I)*(1-exp(-(B-I)))
+                           v4 = 1/epsilon*exp(-B)
+                           
+                           v <- v1+v_2+v_3+v_4
+                           
+                           iter <- 1
+                           while((u >= exp(-(f_z - f_L_z))) & iter <= max.iter){
+                             
+                             # Obtain a sample from one of the four groups
+                             sample <- sample(x = 1:4,
+                                              size = 1,
+                                              prob = c(v1/v, v2/v, v3/v, v4/v))
+                             
+                             # If sample from h1
+                             if(sample == 1){
+                               
+                               # Inverse cdf sampler
+                               u <- runif(1)
+                               z <- (1+a/epsilon)^u - 1
+                               
+                               f_z <- epsilon*z + log(1+z)
+                               f_L_z <- log(1+z)
+                             }
+                             
+                             # If sample from h2
+                             if(sample == 2){
+                               
+                               u <- runif(1)
+                               z <- a/epsilon - log(1-u*(1-exp(-(I-A))))/lambda2
+                               
+                               f_z <- epsilon*z + log(1+z)
+                               f_L_z <- A + lambda2*(z-a/epsilon)
+                             }
+                             
+                             # If sample from h3
+                             if(sample == 3){
+                               
+                               u <- runif(1)
+                               z <- 1/epsilon - log(1-u*(1-exp(-(B-I))))/lambda3
+                               
+                               f_z <- epsilon*z + log(1+z)
+                               f_L_z <- I + lambda3*(z-b/epsilon)
+                             }
+                             
+                             # If sample from h4
+                             if(sample == 4){
+                               
+                               u <- runif(1)
+                               z <- b/epsilon - log(1-u)/epsilon
+                               
+                               f_z <- epsilon*z + log(1+z)
+                               f_L_z <- B + epsilon*(z-b/epsilon)
+                             }
+                             
+                             
+                             # Update the iteration index
+                             iter <- iter + 1
+                           }
+                           
+                           
+                           return(z)
+                         }
+  
+  stopCluster(cl)
+  
+  return(unlist(z))
+  
 }
