@@ -144,3 +144,129 @@ df0 %>%
   ylab('regions')+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         legend.position = "none")
+
+
+
+#---------------------- For larger clusters found in the Bayesian model, color-code by the binomial allocation
+
+
+
+# Cluster 1
+df1 <- df_combined %>%
+  filter(allocation_bayes == 1) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 1')
+
+
+# Cluster 6
+df6 <- df_combined %>%
+  filter(allocation_bayes == 6) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 6')
+
+
+
+# Cluster 21
+df21 <- df_combined %>%
+  filter(allocation_bayes == 21) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 21')
+
+
+# Cluster 53
+df53 <- df_combined %>%
+  filter(allocation_bayes == 53) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 53')
+
+
+# Cluster 55
+df55 <- df_combined %>%
+  filter(allocation_bayes == 55) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 55')
+
+
+# Cluster 63
+df63 <- df_combined %>%
+  filter(allocation_bayes == 63) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 63')
+
+
+# Cluster 97
+df97 <- df_combined %>%
+  filter(allocation_bayes == 97) %>%
+  left_join(data3, by = 'neuron') %>%
+  pivot_longer(4:11, names_to = 'brain_region') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = rownames(data_by_mouse[[1]])),
+         allocation_binom = factor(allocation_binom)) %>%
+  ggplot()+
+  geom_line(mapping = aes(x = brain_region, y = value, color = allocation_binom, group = neuron))+
+  theme_bw()+
+  ylab('projection probability')+
+  xlab('brain region')+
+  ggtitle('Cluster 97')
+
+
+
+#-------------------------- Large motifs in the binomial model ------------------
+
+
+
+

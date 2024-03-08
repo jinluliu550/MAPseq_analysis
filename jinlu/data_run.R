@@ -136,6 +136,10 @@ mcmc_unique <- mcmc_run_post(mcmc_run_all_output = mcmc_all_sample,
 # Number of neurons in each cluster
 opt.clustering.frequency(clustering = mcmc_unique$Z)
 
+# Number of LEC and MEC neurons in each cluster
+opt.clustering.frequency1(clustering = mcmc_unique$Z,
+                          EC_label = data_by_mouse2)
+
 # Proportion of LEC and MEC in each cluster
 opt.clustering.frequency2(clustering = mcmc_unique$Z,
                           EC_label = data_by_mouse2)
@@ -195,6 +199,19 @@ pp.standard.ordering(Y = data_by_mouse,
                      Z = mcmc_unique$Z,
                      regions.name = rownames(data_by_mouse[[1]]))
 
+
+# Distribution of N_{i,m} for neurons within the same cluster
+data_EC_N <- lapply(1:length(data_by_mouse),
+                        function(m) colSums(data_by_mouse[[m]]))
+
+df <- data.frame(N = unlist(data_EC_N),
+                 motif = unlist(mcmc_unique$Z))
+
+ggplot(df)+
+  geom_boxplot(mapping = aes(x = factor(motif, levels = 1:max(unlist(mcmc_unique$Z))),
+                             y = N))+
+  theme_bw()+
+  xlab('Cluster')
 
 # Posterior predictive checks
 ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_sample,
