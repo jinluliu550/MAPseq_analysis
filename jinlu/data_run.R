@@ -5,6 +5,13 @@ LEC <- read.csv('./data/lec_newSet_800_plusBrain.csv')
 MEC <- read.csv('./data/mec_newSet_800_plusBrain.csv')
 
 
+# Load MCMC results
+load('data/mcmc_all_sample.RData')
+load('data/psm.RData')
+load('data/opt.clust0.RData')
+load('data/mcmc_unique.RData')
+
+
 digit.list <- list(one = 1,
                    two = 2,
                    three = 3,
@@ -23,12 +30,6 @@ MEC$brain <- sapply(1:nrow(MEC),
 data <- round(rbind(LEC, MEC), 0)
 
 
-neuron_in_each_mouse <- lapply(1:6, 
-                               function(m) data3 %>%
-                                 filter(brain == m) %>%
-                                 select(neuron) %>%
-                                 pull())
-
 data_by_mouse <- lapply(1:6,
                         function(m) data %>%
                           filter(brain == m) %>%
@@ -39,10 +40,6 @@ data_by_mouse <- lapply(1:6,
                         function(m) t(data_by_mouse[[m]]))
 
 
-
-# Allocations
-allocation_bayesian <- data.frame(neuron = unlist(neuron_in_each_mouse),
-                                  allocation_bayes = unlist(mcmc_unique$Z))
 
 
 # Label of LEC and MEC of each mouse
@@ -67,11 +64,18 @@ for(i in 1:8){
   data3[,i] <- data3[,i]/data3_rowsums
 }
 
-# Load everything
-load('data/mcmc_all_sample.RData')
-load('data/psm.RData')
-load('data/opt.clust0.RData')
-load('data/mcmc_unique.RData')
+
+neuron_in_each_mouse <- lapply(1:6, 
+                               function(m) data3 %>%
+                                 filter(brain == m) %>%
+                                 select(neuron) %>%
+                                 pull())
+
+
+# Allocations
+allocation_bayesian <- data.frame(neuron = unlist(neuron_in_each_mouse),
+                                  allocation_bayes = unlist(mcmc_unique$Z))
+
 
 
 
