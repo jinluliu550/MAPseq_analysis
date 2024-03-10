@@ -57,3 +57,4 @@ source('R/pp_by_z_reordering.R')
 source('R/ppc.R')
 source('R/ppc_single.R')
 
+source('R/binom_cluster_reorder.R')

@@ -89,11 +89,6 @@ opt.clustering.frequency2 <- function(clustering,
   df <- rbind(LEC_df, MEC_df)
   
   # Plot to show proportion
-  
-  df2 <- df %>%
-    group_by(cluster) %>%
-    summarise(sum_counts = sum(counts))
-  
   ggplot(df, 
          aes(x = cluster, y = counts, fill = EC_label)) +
     geom_col(position = "fill")+

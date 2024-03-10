@@ -129,7 +129,8 @@ list0 <- lapply(old_cluster_index,
                 function(i) list00[[i]])
 
 df0 <- do.call(rbind, list0)
-df0$motif_label <- rep(1:length(motifs_union), each = R)
+df0$motif_label <- rep(1:length(motifs_union), 
+                       each = nrow(data_by_mouse[[1]]))
 
 df0 %>%
   ggplot(mapping = aes(x = motif_label,
@@ -267,6 +268,31 @@ df97 <- df_combined %>%
 
 #-------------------------- Large motifs in the binomial model ------------------
 
+large_binomial_motif <- df_combined %>%
+  group_by(allocation_binom) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 100)
 
+for(j in large_binomial_motif$allocation_binom){
+  
+  png(filename = paste0('binom_motif_', j, '.png'),
+      width = 800,
+      height = 500)
+  print(df_combined %>%
+          filter(allocation_binom == j) %>%
+          left_join(data3, by = 'neuron') %>%
+          pivot_longer(4:11, names_to = 'brain_region') %>%
+          mutate(brain_region = factor(brain_region,
+                                       levels = rownames(data_by_mouse[[1]])),
+                 allocation_bayes = factor(allocation_bayes)) %>%
+          ggplot()+
+          geom_line(mapping = aes(x = brain_region, y = value, color = allocation_bayes, group = neuron))+
+          theme_bw()+
+          ylab('projection probability')+
+          xlab('brain region')+
+          ggtitle(paste('cluster', j)))
+  dev.off()
+}
 
 

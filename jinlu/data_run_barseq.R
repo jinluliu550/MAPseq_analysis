@@ -31,7 +31,7 @@ mcmc_all_barseq <- mcmc_run_all(Y = data_barseq,
                                 adaptive_prop = 0.1,
                                 print_Z = TRUE,
                                 
-                                a_gamma = 500,
+                                a_gamma = 1000,
                                 b_gamma = 10,
                                 a_alpha = 1/5,
                                 b_alpha = 1/2,
@@ -81,7 +81,7 @@ mcmc_unique_barseq <- mcmc_run_post(mcmc_run_all_output = mcmc_all_barseq,
                              
 
 # Number of neurons in each cluster
-opt.clustering.frequency(clustering = mcmc_unique_barseq$Z)
+opt.clustering.frequency1(clustering = mcmc_unique_barseq$Z)
 
 
 # Plot of estimated projection strength
