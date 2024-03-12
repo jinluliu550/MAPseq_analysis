@@ -1,15 +1,12 @@
 # Run the model on the MAPseq data
 
 # pre-processing
-LEC <- read.csv('./data/lec_newSet_800_plusBrain.csv')
-MEC <- read.csv('./data/mec_newSet_800_plusBrain.csv')
+LEC <- read.csv('./data/EC/lec_newSet_800_plusBrain.csv')
+MEC <- read.csv('./data/EC/mec_newSet_800_plusBrain.csv')
 
+R <- 9
+M <- 6
 
-# Load MCMC results
-load('data/mcmc_all_sample.RData')
-load('data/psm.RData')
-load('data/opt.clust0.RData')
-load('data/mcmc_unique.RData')
 
 
 digit.list <- list(one = 1,
@@ -30,13 +27,13 @@ MEC$brain <- sapply(1:nrow(MEC),
 data <- round(rbind(LEC, MEC), 0)
 
 
-data_by_mouse <- lapply(1:6,
+data_by_mouse <- lapply(1:M,
                         function(m) data %>%
                           filter(brain == m) %>%
                           select(-brain) %>%
                           as.matrix())
 
-data_by_mouse <- lapply(1:6,
+data_by_mouse <- lapply(1:M,
                         function(m) t(data_by_mouse[[m]]))
 
 
@@ -46,7 +43,7 @@ data_by_mouse <- lapply(1:6,
 LEC$EC_label <- 'LEC'
 MEC$EC_label <- 'MEC'
 
-data_by_mouse2 <- lapply(1:6,
+data_by_mouse2 <- lapply(1:M,
                          function(m) rbind(LEC,MEC) %>%
                            filter(brain == m) %>%
                            select(EC_label) %>%
@@ -57,15 +54,15 @@ data3 <- data %>%
   mutate(neuron = c(paste('LEC neuron', 1:nrow(LEC)),
                     paste('MEC neuron', 1:nrow(MEC))))
 
-data3_rowsums <- rowSums(data3[,1:8])
+data3_rowsums <- rowSums(data3[,1:R])
 
-for(i in 1:8){
+for(i in 1:R){
   
   data3[,i] <- data3[,i]/data3_rowsums
 }
 
 
-neuron_in_each_mouse <- lapply(1:6, 
+neuron_in_each_mouse <- lapply(1:M, 
                                function(m) data3 %>%
                                  filter(brain == m) %>%
                                  select(neuron) %>%
