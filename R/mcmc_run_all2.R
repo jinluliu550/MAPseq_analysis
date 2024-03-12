@@ -15,7 +15,8 @@ mcmc_run_all2 <- function(Y,
                           a_alpha = 1,
                           b_alpha = 1,
                           s,
-                          num.cores = 1){
+                          num.cores = 1,
+                          max.iter.lambda = 30){
   
   
   
@@ -35,6 +36,7 @@ mcmc_run_all2 <- function(Y,
   
   #------------------------ Prepare for outputs -----------------
   
+  # Inference parameters
   Z_output <- NULL
   xi_output <- NULL
   w_output <- NULL
@@ -45,6 +47,10 @@ mcmc_run_all2 <- function(Y,
   alpha_r_output <- NULL
   gamma_star_output <- NULL
   q_star_output <- NULL
+  tau_output <- 0
+  lambda_output <- NULL
+  
+  # Other analysis
   allocation_prob_output <- NULL
   w_m_0_output <- NULL
   w_m_1_output <- NULL
@@ -133,6 +139,7 @@ mcmc_run_all2 <- function(Y,
   mean_x_q_star <- lapply(1:J,
                           function(j) matrix(log(q_star[j,1:(R-1)]/q_star[j,R]),
                                              nrow = 1))
+  
   tilde_s_q_star <- lapply(1:J,
                            function(j) t(mean_x_q_star[[j]])%*%mean_x_q_star[[j]])
   
@@ -244,6 +251,15 @@ mcmc_run_all2 <- function(Y,
     
     tau_count <- tau_count + tau_output$accept
     acceptance_prob_list$tau[iter-1] <- tau_count/(iter-1)
+    
+    
+    
+    #---------------------------------------- lambda -------------------------------------------------
+    
+    lambda_mcmc <- lambda_mcmc(max.iter = max.iter.lambda,
+                               beta = beta,
+                               tau = tau,
+                               num.cores = num.cores)
     
     #----------------------------------------- xi ----------------------------------------------------
     
@@ -386,6 +402,7 @@ mcmc_run_all2 <- function(Y,
     acceptance_prob_list$gamma_star[iter-1] <- gamma_star_count/((iter-1)*J)
     
     
+    
     #------------------------------- w_m -------------------------------
     
     # For x = 0, for region LEC
@@ -413,10 +430,16 @@ mcmc_run_all2 <- function(Y,
       q_star_output[[output_index]] <- q_star
       gamma_star_output[[output_index]] <- gamma_star
       alpha_r_ouput[[output_index]] <- alpha_r
-      allocation_prob_output[[output_index]] <- allocation.prob
+      
       xi_output[[output_index]] <- xi
       delta_output[[output_index]] <- delta
       beta_output[[output_index]] <- beta
+      
+      tau_output[output_index] <- tau
+      lambda_output[[output_index]] <- lambda
+      
+      
+      allocation_prob_output[[output_index]] <- allocation.prob
       w_m_0_output[[output_index]] <- w_m_0
       w_m_1_output[[output_index]] <- w_m_1
       
@@ -425,7 +448,6 @@ mcmc_run_all2 <- function(Y,
   }
   
   #------------------------------- Step 6: Return a list of items ----------------------
-  
   
   my_list <- list('acceptance_prob' = acceptance_prob_list,
                   'M' = M,
@@ -444,14 +466,12 @@ mcmc_run_all2 <- function(Y,
                   'delta_output' = delta_output,
                   'beta_output' = beta_output,
                   'w_m_0_output' = w_m_0_output,
-                  'w_m_1_output' = w_m_1_output
-                  
-                  
-                  
-                  
+                  'w_m_1_output' = w_m_1_output,
+                  'tau_output' = tau_output,
+                  'lambda_output' = lambda_output
                   
   )
   
   
-  
+  return(my_list)
 }

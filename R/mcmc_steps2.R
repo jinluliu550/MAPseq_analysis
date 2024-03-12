@@ -1126,7 +1126,7 @@ lambda_mcmc <- function(max.iter,
   J <- length(beta)
   a = 1/5
   b = 10
-  epsilon = 1e-04
+  epsilon = 1/2*tau*beta
   
   
   # Register cores
@@ -1141,22 +1141,22 @@ lambda_mcmc <- function(max.iter,
                            
                            
                            # calculate normalizing constant v
-                           A = f_epsilon_x(epsilon = epsilon,
-                                           x = a/epsilon)
+                           A = f_epsilon_x(epsilon = epsilon[j],
+                                           x = a/epsilon[j])
                            
-                           I <- f_epsilon_x(epsilon = epsilon,
-                                            x = 1/epsilon)
+                           I <- f_epsilon_x(epsilon = epsilon[j],
+                                            x = 1/epsilon[j])
                            
-                           B <- f_epsilon_x(epsilon = epsilon,
-                                            x = b/epsilon)
+                           B <- f_epsilon_x(epsilon = epsilon[j],
+                                            x = b/epsilon[j])
                            
-                           lambda2 <- (I-A)/((1-a)/epsilon)
-                           lambda3 <- (B-I)/((b-1)/epsilon)
+                           lambda2 <- (I-A)/((1-a)/epsilon[j])
+                           lambda3 <- (B-I)/((b-1)/epsilon[j])
                            
-                           v1 = log(1+a/epsilon)
+                           v1 = log(1+a/epsilon[j])
                            v2 = 1/lambda2*exp(-A)*(1-exp(-(I-A)))
                            v2 = 1/lamnda3*exp(-I)*(1-exp(-(B-I)))
-                           v4 = 1/epsilon*exp(-B)
+                           v4 = 1/epsilon[j]*exp(-B)
                            
                            v <- v1+v_2+v_3+v_4
                            
@@ -1173,9 +1173,9 @@ lambda_mcmc <- function(max.iter,
                                
                                # Inverse cdf sampler
                                u <- runif(1)
-                               z <- (1+a/epsilon)^u - 1
+                               z <- (1+a/epsilon[j])^u - 1
                                
-                               f_z <- epsilon*z + log(1+z)
+                               f_z <- epsilon[j]*z + log(1+z)
                                f_L_z <- log(1+z)
                              }
                              
@@ -1183,30 +1183,30 @@ lambda_mcmc <- function(max.iter,
                              if(sample == 2){
                                
                                u <- runif(1)
-                               z <- a/epsilon - log(1-u*(1-exp(-(I-A))))/lambda2
+                               z <- a/epsilon[j] - log(1-u*(1-exp(-(I-A))))/lambda2
                                
-                               f_z <- epsilon*z + log(1+z)
-                               f_L_z <- A + lambda2*(z-a/epsilon)
+                               f_z <- epsilon[j]*z + log(1+z)
+                               f_L_z <- A + lambda2*(z-a/epsilon[j])
                              }
                              
                              # If sample from h3
                              if(sample == 3){
                                
                                u <- runif(1)
-                               z <- 1/epsilon - log(1-u*(1-exp(-(B-I))))/lambda3
+                               z <- 1/epsilon[j] - log(1-u*(1-exp(-(B-I))))/lambda3
                                
-                               f_z <- epsilon*z + log(1+z)
-                               f_L_z <- I + lambda3*(z-b/epsilon)
+                               f_z <- epsilon[j]*z + log(1+z)
+                               f_L_z <- I + lambda3*(z-b/epsilon[j])
                              }
                              
                              # If sample from h4
                              if(sample == 4){
                                
                                u <- runif(1)
-                               z <- b/epsilon - log(1-u)/epsilon
+                               z <- b/epsilon[j] - log(1-u)/epsilon[j]
                                
-                               f_z <- epsilon*z + log(1+z)
-                               f_L_z <- B + epsilon*(z-b/epsilon)
+                               f_z <- epsilon[j]*z + log(1+z)
+                               f_L_z <- B + epsilon[j]*(z-b/epsilon[j])
                              }
                              
                              
