@@ -16,9 +16,9 @@ binom_cluster_reorder <- function(Y,
   average_q <- lapply(sort(unique(Z)),
                       function(j){
                         
-                        data_j <- as.matrix(Y_proportion[which(Z == j),],
+                        data_j <- matrix(Y_proportion[which(Z == j),],
                                             
-                                            nrow = length(which(Z==j)))
+                                         nrow = length(which(Z==j)))
                         
                         matrix(colMeans(data_j),
                                nrow = 1)

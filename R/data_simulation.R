@@ -210,3 +210,26 @@ Y.prop.df %>%
   ggtitle('Projecion strength of each neuron')
 
 
+
+# x
+x <- NULL
+x[[1]] <- rep(0, 100)
+x[[2]] <- c(rep(0, 100), rep(1, 100))
+x[[3]] <- c(rep(0, 100), rep(1, 100))
+x[[4]] <- rep(1, 100)
+
+# Run MCMC
+
+mcmc_all_test <- mcmc_run_all(Y = Y,
+                              x = x,
+                              J = 5,
+                              print_Z = TRUE,
+                              iter_update = 100,
+                              a_gamma = 10,
+                              b_gamma = 1,
+                              a0 = 1,
+                              b0 = 1,
+                              a_alpha = 1,
+                              b_alpha = 1,
+                              s = 5)
+

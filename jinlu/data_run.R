@@ -4,9 +4,11 @@
 LEC <- read.csv('./data/EC/lec_newSet_800_plusBrain.csv')
 MEC <- read.csv('./data/EC/mec_newSet_800_plusBrain.csv')
 
+LEC <- read.csv('./data/lec_newSet_800_plusBrain.csv')
+MEC <- read.csv('./data/mec_newSet_800_plusBrain.csv')
+
 R <- 9
 M <- 6
-
 
 
 digit.list <- list(one = 1,
@@ -96,6 +98,7 @@ mcmc_all_sample <- mcmc_run_all(Y = data_by_mouse,
 psm <- similarity_matrix(mcmc_run_all_output = mcmc_all_sample,
                          num.cores = 10,
                          run.on.pc = FALSE)
+
 
 # Plot of posterior similarity matrix
 plotpsm(psm.ind = psm$psm.within,

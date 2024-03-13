@@ -14,6 +14,8 @@ mcmc_run_all2 <- function(Y,
                           b0 = 1,
                           a_alpha = 1,
                           b_alpha = 1,
+                          a_r_prior = 1,
+                          b_r_prior = 1,
                           s,
                           num.cores = 1,
                           max.iter.lambda = 30){
@@ -156,7 +158,7 @@ mcmc_run_all2 <- function(Y,
   
   
   # alpha r
-  mean_X_alpha_r <- matrix(log(rep(a_r/b_r, R)),
+  mean_X_alpha_r <- matrix(log(rep(a_r_prior/b_r_prior, R)),
                            nrow = 1)
   tilde_s_alpha_r <- t(mean_X_alpha_r)%*%mean_X_alpha_r
   covariance_alpha_r <- matrix(0, nrow = R, ncol = R)
@@ -242,14 +244,15 @@ mcmc_run_all2 <- function(Y,
                          variance = variance_tau,
                          M_2 = M_2_tau,
                          X_mean = X_mean_tau,
-                         adaptive_prop = adaptive_prop)
+                         adaptive_prop = adaptive_prop,
+                         iter = iter)
     
     tau <- tau_mcmc$tau
     X_mean_tau <- tau_mcmc$X_mean
     M_2_tau <- tau_mcmc$M_2
     variance_tau <- tau_mcmc$variance
     
-    tau_count <- tau_count + tau_output$accept
+    tau_count <- tau_count + tau_mcmc$accept
     acceptance_prob_list$tau[iter-1] <- tau_count/(iter-1)
     
     
@@ -260,6 +263,7 @@ mcmc_run_all2 <- function(Y,
                                beta = beta,
                                tau = tau,
                                num.cores = num.cores)
+    
     
     #----------------------------------------- xi ----------------------------------------------------
     

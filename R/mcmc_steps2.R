@@ -37,7 +37,7 @@ allocation_variables_dirmult_mcmc2 <- function(beta,
                                                 n = sum(Y[[m]][,c]),
                                                 alpha = q_star[j,]*gamma_star[j],
                                                 log = TRUE)+
-                                  log(delta[j,m]) + beta[j]*x[[m]][i]
+                                  log(delta[j,m]) + beta[j]*x[[m]][c]
                               })
                               
                               ##-- logK
@@ -83,7 +83,7 @@ xi_mcmc <- function(delta,
   M <- ncol(delta)
   J <- nrow(delta)
   C <- sapply(1:M,
-              function(m) length(x[m]))
+              function(m) length(x[[m]]))
   
   
   output <- lapply(1:M,
@@ -278,9 +278,9 @@ beta_mcmc <- function(beta,
                 
                 u_IJ <- matrix(runif(n = C[m]*J,
                                      min = 0,
-                                     max = c_IJ),
+                                     max = c[[m]]),
                                nrow = C[m],
-                               nrow = J)
+                               ncol = J)
                 
                 u_IJ
               })
@@ -312,7 +312,7 @@ beta_mcmc <- function(beta,
                       beta_j <- rtruncnorm(n = 1,
                                            a = -Inf,
                                            b = max_beta_j,
-                                           mean = (1/tau)*(1/lambda[j])*length(which(unlist(x)[which(unlist(Z)=j)]==1)),
+                                           mean = (1/tau)*(1/lambda[j])*length(which(unlist(x)[which(unlist(Z)==j)]==1)),
                                            sd = sqrt((1/tau)*(1/lambda[j]))
                                            )
                       
@@ -904,7 +904,7 @@ q_star_mcmc2 <- function(Y,
                          .packages = c('base',
                                        'extraDistr',
                                        'mvtnorm'),
-                         .export = 'q_star_logprob2'){
+                         .export = 'q_star_logprob2') %dopar% {
     
     
     # If component j is non-empty
@@ -1041,7 +1041,8 @@ tau_mcmc <- function(lambda,
                      M_2,
                      X_mean,
                      variance,
-                     adaptive_prop){
+                     adaptive_prop,
+                     iter){
   
   # previous values
   tau_old <- tau
@@ -1051,6 +1052,7 @@ tau_mcmc <- function(lambda,
   M_2_old <- M_2
   X_mean_old <- X_mean
   
+  n <- iter
   
   # Simulate new values
   if(n <= 100){
@@ -1144,24 +1146,30 @@ lambda_mcmc <- function(max.iter,
                            A = f_epsilon_x(epsilon = epsilon[j],
                                            x = a/epsilon[j])
                            
-                           I <- f_epsilon_x(epsilon = epsilon[j],
-                                            x = 1/epsilon[j])
+                           I = f_epsilon_x(epsilon = epsilon[j],
+                                           x = 1/epsilon[j])
                            
-                           B <- f_epsilon_x(epsilon = epsilon[j],
-                                            x = b/epsilon[j])
+                           B = f_epsilon_x(epsilon = epsilon[j],
+                                          x = b/epsilon[j])
                            
                            lambda2 <- (I-A)/((1-a)/epsilon[j])
                            lambda3 <- (B-I)/((b-1)/epsilon[j])
                            
                            v1 = log(1+a/epsilon[j])
                            v2 = 1/lambda2*exp(-A)*(1-exp(-(I-A)))
-                           v2 = 1/lamnda3*exp(-I)*(1-exp(-(B-I)))
+                           v3 = 1/lambda3*exp(-I)*(1-exp(-(B-I)))
                            v4 = 1/epsilon[j]*exp(-B)
                            
-                           v <- v1+v_2+v_3+v_4
+                           v <- v1+v2+v3+v4
                            
                            iter <- 1
-                           while((u >= exp(-(f_z - f_L_z))) & iter <= max.iter){
+                           
+                           # Give initial values
+                           u <- 10000
+                           f_z <- 1
+                           f_L_z <- 1
+                           
+                           while((u >= exp(-(f_z - f_L_z))) & (iter <= max.iter)){
                              
                              # Obtain a sample from one of the four groups
                              sample <- sample(x = 1:4,
@@ -1220,6 +1228,6 @@ lambda_mcmc <- function(max.iter,
   
   stopCluster(cl)
   
-  return(unlist(z))
+  return(unlist(loop.result))
   
 }

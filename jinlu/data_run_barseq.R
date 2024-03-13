@@ -2,13 +2,15 @@
 
 
 # Load data
-data1 <- read.csv('./data/BRAIN_C9.csv')
-data2 <- read.csv('./data/BRAIN_C14.csv')
-data3 <- read.csv('./data/BRAIN_C28.csv')
+data1 <- read.csv('./data/Bar-seq-100010/BRAIN_C9.csv')
+data2 <- read.csv('./data/Bar-seq-100010/BRAIN_C14.csv')
+data3 <- read.csv('./data/Bar-seq-100010/BRAIN_C28.csv')
 
 # Load data
-load('data/psm_barseq.RData')
-load('data/mcmc_all_barseq.RData')
+load('data/Bar-seq-100010/psm_barseq.RData')
+load('data/Bar-seq-100010/mcmc_all_barseq.RData')
+load('data/Bar-seq-100010/mcmc_unique_barseq.RData')
+
 
 # Round to integers
 data1 <- round(data1, 0)
@@ -75,13 +77,13 @@ mcmc_unique_barseq <- mcmc_run_post(mcmc_run_all_output = mcmc_all_barseq,
                                     burn_in = 1500,
                                     number_iter = 3000,
                                     Y = data_barseq,
-                                    a_gamma = 500,
+                                    a_gamma = 1000,
                                     b_gamma = 10,
                                     regions.name = rownames(data_barseq[[1]]))
-                             
+
 
 # Number of neurons in each cluster
-opt.clustering.frequency1(clustering = mcmc_unique_barseq$Z)
+opt.clustering.frequency(clustering = mcmc_unique_barseq$Z)
 
 
 # Plot of estimated projection strength
@@ -162,3 +164,37 @@ ggplot(total.withinss,
   theme_bw()
 
 
+# Case with 30 clusters
+k_mean_clust_30 <- kmeans(df, 30, nstart = 25)$cluster
+
+clust <- list(k_mean_clust_30[1:605],
+              k_mean_clust_30[606:(606+5082)],
+              k_mean_clust_30[(606+5082+1):(605+5082+704)])
+
+k_mean_reorder_cluster <- binom_cluster_reorder(Y = t(do.call(cbind,data_barseq)),
+                                                Z = unlist(clust))
+
+pp.standard.ordering(Y = data_barseq,
+                     Z = k_mean_reorder_cluster$Z,
+                     regions.name = rownames(data_barseq[[1]]))
+
+
+# Case with 50 clusters
+k_mean_clust_50 <- kmeans(df, 50, nstart = 25)$cluster
+
+clust <- list(k_mean_clust_50[1:605],
+              k_mean_clust_50[606:(606+5082)],
+              k_mean_clust_50[(606+5082+1):(605+5082+704)])
+
+k_mean_reorder_cluster <- binom_cluster_reorder(Y = t(do.call(cbind,data_barseq)),
+                                                Z = unlist(clust))
+
+pp.standard.ordering(Y = data_barseq,
+                     Z = k_mean_reorder_cluster$Z,
+                     regions.name = rownames(data_barseq[[1]]))
+
+
+
+#------------------------------------- Binomial clustering ---------------------------------------
+
+# Waiting for required result from Edward

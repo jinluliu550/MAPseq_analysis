@@ -22,6 +22,7 @@ plotpsm <- function(psm.ind,
 
   if(plot.type %in% c('tot', 'both')){
 
+    
     image.plot(1:n,
                1:n,
                psm_hc,
@@ -75,6 +76,14 @@ plotpsm <- function(psm.ind,
   n.max <- max(n)
 
   if(plot.type %in% c('ind', 'both')){
+    
+    
+    png('barseq_psp_2.png',
+        width = 907,
+        height = 711)
+    
+    
+    
     
     image.plot(1:n.max, 
                1:n.max,
