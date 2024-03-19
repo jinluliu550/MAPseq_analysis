@@ -4,12 +4,14 @@
 LEC <- read.csv('./data/EC/lec_newSet_800_plusBrain.csv')
 MEC <- read.csv('./data/EC/mec_newSet_800_plusBrain.csv')
 
-LEC <- read.csv('./data/lec_newSet_800_plusBrain.csv')
-MEC <- read.csv('./data/mec_newSet_800_plusBrain.csv')
-
 R <- 9
 M <- 6
 
+# Load data
+load("./data/EC/mcmc_all_sample.RData")
+load("./data/EC/psm_EC.RData")
+load("./data/EC/opt.clust0.EC.RData")
+load("./data/EC/mcmc_unique_EC.RData")
 
 digit.list <- list(one = 1,
                    two = 2,
@@ -95,14 +97,13 @@ mcmc_all_sample <- mcmc_run_all(Y = data_by_mouse,
                                 num.cores = 10)
 
 
-psm <- similarity_matrix(mcmc_run_all_output = mcmc_all_sample,
+psm_EC <- similarity_matrix(mcmc_run_all_output = mcmc_all_sample,
                          num.cores = 10,
                          run.on.pc = FALSE)
 
-
 # Plot of posterior similarity matrix
-plotpsm(psm.ind = psm$psm.within,
-        psm.tot = psm$psm.combined,
+plotpsm(psm.ind = psm_EC$psm.within,
+        psm.tot = psm_EC$psm.combined,
         xlab = 'neurons',
         ylab = 'neurons',
         cex.lab = 1.5,
@@ -111,8 +112,8 @@ plotpsm(psm.ind = psm$psm.within,
         cex.main = 1.5)
 
 
-plotpsm(psm.ind = psm$psm.within,
-        psm.tot = psm$psm.combined,
+plotpsm(psm.ind = psm_EC$psm.within,
+        psm.tot = psm_EC$psm.combined,
         xlab = 'neurons',
         ylab = 'neurons',
         cex.lab = 1.5,
@@ -120,15 +121,14 @@ plotpsm(psm.ind = psm$psm.within,
         cex.main = 1.5,
         plot.type = 'tot')
 
+# Optimal clustering
+opt.clust0.EC <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_all_sample)
 
-# 118 clusters
-opt.clust0 <- opt.clustering(mcmc_run_all_output = mcmc_all_sample,
-                             post_similarity = psm)
 
 
 # MCMC of unique parameters
-mcmc_unique <- mcmc_run_post(mcmc_run_all_output = mcmc_all_sample,
-                             Z = opt.clust0,
+mcmc_unique_EC <- mcmc_run_post(mcmc_run_all_output = mcmc_all_sample,
+                             Z = opt.clust0.EC,
                              thinning = 5,
                              burn_in = 1500,
                              number_iter = 3000,
@@ -137,23 +137,52 @@ mcmc_unique <- mcmc_run_post(mcmc_run_all_output = mcmc_all_sample,
                              b_gamma = 10,
                              regions.name = rownames(data_by_mouse[[1]]))
 
-# Number of neurons in each cluster
-opt.clustering.frequency(clustering = mcmc_unique$Z)
+# Number of neurons in each cluster - 148 clusters
+png(file = './plots/EC/number_of_neuron.png',
+    width = 2500,
+    height = 700)
+
+opt.clustering.frequency(clustering = mcmc_unique_EC$Z)
+
+dev.off()
 
 # Number of LEC and MEC neurons in each cluster
-opt.clustering.frequency1(clustering = mcmc_unique$Z,
+png(file = './plots/EC/number_of_neuron_by_EC.png',
+    width = 2500,
+    height = 700)
+
+opt.clustering.frequency1(clustering = mcmc_unique_EC$Z,
                           EC_label = data_by_mouse2)
+
+dev.off()
 
 # Proportion of LEC and MEC in each cluster
-opt.clustering.frequency2(clustering = mcmc_unique$Z,
+png(file = './plots/EC/proportion_of_EC.png',
+    width = 2500,
+    height = 700)
+
+opt.clustering.frequency2(clustering = mcmc_unique_EC$Z,
                           EC_label = data_by_mouse2)
 
-# Plot of estimated projection strength
-mcmc_unique$estimated.pp.plot
+dev.off()
 
+# Plot of estimated projection strength
+png(file = './plots/EC/estimated_pp.png',
+    width = 3500,
+    height = 2000)
+
+mcmc_unique_EC$estimated.pp.plot
+
+dev.off()
 
 # Plot of q tilde
-mcmc_unique$q_tilde_plot
+png(file = './plots/EC/q_tilde.png',
+    width = 3000,
+    height = 600)
+
+mcmc_unique_EC$q_tilde_plot
+
+dev.off()
 
 # unique to one mouse
 unique.to.one.mouse <- sapply(1:118,
