@@ -22,6 +22,7 @@ suppressPackageStartupMessages({
   library(RColorBrewer)
   library(readxl)
   library(truncnorm)
+  library(clevr)
 })
 
 `%notin%` <- Negate(`%in%`)
@@ -50,11 +51,13 @@ source('R/cluster_label.R')
 source('R/projection_by_EC.R')
 
 # Projection probability by cluster
-source('R/pp_by_z_no_reordering.R')
-source('R/pp_by_z_reordering.R')
+source('R/pp_by_z.R')
 
 # Posterior predictive checks
 source('R/ppc.R')
 source('R/ppc_single.R')
 
 source('R/binom_cluster_reorder.R')
+source('R/dlso_cluster_estimate.R')
+
+source('R/binomial_model.R')

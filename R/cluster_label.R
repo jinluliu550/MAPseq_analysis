@@ -10,12 +10,11 @@ q_tilde <- function(neuron_projection_df,
 
   # Estimated allocation
   Z <- neuron_projection_df$Z
-  cluster.vec <- 1:max(unlist(Z))
 
   # Trace length
   trace.length <- length(q_trace)
 
-  df0 <- lapply(cluster.vec,
+  df0 <- lapply(1:nrow(q_trace[[1]]),
                 function(j){
 
                   df0_j <- lapply(1:trace.length,

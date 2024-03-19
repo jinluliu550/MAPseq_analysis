@@ -3,36 +3,43 @@
 binom_cluster_reorder <- function(Y,
                                   Z){
   
-  # Calculate proportions
-  Y_proportion <- Y
-  N_data <- rowSums(Y)
+  Z_unlist <- unlist(Z)
+  Y_join <- do.call(cbind, Y)
   
-  for(i in 1:ncol(Y)){
+  M <- length(Y)
+  C <- sapply(1:M, 
+              function(m) ncol(Y[[m]]))
+  
+  # Calculate proportions
+  Y_proportion <- Y_join
+  N_data <- colSums(Y_join)
+  
+  for(i in 1:ncol(Y_join)){
     
-    Y_proportion[,i] <- Y_proportion[,i]/N_data
+    Y_proportion[,i] <- Y_proportion[,i]/N_data[i]
   }
   
   # Calculate the average projection strength of neurons in each cluster
-  average_q <- lapply(sort(unique(Z)),
+  average_q <- lapply(sort(unique(Z_unlist)),
                       function(j){
                         
-                        data_j <- matrix(Y_proportion[which(Z == j),],
+                        data_j <- matrix(Y_proportion[,which(Z_unlist == j)],
                                             
-                                         nrow = length(which(Z==j)))
+                                         ncol = length(which(Z_unlist==j)))
                         
-                        matrix(colMeans(data_j),
-                               nrow = 1)
+                        matrix(rowMeans(data_j),
+                               ncol = 1)
                       })
   
-  average_q <- do.call(rbind, average_q)
+  average_q <- do.call(cbind, average_q)
   
   # Reorder clusters
-  strong.proj <- apply(average_q,
-                       1,
-                       function(x) which(x == max(x)))
+  strong.proj <- sapply(1:ncol(average_q),
+                        function(j) which(average_q[,j] == max(average_q[,j]))[1])
   
   
-  df0 <- lapply(1:ncol(average_q),
+  
+  df0 <- lapply(1:nrow(average_q),
                 function(i){
                   
                   # Clusters with the strongest projection to region i
@@ -40,7 +47,7 @@ binom_cluster_reorder <- function(Y,
                   
                   if(length(strong.proj.i) != 0){
                     
-                    qj_estimate_i <- matrix(average_q[strong.proj.i,],
+                    qj_estimate_i <- matrix(average_q[,strong.proj.i],
                                             nrow = length(strong.proj.i))
                     
                     output <- strong.proj.i[order(-qj_estimate_i[,i])]
@@ -54,8 +61,12 @@ binom_cluster_reorder <- function(Y,
   
   old_ordering <- unlist(df0)
   
-  Z_new <- sapply(1:length(Z),
-                  function(i) which(old_ordering == Z[i]))
+  Z_new <- lapply(1:M,
+                  function(d){
+                    
+                    sapply(1:C[d],
+                           function(c) which(old_ordering == Z[[d]][c]))
+                  })
   
   return(list('Z' = Z_new,
               'old_ordering' = old_ordering))
