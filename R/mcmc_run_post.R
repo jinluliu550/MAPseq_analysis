@@ -182,7 +182,7 @@ mcmc_run_post <- function(mcmc_run_all_output,
   # Relabel
   strong.proj <- apply(proj_prob_mean,
                        1,
-                       function(x) which(x == max(x)))
+                       function(x) which(x == max(x))[1])
   
   
   df0 <- lapply(1:ncol(proj_prob_mean),
@@ -266,6 +266,9 @@ mcmc_run_post <- function(mcmc_run_all_output,
   estimated.projection.df$class <- rep(cluster_label_vec, each = R)
   estimated.projection.df$class <- factor(estimated.projection.df$class,
                                           levels = colnames(cluster.label.summary)[2:4])
+  
+  estimated.projection.df$cluster <- factor(estimated.projection.df$cluster,
+                                            levels = paste('cluster', 1:length(unique(unlist(Z)))))
   
   
   # All clusters
