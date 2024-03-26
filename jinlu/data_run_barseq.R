@@ -10,7 +10,6 @@ data3 <- read.csv('./data/Bar-seq-100010/BRAIN_C28.csv')
 load('data/Bar-seq-100010/psm_barseq.RData')
 load('data/Bar-seq-100010/mcmc_all_barseq.RData')
 load('data/Bar-seq-100010/opt.clust0.barseq.RData')
-
 load('data/Bar-seq-100010/mcmc_unique_barseq.RData')
 
 
@@ -110,6 +109,16 @@ mcmc_unique_barseq$estimated.pp.plot
 dev.off()
 
 
+# Plot of q tilde
+png(file = './plots/Bar-Seq-100010/q_tilde.png',
+    width = 3000,
+    height = 600)
+
+mcmc_unique_barseq$q_tilde_plot
+
+dev.off()
+
+
 # Function below obtains posterior samples of mouse-specific component probabilities
 omega_JM_mcmc_barseq <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_barseq,
                                           mcmc_run_post_output = mcmc_unique_barseq,
@@ -160,6 +169,23 @@ ppc_multiple$zero.plot
 ppc_multiple$non.zero.plot
 
 
+# Posterior predictive checks with single replicated data
+ppc_single <- ppc_single_f(mcmc_run_all_output = mcmc_all_barseq,
+                           Y = data_barseq,
+                           regions.name = rownames(data_barseq[[1]]))
+
+
+for(m in 1:3){
+  
+  png(file = paste0('./plots/Bar-Seq-100010/ppc_single_mouse_', m, '.png'),
+      width = 1200,
+      height = 700)
+  
+  print(ppc_single[[m]])
+  
+  dev.off()
+}
+
 # Distribution of N_{i,m} for neurons within the same cluster
 data_barseq_N <- lapply(1:length(data_barseq),
                         function(m) colSums(data_barseq[[m]]))
@@ -178,6 +204,18 @@ ggplot(df)+
   xlab('Cluster')
 
 dev.off()
+
+
+png(file = './plots/Bar-Seq-100010/w_jm_difference_eg.png',
+    width = 1500,
+    height = 800)
+
+difference_in_omega_jm_plot(difference_in_omega_jm_output = difference_omega_JM,
+                            mcmc_run_omega_output = omega_JM_mcmc_barseq,
+                            N = 20)
+
+dev.off()
+
 
 #-------------------------------------------------------------------------------------------------
 

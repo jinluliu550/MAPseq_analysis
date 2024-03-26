@@ -61,7 +61,7 @@ pp.standard.ordering <- function(Y,
     geom_hline(yintercept = cumsum(N.j)[-length(cumsum(N.j))],
                color = 'blue',
                linetype = 'dashed',
-               size = 0.05)+
+               linewidth = 0.05)+
 
     ggtitle(title)
 
