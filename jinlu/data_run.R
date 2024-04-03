@@ -201,7 +201,6 @@ omega_JM_mcmc$omega_JM_plot
 dev.off()
 
 # Projection strength of each neuron in each cluster, color-coded by the injection site
-
 png(file = './plots/EC/projection_by_EC.png',
     width = 4000,
     height = 2200)

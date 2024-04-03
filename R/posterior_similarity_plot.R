@@ -10,8 +10,7 @@ plotpsm <- function(psm.ind,
   if(any(psm.tot !=t(psm.tot)) | any(psm.tot >1) | any(psm.tot < 0) | sum(diag(psm.tot)) != nrow(psm.tot) ){
     stop("psm.tot must be a symmetric matrix with entries between 0 and 1 and 1's on the diagonals")}
 
-  ##-------- Setting up the graphics
-  par(mfrow=c(1,1))
+  
 
   ##------------------------------ without distinguishing between datasets ------------------------------
   hc=hclust(as.dist(1-psm.tot), method = method, members = NULL)
@@ -21,6 +20,9 @@ plotpsm <- function(psm.ind,
   psm_hc[,1:n]=psm_hc[,hc$order]
 
   if(plot.type %in% c('tot', 'both')){
+    
+    
+    par(mfrow=c(1,1))
     
     image.plot(1:n,
                1:n,
@@ -81,7 +83,8 @@ plotpsm <- function(psm.ind,
     image.plot(1:n.max, 
                1:n.max,
                psm_matrix_output, 
-               col=rev(heat.colors(100)))
+               col=rev(heat.colors(100)),
+               ...)
     
     
     

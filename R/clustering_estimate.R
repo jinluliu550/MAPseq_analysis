@@ -75,8 +75,7 @@ dlso_cluster_estimate <- function(mcmc_run_all_output){
 # Function which compares minVI and dlso
 
 opt.clustering.comb <- function(mcmc_run_all_output,
-                                post_similarity,
-                                run.on.pc = T){
+                                post_similarity){
   
   
   
@@ -94,62 +93,33 @@ opt.clustering.comb <- function(mcmc_run_all_output,
   
   #---------------------------------- Difference between each sample and the minvi estimated allocation -----------------------------------------
   
-  if(run.on.pc == FALSE){
-    
-    cl <- makeCluster(num.cores,
-                      type = "FORK",
-                      .packages = 'clevr')
-  }else{
-    
-    cl <- makeCluster(num.cores,
-                      .packages = 'clevr')
-  }
+  vi.min <- sapply(1:length(z.trace),
+                   function(t){
+                     
+                     vi.minvi.t <- clevr::variation_info(true = unlist(opt.clust.minvi),
+                                                         pred = unlist(z.trace[[t]]))
+                     
+                     vi.minvi.t
+                   })
   
-  vi.minvi <- pblapply(1:length(z.trace),
-                          cl = cl,
-                          FUN = function(t){
-                            
-                            # Similarity
-                            vi.minvi.t <- variation_info(unlist(opt.clust.minvi),
-                                                         unlist(z.trace[[t]]))
-                            
-                            vi.minvi.t
-                          }
-  )
-  
-  stopCluster(cl)
   
   #--------------------------------- Difference between each sample and dlso estimated allocation ------------------------------------------------
   
-  if(run.on.pc == FALSE){
-    
-    cl <- makeCluster(num.cores,
-                      type = "FORK",
-                      .packages = 'clevr')
-  }else{
-    
-    cl <- makeCluster(num.cores,
-                      .packages = 'clevr')
-  }
+  vi.dlso <- sapply(1:length(z.trace),
+                    function(t){
+                      
+                      # Similarity
+                      vi.dlso.t <- variation_info(unlist(opt.clust.dlso),
+                                                  unlist(z.trace[[t]]))
+                      
+                      vi.dlso.t
+                    })
   
-  vi.dlso <-  pblapply(1:length(z.trace),
-                       cl = cl,
-                       FUN = function(t){
-                         
-                         # Similarity
-                         vi.dlso.t <- variation_info(unlist(opt.clust.dlso),
-                                                      unlist(z.trace[[t]]))
-                         
-                         vi.dlso.t
-                       }
-  )
-  
-  stopCluster(cl)
   
   #-------------------------------- Return item ----------------------------------
   
   # In the case when minvi gives smaller VI than dlso
-  if(mean(unlist(vi.minvi)) < mean(unlist(vi.dlso))){
+  if(mean(vi.minvi) < mean(vi.dlso)){
     
     # we export the minvi point estimate of z
     return(opt.clust.minvi)

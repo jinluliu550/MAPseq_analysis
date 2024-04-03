@@ -9,8 +9,6 @@ difference_in_omega_jm_plot <- function(difference_in_omega_jm_output,
   df0 <- difference_in_omega_jm_output$significant_obs
   stopifnot(nrow(df0) >= N)
 
-  c1 <- rgb(173,216,230,max = 255, alpha = 80, names = "lt.blue")
-  c2 <- rgb(255,192,203, max = 255, alpha = 80, names = "lt.pink")
 
   omega_jm_trace <- mcmc_run_omega_output$omega_J_M_output
   trace.length <- length(omega_jm_trace)

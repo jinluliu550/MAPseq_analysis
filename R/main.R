@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   library(readxl)
   library(truncnorm)
   library(clevr)
+  library(pbapply)
 })
 
 `%notin%` <- Negate(`%in%`)
@@ -58,6 +59,5 @@ source('R/ppc.R')
 source('R/ppc_single.R')
 
 source('R/binom_cluster_reorder.R')
-source('R/dlso_cluster_estimate.R')
 
 source('R/binomial_model.R')
