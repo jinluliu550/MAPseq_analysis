@@ -542,7 +542,83 @@ for(j in large_binomial){
 }
 
 
+#-----------------------------------------------------------------------------------------------
 
+# Bayesian motifs with 20 largest component probabilities
+Bayesian_motifs_large <- data.frame(cluster = 1:length(omega_JM_mcmc$mean_omega_J),
+                                    w_j = omega_JM_mcmc$mean_omega_J) %>%
+  arrange(desc(w_j)) %>%
+  top_n(20) %>%
+  select(cluster) %>%
+  pull() %>%
+  sort()
 
+df$EC_label <- unlist(EC8_EC_label)
 
+# For each large Bayesian motif, calculate LEC/MEC proportion
+for(j in Bayesian_motifs_large){
+  
+  df.j <- df %>%
+    filter(bayesian_allocation == j)
+  
+  # Bayesian
+  LEC_prop_bayesian <- length(which(df.j$EC_label == 'LEC'))/nrow(df.j)
+  n_bayesian <- nrow(df.j)
+  
+  # Binomial
+  LEC_binom <- df.j %>%
+    group_by(binomial_allocation) %>%
+    summarise(LEC = length(which(EC_label == 'LEC'))/n(),
+              count = n()) %>%
+    mutate(MEC = 1-LEC) %>%
+    mutate(binomial_allocation = paste0('binomial motif ', binomial_allocation)) %>%
+    rename(motif = binomial_allocation)
+  
+  # Combine both
+  df.j <- rbind(data.frame(motif = paste0('bayesian motif ', j),
+                           LEC = LEC_prop_bayesian,
+                           count = n_bayesian,
+                           MEC = 1-LEC_prop_bayesian),
+                
+                LEC_binom)
+  
+  df.j$motif <- factor(df.j$motif, levels = unique(df.j$motif))
+  
+  png(filename = paste0('./plots/EC8_new/large_bayesian_motifs/large_bayesian_motifs_', j, '.png'),
+      width = 50*nrow(df.j))
+  
+  print(df.j %>%
+          pivot_longer(cols = c(2,4)) %>%
+          rename(EC_group = name) %>%
+          ggplot()+
+          geom_bar(mapping = aes(x = motif,
+                                 y = value,
+                                 fill = EC_group),
+                   stat = 'identity')+
+          theme_bw()+
+          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+          ggtitle(paste0('bayesian motif ', j))+
+          annotate('text',
+                   x = unique(df.j$motif),
+                   y = 0.95,
+                   label = df.j$count,
+                   size = 8,
+                   angle = 90))
+  
+  dev.off()
+
+}
+
+#-----------------------------------------------------------------------------------------------
+
+# Top 20 binomial motifs with the largest number of neurons
+
+large_binomial_motifs <- df %>%
+  group_by(binomial_allocation) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  top_n(20) %>%
+  select(binomial_allocation) %>%
+  pull() %>%
+  sort()
 
