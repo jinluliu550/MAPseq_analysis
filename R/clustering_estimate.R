@@ -119,7 +119,7 @@ opt.clustering.comb <- function(mcmc_run_all_output,
   #-------------------------------- Return item ----------------------------------
   
   # In the case when minvi gives smaller VI than dlso
-  if(mean(vi.minvi) < mean(vi.dlso)){
+  if(mean(vi.min) < mean(vi.dlso)){
     
     # we export the minvi point estimate of z
     return(opt.clust.minvi)

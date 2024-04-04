@@ -1,10 +1,32 @@
 EC8_new <- read.csv('./data/EC8_new/all_brains_setE_JL.csv')
 
+
 load('./data/EC8_new/mcmc_all_EC8.RData')
 load('./data/EC8_new/psm_EC8.RData')
 load('./data/EC8_new/EC8_Z_minvi.RData')
 load('./data/EC8_new/EC8_Z_dlso.RData')
 load('./data/EC8_new/EC8_Z.RData')
+load('./data/EC8_new/mcmc_unique_EC8.RData')
+
+#---------------------------------------- Binomial results --------------------------------------------
+
+cluster_label <- read.csv('./edward/setE_results/cluster_label.csv',
+                          header = FALSE)$V1
+
+# Allocations
+load('./data/EC8_new/setE_binom_allocations.RData')
+
+
+cluster_summary <- read.csv('./edward/setE_results/cluster_summary.csv')
+
+binomial_output <- list('allocation' = allocation,
+                        'cluster_label' = cluster_label,
+                        'cluster_summary' = cluster_summary)
+
+binomial_output_reorder <- binom_cluster_reorder(Y = EC8_new,
+                                                 binomial_output = binomial_output)
+
+#--------------------------------------------------------------------------------------------------------
 
 # Convert to list
 digit.list <- list(one = 1,
@@ -25,6 +47,8 @@ EC8_EC_label <- lapply(1:6,
                        function(m) EC8_new_list[[m]]$EC)
 
 
+C <- sapply(1:6, function(m) ncol(EC8_new[[m]]))
+R <- 8
 
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
                              J = 150,
@@ -286,15 +310,239 @@ k_mean_clust_30 <- kmeans(df, 30, nstart = 25)$cluster
 clust30 <- lapply(1:6,
                   function(m) k_mean_clust_30[(C_cumsum[m]+1):C_cumsum[m+1]])
 
+clust30_r <- k_means_reorder(Y = EC8_new,
+                             Z = clust30)
+
 k_mean_clust_50 <- kmeans(df, 50, nstart = 25)$cluster
 
 clust50 <- lapply(1:6,
                   function(m) k_mean_clust_50[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
+clust50_r <- k_means_reorder(Y = EC8_new,
+                             Z = clust50)
+
+
 k_mean_clust_70 <- kmeans(df, 70, nstart = 25)$cluster
 
 clust70 <- lapply(1:6,
                   function(m) k_mean_clust_70[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
+clust70_r <- k_means_reorder(Y = EC8_new,
+                             Z = clust70)
+
+# Heatmap of projection strength of neurons in each cluster
+png(file = './plots/EC8_new/k_means_30.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = EC8_new,
+                     Z = clust30_r,
+                     regions.name = rownames(EC8_new[[1]]))
+
+dev.off()
+
+png(file = './plots/EC8_new/k_means_50.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = EC8_new,
+                     Z = clust50_r,
+                     regions.name = rownames(EC8_new[[1]]))
+
+dev.off()
+
+png(file = './plots/EC8_new/k_means_70.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = EC8_new,
+                     Z = clust70_r,
+                     regions.name = rownames(EC8_new[[1]]))
+
+dev.off()
+
+#-------------------------------- Comparison ----------------------------------------------------
+
+png(file = './plots/EC8_new/heatmap_binomial.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = EC8_new,
+                     Z = binomial_output_reorder$allocation,
+                     regions.name = rownames(EC8_new[[1]]))
+
+dev.off()
+
+#---------------------------------------------------------------------------------------------------
+
+
+
+# Compare results
+
+# No1. Bayesian clustering
+# No2. Binomial clustering
+
+# No3. k-means with 30 clusters
+# No4. k-means with 50 clusters
+# No5. k-means with 70 clusters
+
+clusterings <- list(mcmc_unique_EC8$Z,
+                    binomial_output_reorder$allocation,
+                    clust30,
+                    clust50,
+                    clust70)
+
+df1 <- sapply(1:5,
+              function(i) variation_info(unlist(clusterings[[1]]),
+                                         unlist(clusterings[[i]])))
+
+df2 <- sapply(2:5,
+              function(i) variation_info(unlist(clusterings[[2]]),
+                                         unlist(clusterings[[i]])))
+
+df3 <- sapply(3:5,
+              function(i) variation_info(unlist(clusterings[[3]]),
+                                         unlist(clusterings[[i]])))
+
+df4 <- sapply(4:5,
+              function(i) variation_info(unlist(clusterings[[4]]),
+                                         unlist(clusterings[[i]])))
+
+
+mx <- matrix(0, nrow = 5, ncol = 5)
+mx[1,] <- df1
+mx[2,] <- c(NA, df2)
+mx[3,] <- c(NA, NA, df3)
+mx[4,] <- c(NA, NA, NA, df4)
+mx[5,] <- c(rep(NA,4), 0)
+
+mx <- round(mx, 2)
+
+colnames(mx) <- c('bayesian_motif',
+                  'binomial_motif',
+                  'k_means_30',
+                  'k_means_50',
+                  'k_means_70')
+
+rownames(mx) <- c('bayesian_motif',
+                  'binomial_motif',
+                  'k_means_30',
+                  'k_means_50',
+                  'k_means_70')
+
+
+mx <- mx/log(base = 2, x = sum(sapply(1:length(EC8_new),
+                                      function(m) ncol(EC8_new[[m]]))))
+
+mx <- round(mx, 2)
+
+
+# Combine binomial results with Bayesian results
+df <- lapply(1:M,
+             function(m){
+               
+               data.frame(dataset = m,
+                          neuron_index = 1:C[m],
+                          binomial_allocation = binomial_output_reorder$allocation[[m]],
+                          bayesian_allocation = mcmc_unique_EC8$Z[[m]])
+             })
+
+df <- do.call(rbind, df)
+
+# Find the Bayesian motifs with more than 100 allocations
+large_bayesian <- df %>%
+  group_by(bayesian_allocation) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 100) %>%
+  select(bayesian_allocation) %>%
+  pull()
+
+for(j in large_bayesian){
+  
+  df_j <- df %>%
+    filter(bayesian_allocation == j)
+  
+  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
+                    binomial_allocation = rep(df_j$binomial_allocation, each = R),
+                    projection_probability = unlist(lapply(1:nrow(df_j),
+                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
+                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
+                    brain_region = rownames(EC8_new[[1]]))
+  
+  df1$binomial_allocation <- factor(df1$binomial_allocation,
+                                    levels = unique(df1$binomial_allocation))
+  
+  df1$brain_region <- factor(df1$brain_region,
+                             levels = rownames(EC8_new[[1]]))
+  
+  png(filename = paste0('plots/EC8_new/bayesian_motif_', j, '.png'),
+      width = 800,
+      height = 500)
+  
+  
+  print(df1 %>%
+          ggplot()+
+          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = binomial_allocation, group = neuron_index))+
+          theme_bw()+
+          ylab('projection probability')+
+          xlab('brain region')+
+          ggtitle(paste('Cluster', j))
+  )
+  
+  dev.off()
+}
+
+
+# Find the binomial motifs with more than 100 allocations
+large_binomial <- df %>%
+  group_by(binomial_allocation) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  filter(count > 100) %>%
+  select(binomial_allocation) %>%
+  pull()
+
+
+for(j in large_binomial){
+  
+  df_j <- df %>%
+    filter(binomial_allocation == j)
+  
+  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
+                    bayesian_allocation = rep(df_j$bayesian_allocation, each = R),
+                    projection_probability = unlist(lapply(1:nrow(df_j),
+                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
+                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
+                    brain_region = rownames(EC8_new[[1]]))
+  
+  df1$bayesian_allocation <- factor(df1$bayesian_allocation,
+                                    levels = unique(df1$bayesian_allocation))
+  
+  df1$brain_region <- factor(df1$brain_region,
+                             levels = rownames(EC8_new[[1]]))
+  
+  png(filename = paste0('plots/EC8_new/binomial_motif_', j, '.png'),
+      width = 800,
+      height = 500)
+  
+  
+  print(df1 %>%
+          ggplot()+
+          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = bayesian_allocation, group = neuron_index))+
+          theme_bw()+
+          ylab('projection probability')+
+          xlab('brain region')+
+          ggtitle(paste('Cluster', j))
+  )
+  
+  dev.off()
+}
+
+
+
+
 
 
