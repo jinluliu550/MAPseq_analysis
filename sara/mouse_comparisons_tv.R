@@ -59,5 +59,7 @@ ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
   labs(x = "Mouse",
        y = "Mouse") +
   theme_bw() +
-  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.4)
+  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.4) +
+  geom_text(aes(label = round(tv_mean$TV,3)), color = "black", size = 4) +
+  coord_fixed()
 
