@@ -34,3 +34,30 @@ ggplot(tv_dist) +
   theme_bw()+
   scale_fill_manual(values=group.colors) +
   scale_color_manual(values=group.colors)
+
+# Compute the posterior mean
+tv_mean = matrix(0, 6,6)
+for (m in c(1:6)){
+  tv_dist_m = lapply(mcmc_all_EC8$omega_J_M_output,mytv_dist, ind = m )
+  tv_dist_m = data.frame(matrix(unlist(tv_dist_m), nrow=length(tv_dist_m), byrow=TRUE))
+  tv_mean[m,] = colMeans(tv_dist_m)
+}
+tv_mean = data.frame(tv_mean, row.names = c("1", "2", "3", "4", "5", "6"))
+names(tv_mean) = c("1", "2", "3", "4", "5", "6")
+print(tv_mean)
+
+tv_mean = data.frame(tv_mean, "Mouse 1" = c("1", "2", "3", "4", "5", "6"))
+names(tv_mean)[1:6] = c("1", "2", "3", "4", "5", "6")
+tv_mean <-  pivot_longer(tv_mean,
+  cols = !Mouse.1,
+  names_to = "Mouse.2", 
+  values_to = "TV"
+)
+
+ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
+  geom_tile() +
+  labs(x = "Mouse",
+       y = "Mouse") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.4)
+
