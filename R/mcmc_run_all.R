@@ -6,7 +6,7 @@ mcmc_run_all <- function(Y,
                          number_iter = 6000,
                          thinning = 5,
                          burn_in = 3000,
-                         adaptive_prop = 0.1,
+                         adaptive_prop = 0.001,
                          print_Z = FALSE,
                          iter_update = 100,
                          a_gamma,
@@ -60,16 +60,38 @@ mcmc_run_all <- function(Y,
   Z_new <- lapply(1:M,
                   function(m) sample(1:J, size = C[m], replace = TRUE))
   omega_J_M_new <- matrix(1/J,
-                      nrow = J,
-                      ncol = M)
+                          nrow = J,
+                          ncol = M)
   omega_new <- rep(1/J,
-               J)
+                   J)
+  
   alpha_new <- 1
   alpha_zero_new <- 1
 
-  q_star_1_J_new <- matrix(1/R,
-                           nrow = J,
-                           ncol = R)
+  # Based on Z_new
+  q_star_1_J_new <- lapply(1:J,
+                          function(j){
+                            
+                            if(length(which(unlist(Z_new)==j)) != 0){
+                              
+                              data.j.prior <- do.call(cbind, Y)[,which(unlist(Z_new)==j)]
+                              
+                              data.j.mean <- rowMeans(data.j.prior)
+                              
+                              mx <- matrix(data.j.mean/sum(data.j.mean),
+                                           nrow = 1)
+                              
+                            }else{
+                              
+                              mx <- matrix(rep(1:R, R), nrow = 1)
+                            }
+                            
+                            mx
+                            
+                          })
+  
+  q_star_1_J_new <- do.call(rbind, q_star_1_J_new)
+  
 
 
   # Let gamma be a large number

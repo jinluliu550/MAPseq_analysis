@@ -8,6 +8,18 @@ load('./data/EC8_new/EC8_Z_dlso.RData')
 load('./data/EC8_new/EC8_Z.RData')
 load('./data/EC8_new/mcmc_unique_EC8.RData')
 
+# Check some of the acceptance probabilities
+plot(mcmc_all_EC8$acceptance_prob$omega, type = 'l')
+plot(mcmc_all_EC8$acceptance_prob$alpha, type = 'l')
+plot(mcmc_all_EC8$acceptance_prob$alpha_zero, type = 'l')
+plot(mcmc_all_EC8$acceptance_prob$q_star, type = 'l')
+plot(mcmc_all_EC8$acceptance_prob$gamma, type = 'l')
+
+# Problem
+plot(mcmc_all_EC8$acceptance_prob$gamma_star, type = 'l')
+plot(mcmc_all_EC8$acceptance_prob$alpha_h, type = 'l')
+
+
 #---------------------------------------- Binomial results --------------------------------------------
 
 cluster_label <- read.csv('./edward/setE_results/cluster_label.csv',
@@ -50,20 +62,22 @@ EC8_EC_label <- lapply(1:6,
 C <- sapply(1:6, function(m) ncol(EC8_new[[m]]))
 R <- 8
 
+
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
                              J = 150,
                              number_iter = 8000,
                              thinning = 5,
                              burn_in = 3000,
-                             adaptive_prop = 0.1,
+                             adaptive_prop = 0.001,
                              print_Z = TRUE,
-                             
                              
                              a_gamma = 500,
                              b_gamma = 10,
                              a_alpha = 1/5,
                              b_alpha = 1/2,
                              num.cores = 10)
+
+
 
 
 psm_EC8 <- similarity_matrix(mcmc_run_all_output = mcmc_all_EC8,
@@ -451,95 +465,8 @@ df <- lapply(1:M,
 
 df <- do.call(rbind, df)
 
-# Find the Bayesian motifs with more than 100 allocations
-large_bayesian <- df %>%
-  group_by(bayesian_allocation) %>%
-  summarise(count = n()) %>%
-  arrange(desc(count)) %>%
-  filter(count > 100) %>%
-  select(bayesian_allocation) %>%
-  pull()
-
-for(j in large_bayesian){
-  
-  df_j <- df %>%
-    filter(bayesian_allocation == j)
-  
-  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
-                    binomial_allocation = rep(df_j$binomial_allocation, each = R),
-                    projection_probability = unlist(lapply(1:nrow(df_j),
-                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
-                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
-                    brain_region = rownames(EC8_new[[1]]))
-  
-  df1$binomial_allocation <- factor(df1$binomial_allocation,
-                                    levels = unique(df1$binomial_allocation))
-  
-  df1$brain_region <- factor(df1$brain_region,
-                             levels = rownames(EC8_new[[1]]))
-  
-  png(filename = paste0('plots/EC8_new/bayesian_motif_', j, '.png'),
-      width = 800,
-      height = 500)
-  
-  
-  print(df1 %>%
-          ggplot()+
-          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = binomial_allocation, group = neuron_index))+
-          theme_bw()+
-          ylab('projection probability')+
-          xlab('brain region')+
-          ggtitle(paste('Cluster', j))
-  )
-  
-  dev.off()
-}
 
 
-# Find the binomial motifs with more than 100 allocations
-large_binomial <- df %>%
-  group_by(binomial_allocation) %>%
-  summarise(count = n()) %>%
-  arrange(desc(count)) %>%
-  filter(count > 100) %>%
-  select(binomial_allocation) %>%
-  pull()
-
-
-for(j in large_binomial){
-  
-  df_j <- df %>%
-    filter(binomial_allocation == j)
-  
-  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
-                    bayesian_allocation = rep(df_j$bayesian_allocation, each = R),
-                    projection_probability = unlist(lapply(1:nrow(df_j),
-                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
-                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
-                    brain_region = rownames(EC8_new[[1]]))
-  
-  df1$bayesian_allocation <- factor(df1$bayesian_allocation,
-                                    levels = unique(df1$bayesian_allocation))
-  
-  df1$brain_region <- factor(df1$brain_region,
-                             levels = rownames(EC8_new[[1]]))
-  
-  png(filename = paste0('plots/EC8_new/binomial_motif_', j, '.png'),
-      width = 800,
-      height = 500)
-  
-  
-  print(df1 %>%
-          ggplot()+
-          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = bayesian_allocation, group = neuron_index))+
-          theme_bw()+
-          ylab('projection probability')+
-          xlab('brain region')+
-          ggtitle(paste('Cluster', j))
-  )
-  
-  dev.off()
-}
 
 
 #-----------------------------------------------------------------------------------------------
@@ -602,11 +529,47 @@ for(j in Bayesian_motifs_large){
                    x = unique(df.j$motif),
                    y = 0.95,
                    label = df.j$count,
-                   size = 8,
+                   size = 3,
                    angle = 90))
   
   dev.off()
 
+}
+
+
+for(j in Bayesian_motifs_large){
+  
+  df_j <- df %>%
+    filter(bayesian_allocation == j)
+  
+  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
+                    binomial_allocation = rep(df_j$binomial_allocation, each = R),
+                    projection_probability = unlist(lapply(1:nrow(df_j),
+                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
+                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
+                    brain_region = rownames(EC8_new[[1]]))
+  
+  df1$binomial_allocation <- factor(df1$binomial_allocation,
+                                    levels = unique(df1$binomial_allocation))
+  
+  df1$brain_region <- factor(df1$brain_region,
+                             levels = rownames(EC8_new[[1]]))
+  
+  png(filename = paste0('plots/EC8_new/large_bayesian_motifs/bayesian_motif_', j, '.png'),
+      width = 800,
+      height = 500)
+  
+  
+  print(df1 %>%
+          ggplot()+
+          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = binomial_allocation, group = neuron_index))+
+          theme_bw()+
+          ylab('projection probability')+
+          xlab('brain region')+
+          ggtitle(paste('Cluster', j))
+  )
+  
+  dev.off()
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -622,3 +585,92 @@ large_binomial_motifs <- df %>%
   pull() %>%
   sort()
 
+# For each large Binomial motif, calculate LEC/MEC proportion
+for(j in large_binomial_motifs){
+  
+  df.j <- df %>%
+    filter(binomial_allocation == j)
+  
+  # Binomial
+  LEC_prop_binomial <- length(which(df.j$EC_label == 'LEC'))/nrow(df.j)
+  n_binomial <- nrow(df.j)
+  
+  # Bayesian
+  LEC_bayes <- df.j %>%
+    group_by(bayesian_allocation) %>%
+    summarise(LEC = length(which(EC_label == 'LEC'))/n(),
+              count = n()) %>%
+    mutate(MEC = 1-LEC) %>%
+    mutate(bayesian_allocation = paste0('bayesian motif ', bayesian_allocation)) %>%
+    rename(motif = bayesian_allocation)
+  
+  # Combine both
+  df.j <- rbind(data.frame(motif = paste0('binomial motif ', j),
+                           LEC = LEC_prop_binomial,
+                           count = n_binomial,
+                           MEC = 1-LEC_prop_binomial),
+                
+                LEC_bayes)
+  
+  df.j$motif <- factor(df.j$motif, levels = unique(df.j$motif))
+  
+  png(filename = paste0('./plots/EC8_new/large_binomial_motifs/large_binomial_motifs_', j, '.png'))
+  
+  print(df.j %>%
+          pivot_longer(cols = c(2,4)) %>%
+          rename(EC_group = name) %>%
+          ggplot()+
+          geom_bar(mapping = aes(x = motif,
+                                 y = value,
+                                 fill = EC_group),
+                   stat = 'identity')+
+          theme_bw()+
+          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+          ggtitle(paste0('binomial motif ', j))+
+          annotate('text',
+                   x = unique(df.j$motif),
+                   y = 0.95,
+                   label = df.j$count,
+                   size = 3,
+                   angle = 90))
+  
+  dev.off()
+  
+}
+
+
+
+for(j in large_binomial_motifs){
+  
+  df_j <- df %>%
+    filter(binomial_allocation == j)
+  
+  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
+                    bayesian_allocation = rep(df_j$bayesian_allocation, each = R),
+                    projection_probability = unlist(lapply(1:nrow(df_j),
+                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
+                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
+                    brain_region = rownames(EC8_new[[1]]))
+  
+  df1$bayesian_allocation <- factor(df1$bayesian_allocation,
+                                    levels = unique(df1$bayesian_allocation))
+  
+  df1$brain_region <- factor(df1$brain_region,
+                             levels = rownames(EC8_new[[1]]))
+  
+  png(filename = paste0('plots/EC8_new/large_binomial_motifs/binomial_motif_', j, '.png'),
+      width = 800,
+      height = 500)
+  
+  
+  print(df1 %>%
+          ggplot()+
+          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = bayesian_allocation, group = neuron_index))+
+          theme_bw()+
+          ylab('projection probability')+
+          xlab('brain region')+
+          ggtitle(paste('Cluster', j))
+  )
+  
+  dev.off()
+}

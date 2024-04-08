@@ -163,7 +163,7 @@ component_probabilities_mcmc <- function(omega,
 
     X_new <- rmvnorm(n = 1,
                      mean = X_old,
-                     sigma = diag(x=1, nrow=J-1, ncol=J-1))
+                     sigma = diag(x=0.01, nrow=J-1, ncol=J-1))
 
   }else{
 
@@ -256,7 +256,7 @@ alpha_mcmc <- function(omega_J_M,
 
     X_new <- rnorm(n = 1,
                    mean = X_old,
-                   sd = 1)
+                   sd = 0.01)
   }else{
 
     X_new <- rnorm(n = 1,
@@ -340,7 +340,7 @@ alpha_zero_mcmc <- function(omega,
 
     X_new <- rnorm(n = 1,
                    mean = X_old,
-                   sd = 1)
+                   sd = 0.01)
   }else{
 
     X_new <- rnorm(n = 1,
@@ -411,12 +411,13 @@ gamma_logprob <- function(Y,
   R <- nrow(Y[[1]])
 
   # log - probability
-  log_prob <- log_prob + sum(lgamma(sum(q_j_star*gamma_j_star)) + lgamma(N_CM_j + 1) - lgamma(N_CM_j + sum(q_j_star*gamma_j_star)) +
+  log_prob <- log_prob + sum(lgamma(gamma_j_star) + lgamma(N_CM_j + 1) - lgamma(N_CM_j + gamma_j_star) +
 
                                colSums(lgamma(as.matrix(Y_bind[,cell_index_j]) + matrix(rep(q_j_star*gamma_j_star,
                                                                                             length(cell_index_j)),
                                                                                         nrow = R)
-                               )) - sum(lgamma(q_j_star*gamma_j_star)) - colSums(lgamma(as.matrix(Y_bind[,cell_index_j] + 1)))
+                               )) - sum(lgamma(q_j_star*gamma_j_star)) - colSums(lgamma(as.matrix(Y_bind[,cell_index_j] + 1))
+                                                                                 )
   )
 
   return(log_prob)
@@ -466,7 +467,7 @@ gamma_mcmc <- function(Y,
 
         X_j_new <- rnorm(n = 1,
                          mean = X_old,
-                         sd = 1)
+                         sd = 0.01)
 
 
       }else{
@@ -557,39 +558,38 @@ gamma_mcmc <- function(Y,
 
 
 q_star_logprob <- function(Y,
-                          Z,
-                          q_j_star,
-                          gamma_j_star,
-                          alpha_h,
-                          j){
+                           Z,
+                           q_j_star,
+                           gamma_j_star,
+                           alpha_h,
+                           j){
 
 
   # Bind Y by columns
   Y_bind <- do.call(cbind,Y)
+  
+  
+  # Find the cell index of the ones with allocation equal to j
+  cell_index_j <- which(unlist(Z)==j)
+  
+  # Sum of neuron counts across all regions for these cells
+  N_CM_j <- colSums(as.matrix(Y_bind[,cell_index_j]))
+  
+  # Number of regions
+  R <- nrow(Y[[1]])
 
   # Initialize the log probability - Dirichlet prior
   log_prob <- sum((alpha_h-1)*log(q_j_star))
 
-  # Find the cell index of the ones with allocation equal to j
-  cell_index_j <- which(unlist(Z)==j)
-
-  # Sum of neuron counts across all regions for these cells
-  N_CM_j <- colSums(as.matrix(Y_bind[,cell_index_j]))
-
-  # Number of regions
-  R <- nrow(Y[[1]])
-
-
-  log_prob <- log_prob + sum(lgamma(sum(q_j_star*gamma_j_star)) + lgamma(N_CM_j + 1) - lgamma(N_CM_j + sum(q_j_star*gamma_j_star))) +
-
-                               sum(colSums(lgamma(as.matrix(Y_bind[,cell_index_j]) + matrix(rep(q_j_star*gamma_j_star,
-                                                                                            length(cell_index_j)),
-                                                                                        nrow = R)
-                               ))) - sum(lgamma(q_j_star*gamma_j_star))*length(cell_index_j) -
-
+  # log probability - distribution of Y
+  log_prob <- log_prob + sum(colSums(lgamma(as.matrix(Y_bind[,cell_index_j]) + matrix(rep(q_j_star*gamma_j_star,
+                                                                                          length(cell_index_j)),
+                                                                                      nrow = R)
+  ))) - sum(lgamma(q_j_star*gamma_j_star))*length(cell_index_j) -
+    
     sum(colSums(lgamma(as.matrix(Y_bind[,cell_index_j] + 1))))
 
-
+                 
   return(log_prob)
 
 }
@@ -640,14 +640,14 @@ q_star_mcmc <- function(Y,
         # Length of R - 1
         X_j_new <- as.vector(rmvnorm(n = 1,
                                      mean = X_old[j,],
-                                     sigma = diag(1,nrow = R-1, ncol = R-1)))
+                                     sigma = diag(0.01,nrow = R-1, ncol = R-1)))
 
       }else{
 
         # Length of R - 1
         X_j_new <- as.vector(rmvnorm(n = 1,
                                      mean = X_old[j,],
-                                     sigma = (2.4^2)/2*(covariance_old[[j]] + adaptive_prop*diag(1,nrow = R-1, ncol = R-1))))
+                                     sigma = (2.4^2)/(R-1)*(covariance_old[[j]] + adaptive_prop*diag(1,nrow = R-1, ncol = R-1))))
 
       }
 
@@ -777,12 +777,12 @@ alpha_h_mcmc <- function(alpha_h,
 
     X_alpha_h_new <- rmvnorm(n = 1,
                              mean = X_alpha_h_old,
-                             sigma = diag(1,nrow = R, ncol = R))
+                             sigma = diag(0.01,nrow = R, ncol = R))
   }else{
 
     X_alpha_h_new <- rmvnorm(n = 1,
                              mean = X_alpha_h_old,
-                             sigma = (2.4^2)/2*(covariance_old + adaptive_prop*diag(1,nrow = R, ncol = R)))
+                             sigma = (2.4^2)/R*(covariance_old + adaptive_prop*diag(1,nrow = R, ncol = R)))
   }
 
   ##-- alpha_h_new
@@ -794,7 +794,7 @@ alpha_h_mcmc <- function(alpha_h,
                                     a_alpha = a_alpha,
                                     b_alpha = b_alpha)-
 
-    alpha_h_logprob(alpha_h = alpha_h_old,
+    alpha_h_logprob(alpha_h = as.vector(alpha_h_old),
                     q_star_1_J = q_star_1_J,
                     a_alpha = a_alpha,
                     b_alpha = b_alpha)-
