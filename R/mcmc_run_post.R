@@ -110,7 +110,8 @@ mcmc_run_post <- function(mcmc_run_all_output,
                                 mean_x = mean_x_q_new,
                                 tilde_s = tilde_s_q_new,
                                 iter_num = iter,
-                                adaptive_prop = adaptive_prop)
+                                adaptive_prop = adaptive_prop,
+                                num.cores = num.cores)
     
     # Update covariance sturcture of q
     covariance_q_new <- q_output_sim$covariance_new

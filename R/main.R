@@ -60,4 +60,3 @@ source('R/ppc_single.R')
 
 source('R/binom_cluster_reorder.R')
 
-source('R/binomial_model.R')

@@ -183,6 +183,8 @@ mcmc_run_all <- function(Y,
     if(isTRUE(print_Z)){
       for(m in 1:M) print(table(Z_new[[m]]))
     }
+    
+    print(paste0('J' = length(unique(unlist(Z_new)))))
 
     ##------------------------ Dataset specific component probabilities ------------------------------
 
@@ -276,7 +278,8 @@ mcmc_run_all <- function(Y,
                                 mean_x = mean_x_q_new,
                                 tilde_s = tilde_s_q_new,
                                 iter_num = iter,
-                                adaptive_prop = adaptive_prop)
+                                adaptive_prop = adaptive_prop,
+                                num.cores = num.cores)
 
     covariance_q_new <- q_output_sim$covariance_new
     mean_x_q_new <- q_output_sim$mean_x_new
@@ -298,7 +301,8 @@ mcmc_run_all <- function(Y,
                                    M_2 = M_2_gamma_new,
                                    variance = variance_gamma_new,
                                    iter_num = iter,
-                                   adaptive_prop = adaptive_prop)
+                                   adaptive_prop = adaptive_prop,
+                                   num.cores = num.cores)
 
     gamma_1_J_star_new <- gamma_output_sim$gamma_1_J_star_new
     variance_gamma_new <- gamma_output_sim$variance_gamma_new
@@ -306,6 +310,8 @@ mcmc_run_all <- function(Y,
     X_mean_gamma_new <- gamma_output_sim$X_mean_gamma_new
     gamma_star_count <- gamma_star_count + gamma_output_sim$gamma_count
     acceptance_prob_list$gamma_star[iter-1] <- gamma_star_count/((iter-1)*J)
+    
+    print(paste0('max gamma = ', max(gamma_1_J_star_new), 'min gamma = ', min(gamma_1_J_star_new)))
 
 
     #-------------------------- Step 5: Update simulated values ------------------------

@@ -8,14 +8,12 @@ load('./data/EC8_new/EC8_Z_dlso.RData')
 load('./data/EC8_new/EC8_Z.RData')
 load('./data/EC8_new/mcmc_unique_EC8.RData')
 
-# Check some of the acceptance probabilities
+# Acceptance probabilities
 plot(mcmc_all_EC8$acceptance_prob$omega, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha_zero, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$q_star, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$gamma, type = 'l')
-
-# Problem
 plot(mcmc_all_EC8$acceptance_prob$gamma_star, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha_h, type = 'l')
 
@@ -28,8 +26,12 @@ cluster_label <- read.csv('./edward/setE_results/cluster_label.csv',
 # Allocations
 load('./data/EC8_new/setE_binom_allocations.RData')
 
+load('./edward/setE_results/setE_motif_groups.RData')
+
+
 
 cluster_summary <- read.csv('./edward/setE_results/cluster_summary.csv')
+
 
 binomial_output <- list('allocation' = allocation,
                         'cluster_label' = cluster_label,
@@ -37,6 +39,11 @@ binomial_output <- list('allocation' = allocation,
 
 binomial_output_reorder <- binom_cluster_reorder(Y = EC8_new,
                                                  binomial_output = binomial_output)
+
+binomial_output_reorder$cluster_summary <- NULL
+
+save(binomial_output_reorder, file = './data/EC8_new/binomial_output_reorder.RData')
+
 
 #--------------------------------------------------------------------------------------------------------
 
@@ -71,11 +78,12 @@ mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
                              adaptive_prop = 0.001,
                              print_Z = TRUE,
                              
-                             a_gamma = 500,
-                             b_gamma = 10,
+                             a_gamma = 20,
+                             b_gamma = 1,
                              a_alpha = 1/5,
                              b_alpha = 1/2,
                              num.cores = 10)
+
 
 
 
@@ -85,20 +93,16 @@ psm_EC8 <- similarity_matrix(mcmc_run_all_output = mcmc_all_EC8,
                              run.on.pc = FALSE)
 
 
-
-# minvi
-EC8_Z_minvi <- opt.clustering(mcmc_run_all_output = mcmc_all_EC8,
-                              post_similarity = psm_EC8)
-
-# dlso
-EC8_Z_dlso <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_all_EC8)
-
-# optimal clustering - 121 clusters
+# optimal clustering
 EC8_Z <- opt.clustering.comb(mcmc_run_all_output = mcmc_all_EC8,
                              post_similarity = psm_EC8)
 
 
 # Plot of posterior similarity matrix
+png(file = './plots/EC8_new/heatmap_psm_1.png',
+    width = 664,
+    height = 664)
+
 plotpsm(psm.ind = psm_EC8$psm.within,
         psm.tot = psm_EC8$psm.combined,
         xlab = 'neurons',
@@ -108,6 +112,11 @@ plotpsm(psm.ind = psm_EC8$psm.within,
         plot.type = 'ind',
         cex.main = 1.5)
 
+dev.off()
+
+png(file = './plots/EC8_new/heatmap_psm_2.png',
+    width = 664,
+    height = 664)
 
 plotpsm(psm.ind = psm_EC8$psm.within,
         psm.tot = psm_EC8$psm.combined,
@@ -117,6 +126,8 @@ plotpsm(psm.ind = psm_EC8$psm.within,
         main = 'Posterior Similarity Matrix',
         cex.main = 1.5,
         plot.type = 'tot')
+
+dev.off()
 
 # MCMC unique
 mcmc_unique_EC8 <- mcmc_run_post(mcmc_run_all_output = mcmc_all_EC8,
