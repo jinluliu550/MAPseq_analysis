@@ -243,7 +243,7 @@ gp1 = ggplot(df1, mapping = aes(x = factor(region, levels = row.names(phat)), y 
                        limits = c(0,1))+
   guides(fill=guide_legend(title="Projection\nstrength"))+
   xlab('region')+
-  theme(axis.text.x = element_text(size = 12),
+  theme(axis.text.x = element_text(size = 12,angle = 90),
         axis.title.x = element_text(size = 12),
         plot.title = element_text(size=12, hjust = 0.5),
         axis.title.y = element_text(size = 12,angle = 90))+
@@ -259,7 +259,7 @@ gp2 = ggplot(df2, mapping = aes(x = factor(region, levels = row.names(phat)), y 
                        limits = c(0,1))+
   guides(fill=guide_legend(title="Projection\nstrength"))+
   xlab('region')+
-  theme(axis.text.x = element_text(size = 12),
+  theme(axis.text.x = element_text(size = 12,angle = 90),
         axis.title.x = element_text(size = 12),
         plot.title = element_text(size=12, hjust = 0.5),
         axis.title.y = element_text(size = 12,angle = 90))+
@@ -275,7 +275,7 @@ gp3 = ggplot(df3, mapping = aes(x = factor(region, levels = row.names(phat)), y 
                        limits = c(0,1))+
   guides(fill=guide_legend(title="Projection\nstrength"))+
   xlab('region')+
-  theme(axis.text.x = element_text(size = 12),
+  theme(axis.text.x = element_text(size = 12,angle = 90),
         axis.title.x = element_text(size = 12),
         plot.title = element_text(size=12, hjust = 0.5),
         axis.title.y = element_text(size = 12,angle = 90))+
