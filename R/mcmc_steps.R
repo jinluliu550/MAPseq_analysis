@@ -440,8 +440,7 @@ gamma_mcmc <- function(Y,
                        M_2,
                        variance,
                        iter_num,
-                       adaptive_prop,
-                       num.cores){
+                       adaptive_prop){
 
   J <- nrow(q_star_1_J)
   n <- iter_num
@@ -454,14 +453,16 @@ gamma_mcmc <- function(Y,
   M_2_old <- M_2
   X_mean_old <- X_mean
 
-  
-  cl <- makeCluster(num.cores)
-  registerDoParallel(cl)
+  # Update
+  X_mean_new <- NULL
+  M_2_new <- NULL
+  variance_new <- NULL
+  gamma_count <- 0
+  gamma_1_J_star_new <- NULL
   
   # For each component j
-  loop.result <- foreach(j = 1:J,
-                         .packages = c('stats'),
-                         .export = c('gamma_logprob')) %dopar% {
+  for(j in 1:J){
+    
     
     if(length(which(unlist(Z)==j)) != 0){
       
@@ -533,39 +534,13 @@ gamma_mcmc <- function(Y,
       X_j_new <- X_old[j]
     }
     
-    # Output
-    X_mean_new.j <- (1-1/n)*X_mean_old[j] + 1/n*X_j_new
-    M_2_new.j <- M_2_old[j] + (X_j_new-X_mean_old[j])*(X_j_new-X_mean_new.j)
-    variance_new.j <- 1/(n-1)*M_2_new.j
+    X_mean_new[j] <- (1-1/n)*X_mean_old[j] + 1/n*X_j_new
+    M_2_new[j] <- M_2_old[j] + (X_j_new-X_mean_old[j])*(X_j_new-X_mean_new[j])
+    variance_new[j] <- 1/(n-1)*M_2_new[j]
+    gamma_count <- gamma_count + outcome
+    gamma_1_J_star_new[j] <- gamma_j_new
     
-    list('X_mean_new.j' = X_mean_new.j,
-         'M_2_new.j' = M_2_new.j,
-         'variance_new.j' = variance_new.j,
-         'gamma_j_new' = gamma_j_new,
-         'outcome' = outcome)
   }
-  
-  # Stop cluster
-  stopCluster(cl)
-  
-  
-  
-  # Return items
-  X_mean_new <- sapply(1:J,
-                       function(j) loop.result[[j]]$X_mean_new.j)
-  
-  M_2_new <- sapply(1:J,
-                    function(j) loop.result[[j]]$M_2_new.j)
-  
-  variance_new <- sapply(1:J,
-                         function(j) loop.result[[j]]$variance_new.j)
-  
-  gamma_1_J_star_new <- sapply(1:J,
-                               function(j) loop.result[[j]]$gamma_j_new)
-  
-  
-  gamma_count <- sum(sapply(1:J,
-                            function(j) loop.result[[j]]$outcome))
   
 
 
@@ -627,8 +602,7 @@ q_star_mcmc <- function(Y,
                         mean_x,
                         tilde_s,
                         iter_num,
-                        adaptive_prop,
-                        num.cores = 1){
+                        adaptive_prop){
 
   J <- nrow(q_star_1_J)
   R <- ncol(q_star_1_J)
@@ -645,20 +619,15 @@ q_star_mcmc <- function(Y,
     X_old[j,] <- log(q_star_1_J_old[j,1:(R-1)]/q_star_1_J_old[j,R])
   }
 
-
-  # Register cores
-  cl <- makeCluster(num.cores)
-  registerDoParallel(cl)
+  q_star_1_J_new <- matrix(0, J, R)
+  tilde_s_new <- NULL
+  mean_x_new <- NULL
+  covariance_new <- NULL
+  q_star_count <- 0
   
-  # For each component
-  loop.result <- foreach(j = 1:J,
-                         .packages = c('mvtnorm',
-                                       'extraDistr',
-                                       'stats'),
-                         .export = c('q_star_logprob')) %dopar% {
+  # For each cluster
+  for(j in 1:J){
     
-    
-    # If component j is non-empty
     
     if(length(which(unlist(Z)==j)) != 0){
       
@@ -716,54 +685,32 @@ q_star_mcmc <- function(Y,
       accept.prob <- 1
       
     }
-                           
+    
+    
+    
     # Random Bernoulli
     outcome <- rbinom(n = 1,
                       size = 1,
                       prob = min(1,accept.prob))
-                           
+    
     # If outcome is to reject
     if(outcome == 0){
-                             
-    q_star_j_new <- q_star_1_J_old[j,]
-    X_j_new <- X_old[j,]
-    
+      
+      q_star_j_new <- q_star_1_J_old[j,]
+      X_j_new <- X_old[j,]
+      
     }
     
-    tilde_s_new.j <- tilde_s_old[[j]] + matrix(X_j_new, ncol = 1)%*%matrix(X_j_new, nrow = 1)
-    mean_x_new.j <- mean_X_old[[j]]*(1-1/n) + 1/n*matrix(X_j_new, nrow = 1)
-    covariance_new.j <- 1/(n-1)*tilde_s_new.j - n/(n-1)*t(mean_x_new.j)%*%mean_x_new.j
-                           
-    list('tilde_s_new.j' = tilde_s_new.j,
-         'mean_x_new.j' = mean_x_new.j,
-         'covariance_new.j' = covariance_new.j,
-         'q_star_j_new' = q_star_j_new,
-         'outcome' = outcome)
-    
-                         }
+    # Update
+    tilde_s_new[[j]] <- tilde_s_old[[j]] + matrix(X_j_new, ncol = 1)%*%matrix(X_j_new, nrow = 1)
+    mean_x_new[[j]] <- mean_X_old[[j]]*(1-1/n) + 1/n*matrix(X_j_new, nrow = 1)
+    covariance_new[[j]] <- 1/(n-1)*tilde_s_new[[j]] - n/(n-1)*t(mean_x_new[[j]])%*%mean_x_new[[j]]
+    q_star_count <- q_star_count + outcome
+    q_star_1_J_new[j,] <- q_star_j_new
+  }
   
-  # Stop cluster
-  stopCluster(cl)
   
-  # Prepare for output
-  tilde_s_new <- lapply(1:J, 
-                        function(j) loop.result[[j]]$tilde_s_new.j)
   
-  mean_x_new <- lapply(1:J, 
-                       function(j) loop.result[[j]]$mean_x_new.j)
-  
-  covariance_new <- lapply(1:J,
-                           function(j) loop.result[[j]]$covariance_new.j)
-  
-  q_star_j_new <- lapply(1:J,
-                         function(j) matrix(loop.result[[j]]$q_star_j_new, nrow = 1))
-  
-  q_star_1_J_new <- do.call(rbind, q_star_j_new)
-  
-  q_star_count <- sum(sapply(1:J,
-                             function(j) loop.result[[j]]$outcome))
-  
-
   # Return
   return(list('tilde_s_new' = tilde_s_new,
               'mean_x_new' = mean_x_new,

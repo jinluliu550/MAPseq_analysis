@@ -278,8 +278,7 @@ mcmc_run_all <- function(Y,
                                 mean_x = mean_x_q_new,
                                 tilde_s = tilde_s_q_new,
                                 iter_num = iter,
-                                adaptive_prop = adaptive_prop,
-                                num.cores = num.cores)
+                                adaptive_prop = adaptive_prop)
 
     covariance_q_new <- q_output_sim$covariance_new
     mean_x_q_new <- q_output_sim$mean_x_new
@@ -301,8 +300,7 @@ mcmc_run_all <- function(Y,
                                    M_2 = M_2_gamma_new,
                                    variance = variance_gamma_new,
                                    iter_num = iter,
-                                   adaptive_prop = adaptive_prop,
-                                   num.cores = num.cores)
+                                   adaptive_prop = adaptive_prop)
 
     gamma_1_J_star_new <- gamma_output_sim$gamma_1_J_star_new
     variance_gamma_new <- gamma_output_sim$variance_gamma_new
