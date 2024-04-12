@@ -311,6 +311,8 @@ mcmc_run_all <- function(Y,
     
     print(paste0('max gamma = ', max(gamma_1_J_star_new), 'min gamma = ', min(gamma_1_J_star_new)))
 
+    print(paste0('Interations = ', iter))
+    
 
     #-------------------------- Step 5: Update simulated values ------------------------
     if(update == TRUE){
