@@ -277,6 +277,8 @@ mcmc_run_post <- function(mcmc_run_all_output,
   estimated.projection.df$class <- factor(estimated.projection.df$class,
                                           levels = colnames(cluster.label.summary)[2:4])
   
+  estimated.projection.df$cluster <- factor(estimated.projection.df$cluster,
+                                            levels = paste('cluster', 1:J))
   
   # All clusters
   estimated.pp.plot <- ggplot2::ggplot(estimated.projection.df,

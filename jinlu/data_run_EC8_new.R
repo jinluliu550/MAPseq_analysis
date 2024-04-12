@@ -139,6 +139,8 @@ mcmc_unique_EC8 <- mcmc_run_post(mcmc_run_all_output = mcmc_all_EC8,
                                  b_gamma = 10,
                                  regions.name = rownames(EC8_new[[1]]))
 
+EC8_Z_reordered <- mcmc_unique_EC8$Z
+
 # Number of neurons in each cluster
 png(file = './plots/EC8_new/number_of_neuron.png',
     width = 2500,
@@ -418,31 +420,7 @@ clusterings <- list(mcmc_unique_EC8$Z,
                     clust50,
                     clust70)
 
-df1 <- sapply(1:5,
-              function(i) variation_info(unlist(clusterings[[1]]),
-                                         unlist(clusterings[[i]])))
-
-df2 <- sapply(2:5,
-              function(i) variation_info(unlist(clusterings[[2]]),
-                                         unlist(clusterings[[i]])))
-
-df3 <- sapply(3:5,
-              function(i) variation_info(unlist(clusterings[[3]]),
-                                         unlist(clusterings[[i]])))
-
-df4 <- sapply(4:5,
-              function(i) variation_info(unlist(clusterings[[4]]),
-                                         unlist(clusterings[[i]])))
-
-
 mx <- matrix(0, nrow = 5, ncol = 5)
-mx[1,] <- df1
-mx[2,] <- c(NA, df2)
-mx[3,] <- c(NA, NA, df3)
-mx[4,] <- c(NA, NA, NA, df4)
-mx[5,] <- c(rep(NA,4), 0)
-
-mx <- round(mx, 2)
 
 colnames(mx) <- c('bayesian_motif',
                   'binomial_motif',
@@ -457,10 +435,18 @@ rownames(mx) <- c('bayesian_motif',
                   'k_means_70')
 
 
+for(i in 1:5){
+  
+  mx[i,] <- sapply(1:5,
+                   function(v) variation_info(unlist(clusterings[[i]]),
+                                              unlist(clusterings[[v]])))
+}
+
 mx <- mx/log(base = 2, x = sum(sapply(1:length(EC8_new),
                                       function(m) ncol(EC8_new[[m]]))))
 
 mx <- round(mx, 2)
+
 
 
 # Combine binomial results with Bayesian results
