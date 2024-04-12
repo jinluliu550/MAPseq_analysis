@@ -13,7 +13,6 @@ plot(mcmc_all_EC8$acceptance_prob$omega, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha_zero, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$q_star, type = 'l')
-plot(mcmc_all_EC8$acceptance_prob$gamma, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$gamma_star, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha_h, type = 'l')
 
