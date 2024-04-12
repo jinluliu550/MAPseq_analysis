@@ -641,6 +641,7 @@ for(j in large_binomial_motifs){
   df_j <- df %>%
     filter(binomial_allocation == j)
   
+  
   df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
                     bayesian_allocation = rep(df_j$bayesian_allocation, each = R),
                     projection_probability = unlist(lapply(1:nrow(df_j),
