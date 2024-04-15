@@ -28,6 +28,7 @@ plotpsm <- function(psm.ind,
                1:n,
                psm_hc,
                col=rev(heat.colors(100)),
+               axis.args=list(yaxt='n', xaxt='n'),
                ...)
     
     
@@ -84,6 +85,7 @@ plotpsm <- function(psm.ind,
                1:n.max,
                psm_matrix_output, 
                col=rev(heat.colors(100)),
+               axis.args=list(yaxt='n', xaxt='n'),
                ...)
     
     

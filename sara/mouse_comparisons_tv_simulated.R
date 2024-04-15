@@ -15,7 +15,7 @@ mytv_dist = function(x,ind){
   return(0.5*colSums(abs(x-y)))
 }
 
-m =  4 # index of mouse
+m =  3 # index of mouse
 tv_dist = lapply(mcmc_results$omega_J_M_output,mytv_dist, ind = m )
 tv_dist <- data.frame(matrix(unlist(tv_dist), nrow=length(tv_dist), byrow=TRUE))
 #names(tv_dist) = c("1", "2", "3", "4", "5", "6")

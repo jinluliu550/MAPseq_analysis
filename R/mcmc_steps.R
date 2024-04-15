@@ -3,8 +3,14 @@
 
 ddirmultinomial <- function(x, n, alpha, log = FALSE){
 
-  log.prob <- lgamma(sum(alpha)) + lgamma(n+1) - lgamma(n+sum(alpha)) + sum(lgamma(x + alpha) - lgamma(alpha) - lgamma(x+1))
-
+  ind = alpha>0
+  
+  # zero density if x_r>0 and alpha_r=0
+  if(sum(x[!ind])>0){ log.prob = -Inf}
+  else{
+    log.prob <- lgamma(sum(alpha[ind])) + lgamma(n+1) - lgamma(n+sum(alpha[ind])) + sum(lgamma(x[ind] + alpha[ind]) - lgamma(alpha[ind]) - lgamma(x[ind]+1))
+  }  
+  
   if(isFALSE(log)){
 
     return(exp(log.prob))
@@ -96,11 +102,18 @@ dataset_specific_mcmc <- function(Z,
   loop.result <- lapply(1:M, function(m) {
 
     parameter <- as.vector(table(factor(Z[[m]], levels = c(1:J)))) + alpha*omega
+    
+    #check parameter=0
+#    ind = parameter>0
+#    omega_J_M = rep(0,J)
+#    omega_J_M[ind] <- extraDistr::rdirichlet(n = 1,
+#                                        alpha = parameter[ind])
     omega_J_M <- extraDistr::rdirichlet(n = 1,
-                                        alpha = parameter)
+                                             alpha = parameter)
+    
 
-    # shifted the zero values
-    omega_J_M <- ifelse(omega_J_M == 0, 0.001, omega_J_M)
+#    # shifted the zero values
+    omega_J_M <- ifelse(omega_J_M == 0, .Machine$double.eps, omega_J_M)
     omega_J_M <- omega_J_M/sum(omega_J_M)
 
     return(omega_J_M)
@@ -175,6 +188,10 @@ component_probabilities_mcmc <- function(omega,
 
   # Compute omega_new (Length = J) from X_new
   omega_new <- c(exp(X_new)/(1+sum(exp(X_new))),1/(1+sum(exp(X_new))))
+  
+  # shifted the zero values
+  omega_new <- ifelse(omega_new == 0, .Machine$double.eps, omega_new)
+  omega_new <- omega_new/sum(omega_new)
 
   # Compute acceptance probability
   log_acceptance <- component_log_prob(omega_new,
@@ -187,11 +204,12 @@ component_probabilities_mcmc <- function(omega,
                        alpha) +
 
     sum(log(omega_new)) - sum(log(omega_old))
-
+  
   # Random Bernoulli
   outcome <- rbinom(n = 1,
                     size = 1,
                     prob=min(1, exp(log_acceptance)))
+
 
   if(outcome == 0){
 
@@ -283,6 +301,7 @@ alpha_mcmc <- function(omega_J_M,
                     size = 1,
                     prob = min(1, exp(log_acceptance)))
 
+  
   if(outcome == 0){
 
     X_new <- X_old
@@ -365,6 +384,8 @@ alpha_zero_mcmc <- function(omega,
                     size = 1,
                     prob = min(1, exp(log_acceptance)))
 
+
+  
   if(outcome == 0){
 
     X_new <- X_old
@@ -521,12 +542,12 @@ gamma_mcmc <- function(Y,
       accept.prob <- 1
       
     }
-    
+ 
     # Random Bernoulli
     outcome <- rbinom(n = 1,
                       size = 1,
                       prob = min(1,accept.prob))
-    
+
     # If outcome is to reject
     if(outcome == 0){
       
@@ -649,6 +670,9 @@ q_star_mcmc <- function(Y,
       
       # q_star_new
       q_star_j_new <- c(exp(X_j_new)/(1+sum(exp(X_j_new))),1/(1+sum(exp(X_j_new))))
+      # shifted the zero values
+      q_star_j_new <- ifelse( q_star_j_new == 0, .Machine$double.eps,  q_star_j_new)
+      q_star_j_new <-  q_star_j_new/sum( q_star_j_new)
       
       # Acceptance probability
       log.accept.prob <- q_star_logprob(Y = Y,
@@ -687,12 +711,11 @@ q_star_mcmc <- function(Y,
     }
     
     
-    
     # Random Bernoulli
     outcome <- rbinom(n = 1,
                       size = 1,
                       prob = min(1,accept.prob))
-    
+
     # If outcome is to reject
     if(outcome == 0){
       
@@ -782,6 +805,10 @@ alpha_h_mcmc <- function(alpha_h,
 
   ##-- alpha_h_new
   alpha_h_new <- exp(X_alpha_h_new)
+  # shifted the zero values
+  alpha_h_new <- ifelse( alpha_h_new == 0, .Machine$double.eps,  alpha_h_new)
+  alpha_h_new <-  alpha_h_new/sum(alpha_h_new)
+  
 
   ##-- Acceptance probability
   accep.log.prob <- alpha_h_logprob(alpha_h = as.vector(alpha_h_new),
@@ -795,7 +822,7 @@ alpha_h_mcmc <- function(alpha_h,
                     b_alpha = b_alpha)-
 
     sum(log(alpha_h_old)) + sum(log(alpha_h_new))
-
+  
   # Random Bernoulli
   outcome <- rbinom(n = 1,
                     size = 1,
