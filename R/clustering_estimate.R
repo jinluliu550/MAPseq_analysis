@@ -94,10 +94,10 @@ opt.clustering.comb <- function(mcmc_run_all_output,
   
   # Result from minvi
   opt.clust.minvi <- opt.clustering(mcmc_run_all_output = mcmc_run_all_output,
-                                         post_similarity = post_similarity,max.k=NULL)
+                                         post_similarity = post_similarity,max.k=max.k)
   
   # Result from dlso
-  opt.clust.dlso <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_run_all_output)
+  opt.clust.dlso <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_run_all_output,max.k=max.k)
   
   # Trace of z
   z.trace <- mcmc_run_all_output$Z_output

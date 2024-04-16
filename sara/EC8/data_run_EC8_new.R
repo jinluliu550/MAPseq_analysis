@@ -104,9 +104,14 @@ mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
 
 
 
-
-library(mcclust.ext)
+# Matrix of cluster labels
 Zmat = matrix(unlist(mcmc_all_EC8$Z_output), length(mcmc_all_EC8$Z_output), sum(C),byrow = TRUE)
+k = apply(Zmat,1,function(x){length(unique(x))})
+
+# Maybe we need to reorder??
+
+# Compute psm
+library(mcclust.ext)
 psm_EC8 <- comp.psm(Zmat)
 M = mcmc_all_EC8$M
 psm_EC8_within <- list(M)
@@ -120,11 +125,16 @@ for(m1 in c(1:M)){
 psm_EC8 = list('psm.within' = psm_EC8_within,
               'psm.combined' = psm_EC8)
 
-
 # optimal clustering
 EC8_Z <- opt.clustering.comb(mcmc_run_all_output = mcmc_all_EC8,
-                             post_similarity = psm_EC8)
+                             post_similarity = psm_EC8, max.k = 150)
+EC8_Z_mvi <- opt.clustering(mcmc_run_all_output = mcmc_all_EC8,
+                             post_similarity = psm_EC8, max.k = 150)
+EC8_Z_salso <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_all_EC8, max.k=150)
 
+lapply(EC8_Z,function(x){length(unique(x))})
+zunlist = unlist(EC8_Z)
+length(unique(zunlist))
 
 # Plot of posterior similarity matrix
 png(file = './plots/EC8_new/heatmap_psm_1_new.png',
