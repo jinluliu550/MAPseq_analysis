@@ -701,6 +701,9 @@ q_star_mcmc <- function(Y,
       # Simulate from the prior
       q_star_j_new <- as.vector(extraDistr::rdirichlet(n = 1,
                                                        alpha = alpha_h))
+      # shifted the zero values
+      q_star_j_new <- ifelse( q_star_j_new == 0, .Machine$double.eps,  q_star_j_new)
+      q_star_j_new <-  q_star_j_new/sum( q_star_j_new)
       
       # X_new
       X_j_new <- log(q_star_j_new[1:(R-1)]/q_star_j_new[R])
@@ -807,7 +810,6 @@ alpha_h_mcmc <- function(alpha_h,
   alpha_h_new <- exp(X_alpha_h_new)
   # shifted the zero values
   alpha_h_new <- ifelse( alpha_h_new == 0, .Machine$double.eps,  alpha_h_new)
-  alpha_h_new <-  alpha_h_new/sum(alpha_h_new)
   
 
   ##-- Acceptance probability

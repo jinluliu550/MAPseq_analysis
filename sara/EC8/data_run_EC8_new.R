@@ -16,6 +16,10 @@ plot(mcmc_all_EC8$acceptance_prob$q_star, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$gamma_star, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha_h, type = 'l')
 
+# Trace plots
+plot(mcmc_all_EC8$alpha_output, type = 'l')
+plot(mcmc_all_EC8$alpha_zero_output, type = 'l')
+
 
 #---------------------------------------- Binomial results --------------------------------------------
 
@@ -68,28 +72,53 @@ EC8_EC_label <- lapply(1:6,
 C <- sapply(1:6, function(m) ncol(EC8_new[[m]]))
 R <- 8
 
+#Initialize z
+data_EC_cbind <- do.call(cbind, EC8_new)
+
+df <- t(data_EC_cbind)
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
+
+C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(EC8_new[[m]]))))
+
+# k-means
+k_mean_clust_50 <- kmeans(df, 50, iter.max = 100, nstart = 25)$cluster
+
+clust50 <- lapply(1:6,
+                  function(m) k_mean_clust_50[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
 
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
-                             J = 150,
+                             J = 100,
                              number_iter = 15000,
                              thinning = 5,
                              burn_in = 5000,
                              adaptive_prop = 0.001,
                              print_Z = TRUE,
-                             
                              a_gamma = 30,
                              b_gamma = 1,
                              a_alpha = 1/5,
                              b_alpha = 1/2,
-                             num.cores = 1)
+                             num.cores = 1,
+                             Z.init = clust50)
 
 
 
 
-
-psm_EC8 <- similarity_matrix(mcmc_run_all_output = mcmc_all_EC8,
-                             num.cores = 10,
-                             run.on.pc = FALSE)
+library(mcclust.ext)
+Zmat = matrix(unlist(mcmc_all_EC8$Z_output), length(mcmc_all_EC8$Z_output), sum(C),byrow = TRUE)
+psm_EC8 <- comp.psm(Zmat)
+M = mcmc_all_EC8$M
+psm_EC8_within <- list(M)
+C_cumsum = c(0,cumsum(C))
+for(m1 in c(1:M)){
+  psm_EC8_within[[m1]] = list(M)
+  for(m2 in c(1:M)){
+    psm_EC8_within[[m1]][[m2]] = psm_EC8[(C_cumsum[m1]+1):C_cumsum[m1+1],(C_cumsum[m2]+1):C_cumsum[m2+1]]
+  }
+}
+psm_EC8 = list('psm.within' = psm_EC8_within,
+              'psm.combined' = psm_EC8)
 
 
 # optimal clustering
@@ -98,7 +127,7 @@ EC8_Z <- opt.clustering.comb(mcmc_run_all_output = mcmc_all_EC8,
 
 
 # Plot of posterior similarity matrix
-png(file = './plots/EC8_new/heatmap_psm_1.png',
+png(file = './plots/EC8_new/heatmap_psm_1_new.png',
     width = 664,
     height = 664)
 
@@ -113,7 +142,7 @@ plotpsm(psm.ind = psm_EC8$psm.within,
 
 dev.off()
 
-png(file = './plots/EC8_new/heatmap_psm_2.png',
+png(file = './plots/EC8_new/heatmap_psm_2_new.png',
     width = 664,
     height = 664)
 
@@ -132,17 +161,17 @@ dev.off()
 mcmc_unique_EC8 <- mcmc_run_post(mcmc_run_all_output = mcmc_all_EC8,
                                  Z = EC8_Z,
                                  thinning = 5,
-                                 burn_in = 1500,
-                                 number_iter = 3000,
+                                 burn_in = 2000,
+                                 number_iter = 12000,
                                  Y = EC8_new,
-                                 a_gamma = 500,
-                                 b_gamma = 10,
+                                 a_gamma = 30,
+                                 b_gamma = 1,
                                  regions.name = rownames(EC8_new[[1]]))
 
 EC8_Z_reordered <- mcmc_unique_EC8$Z
 
 # Number of neurons in each cluster
-png(file = './plots/EC8_new/number_of_neuron.png',
+png(file = './plots/EC8_new/number_of_neuron_new.png',
     width = 2500,
     height = 700)
 
@@ -151,7 +180,7 @@ opt.clustering.frequency(clustering = mcmc_unique_EC8$Z)
 dev.off()
 
 # Number of LEC and MEC neurons in each cluster
-png(file = './plots/EC8_new/number_of_neuron_by_EC.png',
+png(file = './plots/EC8_new/number_of_neuron_by_EC_new.png',
     width = 2500,
     height = 700)
 
@@ -162,7 +191,7 @@ dev.off()
 
 
 # Proportion of LEC and MEC in each cluster
-png(file = './plots/EC8_new/proportion_of_EC.png',
+png(file = './plots/EC8_new/proportion_of_EC_new.png',
     width = 2500,
     height = 700)
 
@@ -172,7 +201,7 @@ opt.clustering.frequency2(clustering = mcmc_unique_EC8$Z,
 dev.off()
 
 # Plot of estimated projection strength
-png(file = './plots/EC8_new/estimated_pp.png',
+png(file = './plots/EC8_new/estimated_pp_new.png',
     width = 3500,
     height = 2000)
 
@@ -181,7 +210,7 @@ mcmc_unique_EC8$estimated.pp.plot
 dev.off()
 
 # q tilde
-png(file = './plots/EC8_new/q_tilde.png',
+png(file = './plots/EC8_new/q_tilde_new.png',
     width = 3000,
     height = 600)
 
@@ -193,10 +222,10 @@ dev.off()
 omega_JM_mcmc <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_EC8,
                                    mcmc_run_post_output = mcmc_unique_EC8,
                                    thinning = 5,
-                                   burn_in = 1500,
-                                   number_iter = 3000)
+                                   burn_in = 2000,
+                                   number_iter = 12000)
 
-png(file = './plots/EC8_new/w_jm_EC.png',
+png(file = './plots/EC8_new/w_jm_EC_new.png',
     width = 4000,
     height = 2200)
 
@@ -222,7 +251,7 @@ dev.off()
 difference_omega_JM <- difference_in_omega_jm(mcmc_run_omega_output = omega_JM_mcmc)
 
 
-png(file = './plots/EC8_new/w_jm_difference.png',
+png(file = './plots/EC8_new/w_jm_difference_new.png',
     width = 2000,
     height = 600)
 
@@ -230,7 +259,7 @@ difference_omega_JM$probability_plot
 
 dev.off()
 
-png(file = './plots/EC8_new/w_jm_difference_eg.png',
+png(file = './plots/EC8_new/w_jm_difference_eg_new.png',
     width = 1500,
     height = 800)
 
@@ -242,7 +271,7 @@ dev.off()
 
 for(m in 1:M){
   
-  png(file = paste0('./plots/EC8_new/w_jm_difference_', m, '.png'),
+  png(file = paste0('./plots/EC8_new/w_jm_difference_new_', m, '.png'),
       width = 1500,
       height = 800)
   
@@ -252,7 +281,7 @@ for(m in 1:M){
 }
 
 # Heatmap of projection stength of neurons in each cluster
-png(file = './plots/EC8_new/heatmap_neuron.png',
+png(file = './plots/EC8_new/heatmap_neuron_new.png',
     width = 900,
     height = 900)
 
@@ -270,7 +299,7 @@ data_EC_N <- lapply(1:length(EC8_new),
 df <- data.frame(N = unlist(data_EC_N),
                  motif = unlist(mcmc_unique_EC8$Z))
 
-png(file = './plots/EC8_new/N_sum_by_cluster.png',
+png(file = './plots/EC8_new/N_sum_by_cluste_new.png',
     width = 2500,
     height = 900)
 
@@ -289,7 +318,7 @@ ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_EC8,
                       regions.name = rownames(EC8_new[[1]]))
 
 
-png(file = './plots/EC8_new/ppc_zero.png',
+png(file = './plots/EC8_new/ppc_zero_new.png',
     width = 1200,
     height = 700)
 
@@ -297,7 +326,7 @@ ppc_multiple$zero.plot
 
 dev.off()
 
-png(file = './plots/EC8_new/ppc_nonzero.png',
+png(file = './plots/EC8_new/ppc_nonzero_new.png',
     width = 1200,
     height = 700)
 
@@ -312,7 +341,7 @@ ppc_single <- ppc_single_f(mcmc_run_all_output = mcmc_all_EC8,
 
 for(m in 1:length(EC8_new)){
   
-  png(file = paste0('./plots/EC8_new/ppc_single_mouse_', m, '.png'),
+  png(file = paste0('./plots/EC8_new/ppc_single_mouse_new_', m, '.png'),
       width = 1200,
       height = 700)
   
@@ -671,3 +700,5 @@ for(j in large_binomial_motifs){
   
   dev.off()
 }
+
+save.image("~/OneDrive - University of Edinburgh/BrainConnectivity/data/EC8/mcmc_EC8_longeriter.RData")

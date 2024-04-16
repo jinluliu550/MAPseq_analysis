@@ -181,7 +181,53 @@ ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
   labs(x = "Mouse",
        y = "Mouse") +
   theme_bw() +
-  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.4) +
+  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(tv_mean$TV,3)), color = "black", size = 4) +
   coord_fixed()
 
+##### Compute HPD interval
+library(coda)
+# Compute HPD intervals
+tv_lower = matrix(0, mcmc_all_EC8$M,mcmc_all_EC8$M)
+tv_upper = matrix(0, mcmc_all_EC8$M,mcmc_all_EC8$M)
+for (m in c(1:mcmc_all_EC8$M)){
+  tv_dist_m = lapply(mcmc_all_EC8$omega_J_M_output,mytv_dist, ind = m )
+  tv_dist_m = as.mcmc(matrix(unlist(tv_dist_m), nrow=length(tv_dist_m), byrow=TRUE))
+  tv_hpd =  HPDinterval((tv_dist_m))
+  tv_lower[m,] = tv_hpd[,1]
+  tv_upper[m,] = tv_hpd[,2]
+}
+
+tv_lower = data.frame(tv_lower, row.names = as.factor(c(1:mcmc_all_EC8$M)))
+names(tv_lower) = as.factor(c(1:mcmc_all_EC8$M))
+print(tv_lower)
+
+tv_lower = data.frame(tv_lower, "Mouse 1" = as.factor(c(1:mcmc_all_EC8$M)))
+names(tv_lower)[1:mcmc_all_EC8$M] = as.factor(c(1:mcmc_all_EC8$M))
+tv_lower <-  pivot_longer(tv_lower,
+                          cols = !Mouse.1,
+                          names_to = "Mouse.2", 
+                          values_to = "TV"
+)
+
+tv_upper = data.frame(tv_upper, row.names = as.factor(c(1:mcmc_all_EC8$M)))
+names(tv_upper) = as.factor(c(1:mcmc_all_EC8$M))
+print(tv_upper)
+
+tv_upper = data.frame(tv_upper, "Mouse 1" = as.factor(c(1:mcmc_all_EC8$M)))
+names(tv_upper)[1:mcmc_all_EC8$M] = as.factor(c(1:mcmc_all_EC8$M))
+tv_upper <-  pivot_longer(tv_upper,
+                          cols = !Mouse.1,
+                          names_to = "Mouse.2", 
+                          values_to = "TV"
+)
+
+labs = paste0(round(tv_mean$TV,3),' [',round(tv_lower$TV,2),',', round(tv_upper$TV,2),']')
+ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
+  geom_tile() +
+  labs(x = "Mouse",
+       y = "Mouse") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.4) +
+  geom_text(aes(label = labs), color = "black", size = 4) +
+  coord_fixed()

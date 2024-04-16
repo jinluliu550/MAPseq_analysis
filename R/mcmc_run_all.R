@@ -13,7 +13,8 @@ mcmc_run_all <- function(Y,
                          b_gamma,
                          a_alpha = 1,
                          b_alpha = 1,
-                         num.cores = 1){
+                         num.cores = 1,
+                         Z.init = NULL){
 
 
 
@@ -56,9 +57,13 @@ mcmc_run_all <- function(Y,
 
 
   #----------------------- Step 2: Set starting values ----------------------------
-
-  Z_new <- lapply(1:M,
-                  function(m) sample(1:J, size = C[m], replace = TRUE))
+  if (is.null(Z.init)){
+    Z_new <- lapply(1:M,
+                    function(m) sample(1:J, size = C[m], replace = TRUE))
+  }else{
+    Z_new <- Z.init
+  }
+  
   omega_J_M_new <- matrix(1/J,
                           nrow = J,
                           ncol = M)
@@ -76,14 +81,15 @@ mcmc_run_all <- function(Y,
                               
                               data.j.prior <- do.call(cbind, Y)[,which(unlist(Z_new)==j)]
                               
-                              data.j.mean <- rowMeans(data.j.prior)
+                              pdata.j.prior <- apply(data.j.prior, 2, function(x){x/sum(x)})
+                              data.j.mean <- rowMeans(pdata.j.prior)
                               
                               mx <- matrix(data.j.mean/sum(data.j.mean),
                                            nrow = 1)
                               
                             }else{
                               
-                              mx <- matrix(rep(1:R, R), nrow = 1)
+                              mx <- matrix(1/R, nrow = 1, ncol = R)
                             }
                             
                             mx
@@ -91,6 +97,8 @@ mcmc_run_all <- function(Y,
                           })
   
   q_star_1_J_new <- do.call(rbind, q_star_1_J_new)
+  q_star_1_J_new <- ifelse(q_star_1_J_new == 0, .Machine$double.eps,  q_star_1_J_new)
+  q_star_1_J_new <-  q_star_1_J_new/sum(q_star_1_J_new)
   
 
 
