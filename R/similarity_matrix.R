@@ -1,91 +1,38 @@
 
 #' Posterior similarity matrix
 
-similarity_matrix <- function(mcmc_run_all_output,
-                              num.cores,
-                              run.on.pc = TRUE){
-  
-  
+similarity_matrix <- function(mcmc_run_all_output){
   
   # Input from MCMC
   M <- mcmc_run_all_output$M
   C <- mcmc_run_all_output$C
-  Z_trace <- mcmc_run_all_output$Z_output
   
+  C_cumsum = c(0,cumsum(C))
   
-  ##-- Cumulative sums of cells
-  C_cum <- c(0, cumsum(C))
+  # Put z in a matrix
+  Zmat = matrix(unlist(mcmc_run_all_output$Z_output), length(mcmc_run_all_output$Z_output), sum(C),byrow = TRUE)
   
-  ##-------------------- Similarity between cells from the same dataset and across datasets --------------
+  # Posterior similarity between all observations
+  psm <- comp.psm(Zmat)
   
-  psm.within <- NULL
-  for(m in 1:M) psm.within[[m]] <- NULL
+  # Posterior similarity between observations across 2 datasets
+  psm_within <- list(M)
   
-  ##-- For all possible combinations of datasets
-  for(m1 in rev(1:M)){
-    for(m2 in 1:m1){
-      
-      # Register Cores
-      if(run.on.pc == FALSE){
-        
-        cl <- makeCluster(num.cores,
-                          type = "FORK")
-      }else{
-        
-        cl <- makeCluster(num.cores)
-      }
-      
-      loop.result <- pblapply(1:length(Z_trace),
-                              cl = cl,
-                              FUN = function(iter){
-                                
-                                Z_trace_m1_iter <- Z_trace[[iter]][[m1]]
-                                Z_trace_m2_iter <- Z_trace[[iter]][[m2]]
-                                
-                                psm.empty <- matrix(0, nrow = C[m1], ncol = C[m2])
-                                for(i in 1:C[m1]){
-                                  psm.empty[i,] <- psm.empty[i,] + ifelse(Z_trace_m2_iter == Z_trace_m1_iter[i],
-                                                                          1,
-                                                                          0)
-                                }
-                                
-                                psm.empty
-                                
-                              })
-      
-      # Stop parallel computing
-      stopCluster(cl)
-      
-      
-      # Sum
-      loop.result <- Reduce('+', loop.result)
-      psm.within[[m1]][[m2]] <- loop.result/length(Z_trace)
-      
-    }
-  }
-  
-  ##-------------------------------- Computing a combined matrix -------------------------
-  
-  combined_matrix <- matrix(0, nrow = max(C_cum), ncol = max(C_cum))
-  
-  for(m1 in 1:M){
-    for(m2 in 1:m1){
-      
-      combined_matrix[(C_cum[m1]+1):C_cum[m1+1], (C_cum[m2]+1):C_cum[m2+1]] <- psm.within[[m1]][[m2]]
-    }
+  for(m1 in c(1:M)){
     
-    if(m1 != M){
-      for(m2 in (m1+1):M){
-        
-        combined_matrix[(C_cum[m1]+1):C_cum[m1+1], (C_cum[m2]+1):C_cum[m2+1]] <- t(psm.within[[m2]][[m1]])
-      }
+    psm_within[[m1]] = list(M)
+    
+    for(m2 in c(1:M)){
+      
+      psm_within[[m1]][[m2]] = psm[(C_cumsum[m1]+1):C_cumsum[m1+1],(C_cumsum[m2]+1):C_cumsum[m2+1]]
+      
     }
   }
   
   ##-------------------------------- Return both -----------------------------------------
   
-  return(list('psm.within' = psm.within,
-              'psm.combined' = combined_matrix))
+  return(list('psm.within' = psm_within,
+              'psm.combined' = psm))
   
 }
 

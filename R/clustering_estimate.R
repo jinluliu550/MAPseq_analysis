@@ -1,16 +1,42 @@
 #' Function to obtain clustering estimate which minimizes the variation of information
 #'
 
-opt.clustering <- function(mcmc_run_all_output,
-                           post_similarity, max.k=NULL){
-
+#-- Update the trace of z such that all the cluster labels are consecutive
+z_trace_updated <- function(mcmc_run_all_output){
+  
+  # Dimensions
   C <- mcmc_run_all_output$C
   M <- mcmc_run_all_output$M
+  
+  # Updated allocations
+  z_trace_updated <- lapply(1:length(mcmc_run_all_output$Z_output),
+                            function(t){
+                              
+                              lapply(1:M,
+                                     function(m){
+                                       
+                                       sapply(1:C[m],
+                                              function(c) which(sort(unique(unlist(mcmc_run_all_output$Z_output[[t]][[m]][c]))) == 
+                                                                  mcmc_run_all_output$Z_output[[t]][[m]][c]))
+                                     })
+                            })
+  
+  return(z_trace_updated)
+}
+
+
+opt.clustering <- function(z_trace,
+                           post_similarity,
+                           max.k=NULL){
+
+  M <- length(z_trace[[1]])
+  C <- sapply(1:M, function(m) length(z_trace[[1]][[m]]))
+  
 
   ##-- Unlist for each iteration and put into a matrix
-  Z_output_all <- lapply(1:length(mcmc_run_all_output$Z_output),
+  Z_output_all <- lapply(1:length(z_trace),
 
-                         function(i) matrix(unlist(mcmc_run_all_output$Z_output[[i]]),
+                         function(t) matrix(unlist(z_trace[[t]]),
                                             nrow = 1)
                          )
 
@@ -19,7 +45,8 @@ opt.clustering <- function(mcmc_run_all_output,
 
   opt.clust <- minVI(psm = post_similarity$psm.combined,
                      cls.draw = mcmc.z.matrix,
-                     method = 'all',max.k=max.k)
+                     method = 'all',
+                     max.k=max.k)
 
   opt.clust <- opt.clust$cl[1,]
 
@@ -32,51 +59,34 @@ opt.clustering <- function(mcmc_run_all_output,
 }
 
 
-dlso_cluster_estimate <- function(mcmc_run_all_output, max.k=NULL){
+salso_cluster_estimate <- function(z_trace,
+                                   max.k=NULL){
   
-  # # trace of z
-  # z_trace <- mcmc_run_all_output$Z_output
-  # 
-  # # trace of z in a matrix
-  # z_trace_mx <- lapply(1:length(z_trace),
-  #                      function(t) matrix(unlist(z_trace[[t]]),
-  #                                         nrow = 1))
-  # 
-  # 
-  # z_trace_mx <- do.call(rbind, z_trace_mx)
+  
+  M <- length(z_trace[[1]])
+  C <- sapply(1:M, function(m) length(z_trace[[1]][[m]]))
+  C_cumsum <- c(0, cumsum(C))
+  
+  
   ##-- Unlist for each iteration and put into a matrix
-  Z_output_all <- lapply(1:length(mcmc_run_all_output$Z_output),
+  Z_output_all <- lapply(1:length(z_trace),
                          
-                         function(i) matrix(unlist(mcmc_run_all_output$Z_output[[i]]),
+                         function(i) matrix(unlist(z_trace[[i]]),
                                             nrow = 1)
   )
   
   
   mcmc.z.matrix <- do.call(rbind, Z_output_all)
   
-  #z_point_estimate <- salso::dlso(truth = z_trace_mx)
-  if (is.null(max.k)){max.k=0}
-  z_point_estimate <- salso::salso(x = mcmc.z.matrix, maxNClusters = max.k)
+  ##-- Point estimate of z
+  if(is.null(max.k)){max.k=0}
+  z_point_estimate <- salso::salso(x = mcmc.z.matrix, 
+                                   maxNClusters = max.k)
   
-  # Cut into data
-  M <- mcmc_run_all_output$M
-  C <- mcmc_run_all_output$C
-  
-  C_cumsum <- c(0, cumsum(C))
-  
+  ##-- Convert to a list
   z_point_estimate <- lapply(1:M,
                              function(m) z_point_estimate[(C_cumsum[m]+1):C_cumsum[m+1]])
   
-  # # Reorder
-  # z_point_estimate_r <- lapply(1:M,
-  #                              function(m){
-  #                                
-  #                                sapply(1:C[m],
-  #                                       function(c){
-  #                                         
-  #                                         which(sort(unique(unlist(z_point_estimate))) == z_point_estimate[[m]][c])
-  #                                       })
-  #                              })
   
   return(z_point_estimate)
 }
@@ -85,30 +95,31 @@ dlso_cluster_estimate <- function(mcmc_run_all_output, max.k=NULL){
 
 # Function which compares minVI and dlso
 
-opt.clustering.comb <- function(mcmc_run_all_output,
-                                post_similarity,max.k=NULL){
+opt.clustering.comb <- function(z_trace,
+                                post_similarity,
+                                max.k=NULL){
   
   
   
   #------------------------------------------------ Point estimate of z and trace of z from MCMC ------------------------------------------------
   
   # Result from minvi
-  opt.clust.minvi <- opt.clustering(mcmc_run_all_output = mcmc_run_all_output,
-                                         post_similarity = post_similarity,max.k=max.k)
+  opt.clust.minvi <- opt.clustering(z_trace = z_trace,
+                                    post_similarity = post_similarity,
+                                    max.k=max.k)
   
   # Result from dlso
-  opt.clust.dlso <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_run_all_output,max.k=max.k)
+  opt.clust.dlso <- salso_cluster_estimate(z_trace = z_trace,
+                                           max.k=max.k)
   
-  # Trace of z
-  z.trace <- mcmc_run_all_output$Z_output
   
   #---------------------------------- Difference between each sample and the minvi estimated allocation -----------------------------------------
   
-  vi.min <- sapply(1:length(z.trace),
+  vi.min <- sapply(1:length(z_trace),
                    function(t){
                      
                      vi.minvi.t <- clevr::variation_info(true = unlist(opt.clust.minvi),
-                                                         pred = unlist(z.trace[[t]]), base=2)
+                                                         pred = unlist(z_trace[[t]]), base=2)
                      
                      vi.minvi.t
                    })
@@ -116,12 +127,12 @@ opt.clustering.comb <- function(mcmc_run_all_output,
   
   #--------------------------------- Difference between each sample and dlso estimated allocation ------------------------------------------------
   
-  vi.dlso <- sapply(1:length(z.trace),
+  vi.dlso <- sapply(1:length(z_trace),
                     function(t){
                       
                       # Similarity
                       vi.dlso.t <- variation_info(unlist(opt.clust.dlso),
-                                                  unlist(z.trace[[t]]), base=2)
+                                                  unlist(z_trace[[t]]), base=2)
                       
                       vi.dlso.t
                     })
