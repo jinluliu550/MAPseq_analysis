@@ -3,13 +3,14 @@
 
 ddirmultinomial <- function(x, n, alpha, log = FALSE){
 
-  ind = alpha>0
-  
-  # zero density if x_r>0 and alpha_r=0
-  if(sum(x[!ind])>0){ log.prob = -Inf}
-  else{
-    log.prob <- lgamma(sum(alpha[ind])) + lgamma(n+1) - lgamma(n+sum(alpha[ind])) + sum(lgamma(x[ind] + alpha[ind]) - lgamma(alpha[ind]) - lgamma(x[ind]+1))
-  }  
+  # ind = alpha>0
+  # 
+  # # zero density if x_r>0 and alpha_r=0
+  # if(sum(x[!ind])>0){ log.prob = -Inf}
+  # else{
+  #   log.prob <- lgamma(sum(alpha[ind])) + lgamma(n+1) - lgamma(n+sum(alpha[ind])) + sum(lgamma(x[ind] + alpha[ind]) - lgamma(alpha[ind]) - lgamma(x[ind]+1))
+  # }  
+  log.prob <- lgamma(sum(alpha)) + lgamma(n+1) - lgamma(n+sum(alpha)) + sum(lgamma(x + alpha) - lgamma(alpha) - lgamma(x+1))
   
   if(isFALSE(log)){
 
@@ -103,16 +104,11 @@ dataset_specific_mcmc <- function(Z,
 
     parameter <- as.vector(table(factor(Z[[m]], levels = c(1:J)))) + alpha*omega
     
-    #check parameter=0
-#    ind = parameter>0
-#    omega_J_M = rep(0,J)
-#    omega_J_M[ind] <- extraDistr::rdirichlet(n = 1,
-#                                        alpha = parameter[ind])
     omega_J_M <- extraDistr::rdirichlet(n = 1,
                                              alpha = parameter)
     
 
-#    # shifted the zero values
+    # shifted the zero values
     omega_J_M <- ifelse(omega_J_M == 0, .Machine$double.eps, omega_J_M)
     omega_J_M <- omega_J_M/sum(omega_J_M)
 

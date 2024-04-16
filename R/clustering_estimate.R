@@ -2,7 +2,7 @@
 #'
 
 opt.clustering <- function(mcmc_run_all_output,
-                           post_similarity){
+                           post_similarity, max.k=NULL){
 
   C <- mcmc_run_all_output$C
   M <- mcmc_run_all_output$M
@@ -19,7 +19,7 @@ opt.clustering <- function(mcmc_run_all_output,
 
   opt.clust <- minVI(psm = post_similarity$psm.combined,
                      cls.draw = mcmc.z.matrix,
-                     method = 'all')
+                     method = 'all',max.k=max.k)
 
   opt.clust <- opt.clust$cl[1,]
 
@@ -75,7 +75,7 @@ dlso_cluster_estimate <- function(mcmc_run_all_output){
 # Function which compares minVI and dlso
 
 opt.clustering.comb <- function(mcmc_run_all_output,
-                                post_similarity){
+                                post_similarity,max.k=NULL){
   
   
   
@@ -83,7 +83,7 @@ opt.clustering.comb <- function(mcmc_run_all_output,
   
   # Result from minvi
   opt.clust.minvi <- opt.clustering(mcmc_run_all_output = mcmc_run_all_output,
-                                         post_similarity = post_similarity)
+                                         post_similarity = post_similarity,max.k=NULL)
   
   # Result from dlso
   opt.clust.dlso <- dlso_cluster_estimate(mcmc_run_all_output = mcmc_run_all_output)
@@ -97,7 +97,7 @@ opt.clustering.comb <- function(mcmc_run_all_output,
                    function(t){
                      
                      vi.minvi.t <- clevr::variation_info(true = unlist(opt.clust.minvi),
-                                                         pred = unlist(z.trace[[t]]))
+                                                         pred = unlist(z.trace[[t]]), base=2)
                      
                      vi.minvi.t
                    })
@@ -110,7 +110,7 @@ opt.clustering.comb <- function(mcmc_run_all_output,
                       
                       # Similarity
                       vi.dlso.t <- variation_info(unlist(opt.clust.dlso),
-                                                  unlist(z.trace[[t]]))
+                                                  unlist(z.trace[[t]]), base=2)
                       
                       vi.dlso.t
                     })

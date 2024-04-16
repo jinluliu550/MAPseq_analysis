@@ -78,7 +78,7 @@ data_EC_cbind <- do.call(cbind, EC8_new)
 df <- t(data_EC_cbind)
 df = t(apply(df, 1, function(x){return(x/sum(x))}))
 
-C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(EC8_new[[m]]))))
+C_cumsum <- c(0, cumsum(sapply(1:6, function(m) ncol(EC8_new[[m]]))))
 
 # k-means
 k_mean_clust_50 <- kmeans(df, 50, iter.max = 100, nstart = 25)$cluster
@@ -89,7 +89,7 @@ clust50 <- lapply(1:6,
 
 
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
-                             J = 100,
+                             J = 70,
                              number_iter = 15000,
                              thinning = 5,
                              burn_in = 5000,
