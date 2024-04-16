@@ -32,20 +32,31 @@ opt.clustering <- function(mcmc_run_all_output,
 }
 
 
-dlso_cluster_estimate <- function(mcmc_run_all_output){
+dlso_cluster_estimate <- function(mcmc_run_all_output, max.k=NULL){
   
-  # trace of z
-  z_trace <- mcmc_run_all_output$Z_output
+  # # trace of z
+  # z_trace <- mcmc_run_all_output$Z_output
+  # 
+  # # trace of z in a matrix
+  # z_trace_mx <- lapply(1:length(z_trace),
+  #                      function(t) matrix(unlist(z_trace[[t]]),
+  #                                         nrow = 1))
+  # 
+  # 
+  # z_trace_mx <- do.call(rbind, z_trace_mx)
+  ##-- Unlist for each iteration and put into a matrix
+  Z_output_all <- lapply(1:length(mcmc_run_all_output$Z_output),
+                         
+                         function(i) matrix(unlist(mcmc_run_all_output$Z_output[[i]]),
+                                            nrow = 1)
+  )
   
-  # trace of z in a matrix
-  z_trace_mx <- lapply(1:length(z_trace),
-                       function(t) matrix(unlist(z_trace[[t]]),
-                                          nrow = 1))
   
+  mcmc.z.matrix <- do.call(rbind, Z_output_all)
   
-  z_trace_mx <- do.call(rbind, z_trace_mx)
-  
-  z_point_estimate <- salso::dlso(truth = z_trace_mx)
+  #z_point_estimate <- salso::dlso(truth = z_trace_mx)
+  if (is.null(max.k)){max.k=0}
+  z_point_estimate <- salso::salso(x = mcmc.z.matrix, maxNClusters = max.k)
   
   # Cut into data
   M <- mcmc_run_all_output$M
@@ -56,18 +67,18 @@ dlso_cluster_estimate <- function(mcmc_run_all_output){
   z_point_estimate <- lapply(1:M,
                              function(m) z_point_estimate[(C_cumsum[m]+1):C_cumsum[m+1]])
   
-  # Reorder
-  z_point_estimate_r <- lapply(1:M,
-                               function(m){
-                                 
-                                 sapply(1:C[m],
-                                        function(c){
-                                          
-                                          which(sort(unique(unlist(z_point_estimate))) == z_point_estimate[[m]][c])
-                                        })
-                               })
+  # # Reorder
+  # z_point_estimate_r <- lapply(1:M,
+  #                              function(m){
+  #                                
+  #                                sapply(1:C[m],
+  #                                       function(c){
+  #                                         
+  #                                         which(sort(unique(unlist(z_point_estimate))) == z_point_estimate[[m]][c])
+  #                                       })
+  #                              })
   
-  return(z_point_estimate_r)
+  return(z_point_estimate)
 }
 
 
