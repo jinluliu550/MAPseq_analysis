@@ -89,3 +89,32 @@ similarity_matrix <- function(mcmc_run_all_output,
   
 }
 
+similarity_matrix_mini <- function(allocation_trace){
+  
+  loop.result <- lapply(1:length(allocation_trace),
+                        function(iter){
+                          
+                          
+                          
+                          psm.empty <- matrix(0, 
+                                              nrow = length(allocation_trace[[1]]),
+                                              ncol = length(allocation_trace[[1]]))
+                          
+                          for(i in 1:length(allocation_trace[[1]])){
+                            
+                            psm.empty[i,] <- psm.empty[i,] + ifelse(allocation_trace[[iter]] == allocation_trace[[iter]][i],
+                                                                    1,
+                                                                    0)
+                          }
+                          
+                          psm.empty
+                          
+                        })
+  
+  
+  # Sum
+  loop.result <- Reduce('+', loop.result)
+  psm <- loop.result/length(allocation_trace)
+  
+  return(psm)
+}

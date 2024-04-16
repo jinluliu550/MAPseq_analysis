@@ -13,7 +13,6 @@ mcmc_run_all <- function(Y,
                          b_gamma,
                          a_alpha = 1,
                          b_alpha = 1,
-                         num.cores = 1,
                          Z.init = NULL){
 
 
@@ -181,8 +180,7 @@ mcmc_run_all <- function(Y,
     allocation_output <- allocation_variables_dirmult_mcmc(omega_J_M = omega_J_M_new,
                                                            q_star_1_J = q_star_1_J_new,
                                                            gamma_1_J_star = gamma_1_J_star_new,
-                                                           Y = Y,
-                                                           num.cores = num.cores)
+                                                           Y = Y)
 
     Z_new <- allocation_output$Z
     allocation.prob <- allocation_output$allocation.prob

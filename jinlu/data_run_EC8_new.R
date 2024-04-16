@@ -69,6 +69,12 @@ C <- sapply(1:6, function(m) ncol(EC8_new[[m]]))
 R <- 8
 
 
+N_EC8 <- lapply(1:6,
+                function(m) colSums(EC8_new[[m]]))
+
+hist(unlist(N_EC8),
+     breaks = 100)
+
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
                              J = 150,
                              number_iter = 8000,
@@ -671,3 +677,78 @@ for(j in large_binomial_motifs){
   
   dev.off()
 }
+
+
+df_binomial_test <- df %>%
+  filter(binomial_allocation == 65) %>%
+  filter(bayesian_allocation == 30)
+
+df_binomial_test2 <- df %>%
+  filter(binomial_allocation == 65) %>%
+  filter(bayesian_allocation == 29)
+
+# Estimated w
+estimated_w2 <- table(factor(EC8_Z_reordered[[2]], levels = 1:130))
+estimated_w2 <- estimated_w2/C[2]
+
+
+#-- Cluster 30
+
+# Dataset 2 neuron 55
+# Dataset 2 neuron 167
+# Dataset 2 neuron 449
+
+EC8_new[[2]][,55] # 0 0 0 11
+EC8_new[[2]][,167] # 0 0 0 5
+EC8_new[[2]][,449] # 0 0 0 10
+
+
+allocation_probability(Y = EC8_new[[2]][,449],
+                       q_star = mcmc_unique_EC8$proj_prob_mean,
+                       gamma_star = mcmc_unique_EC8$gamma_mean,
+                       w = estimated_w2)[c(29,30)]
+
+
+#-- Cluster 29
+
+# Dataset 1 neuron 241
+# Dataset 4 neuron 69
+# Dataset 4 neuron 88
+
+
+EC8_new[[1]][,241] # 0 0 0 6
+EC8_new[[4]][,69] # 0 0 0 6
+EC8_new[[4]][,88] # 0 0 0 8
+
+
+allocation_probability(Y = EC8_new[[4]][,88],
+                       q_star = mcmc_unique_EC8$proj_prob_mean,
+                       gamma_star = mcmc_unique_EC8$gamma_mean,
+                       w = estimated_w2)[c(29,30,31)]
+
+
+df_binomial65 <- df %>%
+  filter(binomial_allocation == 65)
+
+df_binomial65_trace <- lapply(1:length(mcmc_all_EC8$Z_output), 
+                              function(t){
+                                
+                                sapply(1:nrow(df_binomial65),
+                                       function(i) mcmc_all_EC8$Z_output[[t]][[df_binomial65$dataset[i]]][df_binomial65$neuron_index[i]])
+                              })
+
+similarity_matrix_test <- similarity_matrix_mini(allocation_trace = df_binomial65_trace)
+
+
+##------------------------------ without distinguishing between datasets ------------------------------
+hc=hclust(as.dist(1-similarity_matrix_test), method = 'complete', members = NULL)
+psm_hc=similarity_matrix_test
+n=nrow(similarity_matrix_test)
+psm_hc[1:n,]=psm_hc[rev(hc$order),]
+psm_hc[,1:n]=psm_hc[,hc$order]
+
+
+image.plot(1:n,
+           1:n,
+           psm_hc,
+           col=rev(heat.colors(100)))
