@@ -27,8 +27,7 @@ ddirmultinomial <- function(x, n, alpha, log = FALSE){
 allocation_variables_dirmult_mcmc <- function(omega_J_M,
                                               q_star_1_J,
                                               gamma_1_J_star,
-                                              Y,
-                                              num.cores){
+                                              Y){
 
   # Create an empty list
   M <- length(Y)
@@ -42,42 +41,39 @@ allocation_variables_dirmult_mcmc <- function(omega_J_M,
 
   for(m in 1:M){
 
-    cl <- makeCluster(num.cores)
-    registerDoParallel(cl)
-
-    result.rbind <- foreach(c = 1:C[m],
-                           .export = 'ddirmultinomial',
-                           .combine = 'rbind',
-                           .packages = 'extraDistr') %dopar% {
-
+    result.rbind <- lapply(1:C[m],
+                           function(c){
+                             
+                             
                              ##-- log_p_tilde
                              log.p.tilde <- sapply(1:J, function(j){
-
+                               
                                ddirmultinomial(Y[[m]][,c],
                                                n = sum(Y[[m]][,c]),
                                                alpha = q_star_1_J[j,]*gamma_1_J_star[j],
                                                log = TRUE)+
                                  log(omega_J_M[j,m])
                              })
-
+                             
                              ##-- logK
                              logK <- -max(log.p.tilde)
-
+                             
                              ##-- probability
                              allo.prob <- exp(log.p.tilde + logK)/sum(exp(log.p.tilde + logK))
-
+                             
                              ##-- allocation
                              Z_cd <- extraDistr::rcat(n = 1,
                                                       prob = allo.prob)
-
+                             
                              Z_cd_prob <- allo.prob[Z_cd]
-
+                             
                              ##-- prepare for output
                              c(Z_cd, Z_cd_prob)
+                             
+                           })
+    
+    result.rbind <- do.call(rbind, result.rbind)
 
-                           }
-
-    stopCluster(cl)
 
     ##-- Store Z
     Z[[m]] <- result.rbind[,1]
