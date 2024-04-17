@@ -89,7 +89,7 @@ clust70 <- lapply(1:6,
 
 
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
-                             J = 70,
+                             J = 100,
                              number_iter = 15000,
                              thinning = 5,
                              burn_in = 5000,
@@ -108,7 +108,7 @@ Zmat = matrix(unlist(mcmc_all_EC8$Z_output), length(mcmc_all_EC8$Z_output), sum(
 k = apply(Zmat,1,function(x){length(unique(x))})
 
 # Posterior similarity matrix
-psm_EC8 = similarity_matrix(mcmc_run_all_output = mcmc_all_EC8)
+psm_EC8 = similarity_matrix(mcmc_run_all_output = mcmc_all_EC8, num.cores = 1)
 
 # Reordered posterior samples of z
 EC8_z_reordered <- z_trace_updated(mcmc_run_all_output = mcmc_all_EC8)

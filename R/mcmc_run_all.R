@@ -63,15 +63,30 @@ mcmc_run_all <- function(Y,
     Z_new <- Z.init
   }
   
-  omega_J_M_new <- matrix(1/J,
-                          nrow = J,
-                          ncol = M)
-  omega_new <- rep(1/J,
-                   J)
+#  omega_J_M_new <- matrix(1/J,
+#                          nrow = J,
+#                          ncol = M)
+#  omega_new <- rep(1/J,
+#                   J)
   
-  alpha_new <- 1
-  alpha_zero_new <- 1
-
+  omega_hat = function(z=z,J=J){
+    omega = rep(1,J)
+    tbz = table(z)
+    omega[as.numeric(names(tbz))] = omega[as.numeric(names(tbz))] + tbz
+    return(omega/sum(omega))
+  }
+  
+  omega_J_M_new <- matrix(unlist(lapply(Z_new, omega_hat, J=J)), J, M, byrow=FALSE)
+  
+  omega_new <- omega_hat(unlist(Z_new), J=J)
+  
+  
+  
+#  alpha_new <- 1
+#  alpha_zero_new <- 1
+  alpha_zero_new  <- mean(unlist(lapply(Z_new,function(x){length(unique(x))}))/log(C))
+  alpha_new <-length(unique(unlist(Z_new)))/log(sum(unlist(lapply(Z_new,function(x){length(unique(x))}))))
+  
   # Based on Z_new
   q_star_1_J_new <- lapply(1:J,
                           function(j){
