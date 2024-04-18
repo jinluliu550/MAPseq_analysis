@@ -8,18 +8,30 @@ z_trace_updated <- function(mcmc_run_all_output){
   C <- mcmc_run_all_output$C
   M <- mcmc_run_all_output$M
   
-  # Updated allocations
-  z_trace_updated <- lapply(1:length(mcmc_run_all_output$Z_output),
-                            function(t){
-                              
-                              lapply(1:M,
-                                     function(m){
-                                       
-                                       sapply(1:C[m],
-                                              function(c) which(sort(unique(unlist(mcmc_run_all_output$Z_output[[t]][[m]][c]))) == 
-                                                                  mcmc_run_all_output$Z_output[[t]][[m]][c]))
-                                     })
-                            })
+  # # Updated allocations
+  # z_trace_updated <- lapply(1:length(mcmc_run_all_output$Z_output),
+  #                           function(t){
+  #                             
+  #                             lapply(1:M,
+  #                                    function(m){
+  #                                      
+  #                                      sapply(1:C[m],
+  #                                             function(c) which(sort(unique(unlist(mcmc_run_all_output$Z_output[[t]][[m]][c]))) == 
+  #                                                                 mcmc_run_all_output$Z_output[[t]][[m]][c]))
+  #                                    })
+  #                           })
+  S = length(mcmc_run_all_output$Z_output)
+  Zmat = matrix(unlist(mcmc_run_all_output$Z_output), S, sum(C), byrow = TRUE)
+  k = apply(Zmat,1,function(x){length(unique(x))})
+  z_trace_updated = matrix(0, S, sum(C))
+  
+  for(s in S:1){
+    #reorder the configuration
+    uniq_s=unique(Zmat[s,])
+    for( h in 1:k[s]){
+      z_trace_updated[s,Zmat[s,]==uniq_s[h]]=h
+    }
+  }
   
   return(z_trace_updated)
 }
@@ -29,31 +41,33 @@ opt.clustering <- function(z_trace,
                            post_similarity,
                            max.k=NULL){
 
-  M <- length(z_trace[[1]])
-  C <- sapply(1:M, function(m) length(z_trace[[1]][[m]]))
+  #M <- length(z_trace[[1]])
+  M = dim(z_trace)[1]
+  #C <- sapply(1:M, function(m) length(z_trace[[1]][[m]]))
+  C = dim(z_trace)[2]
   
 
   ##-- Unlist for each iteration and put into a matrix
-  Z_output_all <- lapply(1:length(z_trace),
+  #Z_output_all <- lapply(1:length(z_trace),
 
-                         function(t) matrix(unlist(z_trace[[t]]),
-                                            nrow = 1)
-                         )
+   #                      function(t) matrix(unlist(z_trace[[t]]),
+    #                                        nrow = 1)
+     #                    )
 
 
-  mcmc.z.matrix <- do.call(rbind, Z_output_all)
+  #mcmc.z.matrix <- do.call(rbind, Z_output_all)
 
   opt.clust <- minVI(psm = post_similarity$psm.combined,
-                     cls.draw = mcmc.z.matrix,
+                     cls.draw = z_trace,
                      method = 'all',
                      max.k=max.k)
 
   opt.clust <- opt.clust$cl[1,]
 
   # Cumulative sum of C
-  C_cumsum <- c(0,cumsum(C))
+  #C_cumsum <- c(0,cumsum(C))
 
-  opt.clust <- lapply(1:M, function(m) opt.clust[(C_cumsum[m]+1):C_cumsum[m+1]])
+  #opt.clust <- lapply(1:M, function(m) opt.clust[(C_cumsum[m]+1):C_cumsum[m+1]])
 
   return(opt.clust)
 }
@@ -63,29 +77,30 @@ salso_cluster_estimate <- function(z_trace,
                                    max.k=NULL){
   
   
-  M <- length(z_trace[[1]])
-  C <- sapply(1:M, function(m) length(z_trace[[1]][[m]]))
-  C_cumsum <- c(0, cumsum(C))
-  
+ # M <- length(z_trace[[1]])
+ # C <- sapply(1:M, function(m) length(z_trace[[1]][[m]]))
+ # C_cumsum <- c(0, cumsum(C))
+  M = dim(z_trace)[1]
+  C = dim(z_trace)[2]
   
   ##-- Unlist for each iteration and put into a matrix
-  Z_output_all <- lapply(1:length(z_trace),
-                         
-                         function(i) matrix(unlist(z_trace[[i]]),
-                                            nrow = 1)
-  )
+#  Z_output_all <- lapply(1:length(z_trace),
+#                         
+#                         function(i) matrix(unlist(z_trace[[i]]),
+#                                            nrow = 1)
+#  )
   
   
-  mcmc.z.matrix <- do.call(rbind, Z_output_all)
+#  mcmc.z.matrix <- do.call(rbind, Z_output_all)
   
   ##-- Point estimate of z
   if(is.null(max.k)){max.k=0}
-  z_point_estimate <- salso::salso(x = mcmc.z.matrix, 
+  z_point_estimate <- salso::salso(x = z_trace, 
                                    maxNClusters = max.k)
   
   ##-- Convert to a list
-  z_point_estimate <- lapply(1:M,
-                             function(m) z_point_estimate[(C_cumsum[m]+1):C_cumsum[m+1]])
+  #z_point_estimate <- lapply(1:M,
+  #                           function(m) z_point_estimate[(C_cumsum[m]+1):C_cumsum[m+1]])
   
   
   return(z_point_estimate)
@@ -115,11 +130,11 @@ opt.clustering.comb <- function(z_trace,
   
   #---------------------------------- Difference between each sample and the minvi estimated allocation -----------------------------------------
   
-  vi.min <- sapply(1:length(z_trace),
+  vi.min <- apply(z_trace,1,
                    function(t){
                      
-                     vi.minvi.t <- clevr::variation_info(true = unlist(opt.clust.minvi),
-                                                         pred = unlist(z_trace[[t]]), base=2)
+                     vi.minvi.t <- clevr::variation_info(true = opt.clust.minvi,
+                                                         pred = t, base=2)
                      
                      vi.minvi.t
                    })
@@ -127,12 +142,12 @@ opt.clustering.comb <- function(z_trace,
   
   #--------------------------------- Difference between each sample and dlso estimated allocation ------------------------------------------------
   
-  vi.dlso <- sapply(1:length(z_trace),
+  vi.dlso <- apply(z_trace,1,
                     function(t){
                       
                       # Similarity
-                      vi.dlso.t <- variation_info(unlist(opt.clust.dlso),
-                                                  unlist(z_trace[[t]]), base=2)
+                      vi.dlso.t <- variation_info(opt.clust.dlso,
+                                                  t, base=2)
                       
                       vi.dlso.t
                     })

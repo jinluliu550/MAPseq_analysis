@@ -108,7 +108,7 @@ Zmat = matrix(unlist(mcmc_all_EC8$Z_output), length(mcmc_all_EC8$Z_output), sum(
 k = apply(Zmat,1,function(x){length(unique(x))})
 
 # Posterior similarity matrix
-psm_EC8 = similarity_matrix(mcmc_run_all_output = mcmc_all_EC8, num.cores = 1)
+psm_EC8 = similarity_matrix(mcmc_run_all_output = mcmc_all_EC8)
 
 # Reordered posterior samples of z
 EC8_z_reordered <- z_trace_updated(mcmc_run_all_output = mcmc_all_EC8)
@@ -116,19 +116,24 @@ EC8_z_reordered <- z_trace_updated(mcmc_run_all_output = mcmc_all_EC8)
 # optimal clustering
 EC8_Z <- opt.clustering.comb(z_trace = EC8_z_reordered,
                              post_similarity = psm_EC8,
-                             max.k = 150)
+                             max.k = max(k))
 
-EC8_Z_mvi <- opt.clustering(z_trace = EC8_z_reordered,
-                            post_similarity = psm_EC8, 
-                            max.k = 150)
+#EC8_Z_mvi <- opt.clustering(z_trace = EC8_z_reordered,
+#                            post_similarity = psm_EC8, 
+#                            max.k = 100)
 
-EC8_Z_salso <- salso_cluster_estimate(z_trace = EC8_z_reordered, 
-                                      max.k=150)
+#EC8_Z_salso <- salso_cluster_estimate(z_trace = EC8_z_reordered, 
+#                                      max.k=100)
 
 # Number of clusters in the point estimate of z
-lapply(EC8_Z,function(x){length(unique(x))})
-zunlist = unlist(EC8_Z)
-length(unique(zunlist))
+#lapply(EC8_Z,function(x){length(unique(x))})
+#zunlist = unlist(EC8_Z)
+#length(unique(zunlist))
+
+#-- Convert to a list
+C_cumsum <- c(0, cumsum(C))
+EC8_Z <- lapply(1:6,
+                           function(m) EC8_Z[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 # Plot of posterior similarity matrix
 png(file = './plots/EC8_new/heatmap_psm_1_new.png',
