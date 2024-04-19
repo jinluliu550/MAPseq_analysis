@@ -1,7 +1,6 @@
 EC8_new <- read.csv('./data/EC8_new/all_brains_setE_JL.csv')
 
 
-
 # Acceptance probabilities
 plot(mcmc_all_EC8$acceptance_prob$omega, type = 'l')
 plot(mcmc_all_EC8$acceptance_prob$alpha, type = 'l')
@@ -200,14 +199,6 @@ mcmc_unique_EC8 <- mcmc_run_post(mcmc_run_all_output = mcmc_all_EC8,
 
 EC8_Z_reordered <- mcmc_unique_EC8$Z
 
-# Number of neurons in each cluster
-png(file = './plots/EC8_new/number_of_neuron_new.png',
-    width = 2500,
-    height = 700)
-
-opt.clustering.frequency(clustering = mcmc_unique_EC8$Z)
-
-dev.off()
 
 # Number of LEC and MEC neurons in each cluster
 png(file = './plots/EC8_new/number_of_neuron_by_EC_new.png',
@@ -218,6 +209,7 @@ opt.clustering.frequency1(clustering = mcmc_unique_EC8$Z,
                           EC_label = EC8_EC_label)
 
 dev.off()
+
 
 
 # Proportion of LEC and MEC in each cluster
@@ -526,131 +518,11 @@ df$EC_label <- unlist(EC8_EC_label)
 
 #-----------------------------------------------------------------------------------------------
 
-# Write a function to choose 50 Bayesian motifs with the largest posterior probability of having w_j > tau
-
-find_large_cluster <- function(mcmc_run_omega_output,
-                               tau = 0.01,
-                               top.n){
-  
-  # Trace of omega
-  omega.trace <- mcmc_run_omega_output$omega_J_M_output
-  
-  # Number of clusters
-  J <- nrow(omega.trace[[1]])
-  
-  # Posterior probability of having w_j > tau
-  posterior.probability <- sapply(1:J,
-                                  function(j){
-                                    
-                                    omega.trace.j <- sapply(1:length(omega.trace),
-                                                            function(t) omega.trace[[t]][j])
-                                    
-                                    mean(omega.trace.j > tau)
-                                  })
-  
-  return(which(rank(desc(posterior.probability)) <= top.n))
-}
-
-
-# top 50 large Bayesian motifs
+# top 20 large Bayesian motifs
 Bayesian_motifs_large <- find_large_cluster(mcmc_run_omega_output = omega_JM_mcmc,
-                                            tau = 0.02,
-                                            top.n = 30)
+                                            tau = 0.01,
+                                            top.n = 20)
 
-
-
-# For each large Bayesian motif, calculate LEC/MEC proportion
-for(j in Bayesian_motifs_large){
-  
-  df.j <- df %>%
-    filter(bayesian_allocation == j)
-  
-  # Bayesian
-  LEC_prop_bayesian <- length(which(df.j$EC_label == 'LEC'))/nrow(df.j)
-  n_bayesian <- nrow(df.j)
-  
-  # Binomial
-  LEC_binom <- df.j %>%
-    group_by(binomial_allocation) %>%
-    summarise(LEC = length(which(EC_label == 'LEC'))/n(),
-              count = n()) %>%
-    mutate(MEC = 1-LEC) %>%
-    mutate(binomial_allocation = paste0('binomial motif ', binomial_allocation)) %>%
-    rename(motif = binomial_allocation)
-  
-  # Combine both
-  df.j <- rbind(data.frame(motif = paste0('bayesian motif ', j),
-                           LEC = LEC_prop_bayesian,
-                           count = n_bayesian,
-                           MEC = 1-LEC_prop_bayesian),
-                
-                LEC_binom)
-  
-  df.j$motif <- factor(df.j$motif, levels = unique(df.j$motif))
-  
-  png(filename = paste0('./plots/EC8_new/large_bayesian_motifs/large_bayesian_motifs_', j, '.png'),
-      width = 50*nrow(df.j))
-  
-  print(df.j %>%
-          pivot_longer(cols = c(2,4)) %>%
-          rename(EC_group = name) %>%
-          ggplot()+
-          geom_bar(mapping = aes(x = motif,
-                                 y = value,
-                                 fill = EC_group),
-                   stat = 'identity')+
-          theme_bw()+
-          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-          ggtitle(paste0('bayesian motif ', j))+
-          annotate('text',
-                   x = unique(df.j$motif),
-                   y = 0.95,
-                   label = df.j$count,
-                   size = 3,
-                   angle = 90)+
-          geom_hline(yintercept = mean(unlist(EC8_EC_label) == 'MEC'), col = "red"))
-  
-  dev.off()
-
-}
-
-
-for(j in Bayesian_motifs_large){
-  
-  df_j <- df %>%
-    filter(bayesian_allocation == j)
-  
-  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
-                    binomial_allocation = rep(df_j$binomial_allocation, each = R),
-                    projection_probability = unlist(lapply(1:nrow(df_j),
-                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
-                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
-                    brain_region = rownames(EC8_new[[1]]))
-  
-  df1$binomial_allocation <- factor(df1$binomial_allocation,
-                                    levels = unique(df1$binomial_allocation))
-  
-  df1$brain_region <- factor(df1$brain_region,
-                             levels = rownames(EC8_new[[1]]))
-  
-  png(filename = paste0('plots/EC8_new/large_bayesian_motifs/bayesian_motif_', j, '.png'),
-      width = 800,
-      height = 500)
-  
-  
-  print(df1 %>%
-          ggplot()+
-          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = binomial_allocation, group = neuron_index))+
-          theme_bw()+
-          ylab('projection probability')+
-          xlab('brain region')+
-          ggtitle(paste('Cluster', j))
-  )
-  
-  dev.off()
-}
-
-#-----------------------------------------------------------------------------------------------
 
 # Top 30 binomial motifs with the largest number of neurons
 
@@ -658,7 +530,7 @@ large_binomial_motifs <- df %>%
   group_by(binomial_allocation) %>%
   summarise(count = n()) %>%
   arrange(desc(count)) %>%
-  top_n(30) %>%
+  top_n(20) %>%
   select(binomial_allocation) %>%
   pull() %>%
   sort()
@@ -919,3 +791,57 @@ for(j in Bayesian_motifs_large){
   
 }
 
+
+# Number of neurons in each cluster for the large Bayesian clusters
+
+png(filename = paste0('plots/EC8_new/large_cluster/number_of_neurons_by_EC_new.png'),
+    width = 1500,
+    height = 700)
+
+opt.clustering.frequency1_large(clustering = mcmc_unique_EC8$Z,
+                                EC_label = EC8_EC_label,
+                                large_cluster_index = Bayesian_motifs_large)
+
+dev.off()
+
+
+png(filename = paste0('plots/EC8_new/large_cluster/number_of_neurons_new.png'),
+    width = 1500,
+    height = 700)
+
+opt.clustering.frequency_large(clustering = mcmc_unique_EC8$Z,
+                               large_cluster_index = Bayesian_motifs_large)
+
+dev.off()
+
+png(filename = paste0('plots/EC8_new/large_cluster/proportion_of_EC_new.png'),
+    width = 1500,
+    height = 700)
+
+opt.clustering.frequency2_large(clustering = mcmc_unique_EC8$Z,
+                                EC_label = EC8_EC_label,
+                                large_cluster_index = Bayesian_motifs_large)
+
+dev.off()
+
+
+png(filename = paste0('plots/EC8_new/large_cluster/estimated_pp_new.png'),
+    width = 1500,
+    height = 1000)
+
+estimated_projection_strength_large(mcmc_run_unique_output = mcmc_unique_EC8,
+                                    large_cluster_index = Bayesian_motifs_large,
+                                    region.name = rownames(EC8_new[[1]]))
+
+dev.off()
+
+
+png(filename = paste0('plots/EC8_new/large_cluster/q_tilde_new.png'),
+    width = 1500,
+    height = 700)
+
+q_tilde_plot_large(mcmc_run_unique_output = mcmc_unique_EC8,
+                   large_cluster_index = Bayesian_motifs_large,
+                   region.name = rownames(EC8_new[[1]]))
+
+dev.off()

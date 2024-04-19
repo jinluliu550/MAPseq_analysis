@@ -2,6 +2,7 @@
 #' Plot to show the number of neurons in each cluster, and the contribution of each mouse in each cluster
 #'
 
+#-- General function
 opt.clustering.frequency <- function(clustering,
                                      main = ''){
 
@@ -29,7 +30,7 @@ opt.clustering.frequency <- function(clustering,
     ggtitle(main)
 }
 
-
+##-- For the EC data
 opt.clustering.frequency1 <- function(clustering,
                                       main='',
                                       EC_label){
@@ -63,6 +64,7 @@ opt.clustering.frequency1 <- function(clustering,
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
 }
+
 
 opt.clustering.frequency2 <- function(clustering,
                                       main='',
