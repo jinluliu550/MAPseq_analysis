@@ -113,16 +113,16 @@ df = t(apply(df, 1, function(x){return(x/sum(x))}))
 C_cumsum <- c(0, cumsum(sapply(1:6, function(m) ncol(EC8_new[[m]]))))
 
 # k-means
-k_mean_clust_70 <- kmeans(df, 70, iter.max = 100, nstart = 25)$cluster
+k_mean_clust_60 <- kmeans(df, 60, iter.max = 100, nstart = 25)$cluster
 
-clust70 <- lapply(1:6,
-                  function(m) k_mean_clust_70[(C_cumsum[m]+1):C_cumsum[m+1]])
+clust60 <- lapply(1:6,
+                  function(m) k_mean_clust_60[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
 
 mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
-                             J = 100,
-                             number_iter = 15000,
+                             J = 80,
+                             number_iter = 20000,
                              thinning = 5,
                              burn_in = 5000,
                              adaptive_prop = 0.0001,
@@ -131,7 +131,7 @@ mcmc_all_EC8 <- mcmc_run_all(Y = EC8_new,
                              b_gamma = 1,
                              a_alpha = 1/5,
                              b_alpha = 1/2,
-                             Z.init = clust70)
+                             Z.init = clust60)
 
 
 Zmat = matrix(unlist(mcmc_all_EC8$Z_output), length(mcmc_all_EC8$Z_output), sum(C),byrow = TRUE)
