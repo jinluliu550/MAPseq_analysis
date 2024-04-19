@@ -37,9 +37,35 @@ mcmc_run_post <- function(mcmc_run_all_output,
   mean_alpha_h <- colSums(alpha_h_all)/nrow(alpha_h_all)
   
   # Initial value of q star
-  q_star_1_J_new <- matrix(1/R,
-                           nrow = J,
-                           ncol = R)
+#  q_star_1_J_new <- matrix(1/R,
+#                           nrow = J,
+#                           ncol = R)
+  # Based on Z_new
+  q_star_1_J_new <- lapply(1:J,
+                           function(j){
+                             
+                             if(length(which(unlist(Z)==j)) != 0){
+                               
+                               data.j.prior <- do.call(cbind, Y)[,which(unlist(Z)==j)]
+                               
+                               pdata.j.prior <- apply(data.j.prior, 2, function(x){x/sum(x)})
+                               data.j.mean <- rowMeans(pdata.j.prior)
+                               
+                               mx <- matrix(data.j.mean/sum(data.j.mean),
+                                            nrow = 1)
+                               
+                             }else{
+                               
+                               mx <- matrix(1/R, nrow = 1, ncol = R)
+                             }
+                             
+                             mx
+                             
+                           })
+  
+  q_star_1_J_new <- do.call(rbind, q_star_1_J_new)
+  q_star_1_J_new <- ifelse(q_star_1_J_new == 0, .Machine$double.eps,  q_star_1_J_new)
+  q_star_1_J_new <-  q_star_1_J_new/sum(q_star_1_J_new)
   
   # Initial covariance structure
   mean_x_q_new <- lapply(1:J, function(j) matrix(log(q_star_1_J_new[j,1:(R-1)]/q_star_1_J_new[j,R]),

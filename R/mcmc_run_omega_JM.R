@@ -28,7 +28,15 @@ mcmc_run_omega_JM <- function(mcmc_run_all_output,
   M <- length(Z)
   
   # Initialize omega
-  omega_new <- rep(1/J, J)
+  omega_hat = function(z=z,J=J){
+    omega = rep(1,J)
+    tbz = table(z)
+    omega[as.numeric(names(tbz))] = omega[as.numeric(names(tbz))] + tbz
+    return(omega/sum(omega))
+  }
+  
+  omega_new <- omega_hat(unlist(Z), J=J)
+#  omega_new <- rep(1/J, J)
   
   mean_X_component_new <- matrix(log(omega_new[1:J-1]/omega_new[J]),
                                  nrow = 1)
