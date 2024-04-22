@@ -45,7 +45,7 @@ projection_prob= function(m,N,mcmc_all_out){
      pprob_mat[i,] = 1- pzero_i
      pprob_pair_temp =  (1-(matrix(pzero_i, R,R) + t(matrix(pzero_i, R,R)) - pzero_pair_i))/matrix(1-pzero_i, R,R)
      diag(pprob_pair_temp) = 1
-     pprob_pair_array[i,,] = pprob_pair + pprob_pair_temp 
+     pprob_pair_array[i,,] = pprob_pair_temp 
   }
   pprob = apply(pprob_mat,2,mean)
   pprob_pair = apply(pprob_pair_array,c(2,3),mean)
@@ -53,6 +53,8 @@ projection_prob= function(m,N,mcmc_all_out){
   pprobpair_ci = apply(pprob_pair_array,c(2,3),function(x){HPDinterval(as.mcmc(x))})
   return(list(pprob = pprob, pprob_pair = pprob_pair, pprob_ci = pprob_ci, pprob_pair_ci = pprobpair_ci))
 }
+
+# pprob_pair + pprob_pair_temp 
 
 #Mouse 1
 pp_m1 = projection_prob(1,100,mcmc_all_EC8)

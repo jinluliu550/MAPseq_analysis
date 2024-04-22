@@ -24,6 +24,9 @@ suppressPackageStartupMessages({
   library(truncnorm)
   library(clevr)
   library(pbapply)
+  library(grid)
+  library(gridExtra)
+  library(coda)
 })
 
 `%notin%` <- Negate(`%in%`)

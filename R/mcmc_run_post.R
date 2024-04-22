@@ -46,7 +46,8 @@ mcmc_run_post <- function(mcmc_run_all_output,
                              
                              if(length(which(unlist(Z)==j)) != 0){
                                
-                               data.j.prior <- do.call(cbind, Y)[,which(unlist(Z)==j)]
+                               data.j.prior <- matrix(do.call(cbind, Y)[,which(unlist(Z)==j)],
+                                                      nrow = R)
                                
                                pdata.j.prior <- apply(data.j.prior, 2, function(x){x/sum(x)})
                                data.j.mean <- rowMeans(pdata.j.prior)
