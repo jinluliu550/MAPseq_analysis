@@ -236,24 +236,3 @@ ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 
-
-
-estimated.pp.plot <- ggplot2::ggplot(estimated.projection.df,
-                                     mapping = aes(x = factor(region, levels = regions.name),
-                                                   y = projection.med,
-                                                   group = cluster,
-                                                   color = class)) +
-  geom_line()+
-  geom_point()+
-  geom_errorbar(aes(ymin = projection.lower,
-                    ymax = projection.upper),
-                width = 0.1)+
-  theme_bw()+
-  ylim(c(0,1))+
-  ylab('projection strength')+
-  xlab('region')+
-  facet_wrap(~cluster)+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  theme(axis.text=element_text(size=axis.text.size),
-        axis.title=element_text(size=axis.title.size),
-        plot.title = element_text(size=plot.title.size))
