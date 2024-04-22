@@ -137,6 +137,7 @@ Zmat = matrix(unlist(mcmc_all_EC8$Z_output), length(mcmc_all_EC8$Z_output), sum(
 
 # Number of occupied components
 k = apply(Zmat,1,function(x){length(unique(x))})
+plot(k, type = 'l')
 
 # Posterior similarity matrix
 psm_EC8 = similarity_matrix(mcmc_run_all_output = mcmc_all_EC8)
@@ -155,8 +156,10 @@ C_cumsum <- c(0, cumsum(C))
 EC8_Z <- lapply(1:6,
                            function(m) EC8_Z[(C_cumsum[m]+1):C_cumsum[m+1]])
 
+length(unique(unlist(EC8_Z)))
+
 # Plot of posterior similarity matrix
-png(file = './plots/EC8_new/heatmap_psm_1_new.png',
+png(file = './plots/EC8_new/heatmap_psm_1_new80.png',
     width = 664,
     height = 664)
 
@@ -171,7 +174,7 @@ plotpsm(psm.ind = psm_EC8$psm.within,
 
 dev.off()
 
-png(file = './plots/EC8_new/heatmap_psm_2_new.png',
+png(file = './plots/EC8_new/heatmap_psm_2_new80.png',
     width = 664,
     height = 664)
 
@@ -201,7 +204,7 @@ EC8_Z_reordered <- mcmc_unique_EC8$Z
 
 
 # Number of LEC and MEC neurons in each cluster
-png(file = './plots/EC8_new/number_of_neuron_by_EC_new.png',
+png(file = './plots/EC8_new/number_of_neuron_by_EC_new80.png',
     width = 2500,
     height = 700)
 
@@ -213,7 +216,7 @@ dev.off()
 
 
 # Proportion of LEC and MEC in each cluster
-png(file = './plots/EC8_new/proportion_of_EC_new.png',
+png(file = './plots/EC8_new/proportion_of_EC_new80.png',
     width = 2500,
     height = 700)
 
@@ -223,7 +226,7 @@ opt.clustering.frequency2(clustering = mcmc_unique_EC8$Z,
 dev.off()
 
 # Plot of estimated projection strength
-png(file = './plots/EC8_new/estimated_pp_new.png',
+png(file = './plots/EC8_new/estimated_pp_new80.png',
     width = 3500,
     height = 2000)
 
@@ -232,7 +235,7 @@ mcmc_unique_EC8$estimated.pp.plot
 dev.off()
 
 # q tilde
-png(file = './plots/EC8_new/q_tilde_new.png',
+png(file = './plots/EC8_new/q_tilde_new80.png',
     width = 3000,
     height = 600)
 
@@ -247,7 +250,7 @@ omega_JM_mcmc <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_EC8,
                                    burn_in = 2000,
                                    number_iter = 12000)
 
-png(file = './plots/EC8_new/w_jm_EC_new.png',
+png(file = './plots/EC8_new/w_jm_EC_new80.png',
     width = 4000,
     height = 2200)
 
@@ -257,7 +260,7 @@ dev.off()
 
 
 # Projection strength of each neuron in each cluster, color-coded by the injection site
-png(file = './plots/EC8_new/projection_by_EC.png',
+png(file = './plots/EC8_new/projection_by_EC80.png',
     width = 4000,
     height = 2200)
 
@@ -273,7 +276,7 @@ dev.off()
 difference_omega_JM <- difference_in_omega_jm(mcmc_run_omega_output = omega_JM_mcmc)
 
 
-png(file = './plots/EC8_new/w_jm_difference_new.png',
+png(file = './plots/EC8_new/w_jm_difference_new80.png',
     width = 2000,
     height = 600)
 
@@ -281,7 +284,7 @@ difference_omega_JM$probability_plot
 
 dev.off()
 
-png(file = './plots/EC8_new/w_jm_difference_eg_new.png',
+png(file = './plots/EC8_new/w_jm_difference_eg_new80.png',
     width = 1500,
     height = 800)
 
@@ -293,7 +296,7 @@ dev.off()
 
 for(m in 1:M){
   
-  png(file = paste0('./plots/EC8_new/w_jm_difference_new_', m, '.png'),
+  png(file = paste0('./plots/EC8_new/w_jm_difference_new80_', m, '.png'),
       width = 1500,
       height = 800)
   
@@ -303,7 +306,7 @@ for(m in 1:M){
 }
 
 # Heatmap of projection stength of neurons in each cluster
-png(file = './plots/EC8_new/heatmap_neuron_new.png',
+png(file = './plots/EC8_new/heatmap_neuron_new80.png',
     width = 900,
     height = 900)
 
@@ -321,7 +324,7 @@ data_EC_N <- lapply(1:length(EC8_new),
 df <- data.frame(N = unlist(data_EC_N),
                  motif = unlist(mcmc_unique_EC8$Z))
 
-png(file = './plots/EC8_new/N_sum_by_cluste_new.png',
+png(file = './plots/EC8_new/N_sum_by_cluste_new80.png',
     width = 2500,
     height = 900)
 
@@ -340,7 +343,7 @@ ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_EC8,
                       regions.name = rownames(EC8_new[[1]]))
 
 
-png(file = './plots/EC8_new/ppc_zero_new.png',
+png(file = './plots/EC8_new/ppc_zero_new80.png',
     width = 1200,
     height = 700)
 
@@ -348,7 +351,7 @@ ppc_multiple$zero.plot
 
 dev.off()
 
-png(file = './plots/EC8_new/ppc_nonzero_new.png',
+png(file = './plots/EC8_new/ppc_nonzero_new80.png',
     width = 1200,
     height = 700)
 
@@ -363,7 +366,7 @@ ppc_single <- ppc_single_f(mcmc_run_all_output = mcmc_all_EC8,
 
 for(m in 1:length(EC8_new)){
   
-  png(file = paste0('./plots/EC8_new/ppc_single_mouse_new_', m, '.png'),
+  png(file = paste0('./plots/EC8_new/ppc_single_mouse_new80_', m, '.png'),
       width = 1200,
       height = 700)
   
@@ -524,8 +527,7 @@ Bayesian_motifs_large <- find_large_cluster(mcmc_run_omega_output = omega_JM_mcm
                                             top.n = 20)
 
 
-# Top 30 binomial motifs with the largest number of neurons
-
+# Top 20 binomial motifs with the largest number of neurons
 large_binomial_motifs <- df %>%
   group_by(binomial_allocation) %>%
   summarise(count = n()) %>%
@@ -536,7 +538,7 @@ large_binomial_motifs <- df %>%
   sort()
 
 # For each large Binomial motif, calculate LEC/MEC proportion
-for(j in large_binomial_motifs){
+for(j in large_binomial_motifs[1:20]){
   
   df.j <- df %>%
     filter(binomial_allocation == j)
@@ -564,7 +566,7 @@ for(j in large_binomial_motifs){
   
   df.j$motif <- factor(df.j$motif, levels = unique(df.j$motif))
   
-  png(filename = paste0('./plots/EC8_new/large_binomial_motifs/large_binomial_motifs_', j, '.png'))
+  png(filename = paste0('./plots/EC8_new/large_binomial_motifs_new80/large_binomial_motifs_', j, '.png'))
   
   print(df.j %>%
           pivot_longer(cols = c(2,4)) %>%
@@ -610,7 +612,7 @@ for(j in large_binomial_motifs){
   df1$brain_region <- factor(df1$brain_region,
                              levels = rownames(EC8_new[[1]]))
   
-  png(filename = paste0('plots/EC8_new/large_binomial_motifs/binomial_motif_', j, '.png'),
+  png(filename = paste0('plots/EC8_new/large_binomial_motifs_new80/binomial_motif_', j, '.png'),
       width = 800,
       height = 500)
   
@@ -626,11 +628,6 @@ for(j in large_binomial_motifs){
   
   dev.off()
 }
-
-
-save.image("~/OneDrive - University of Edinburgh/BrainConnectivity/data/EC8/mcmc_EC8_longeriter.RData")
-
-#-------------------------------- Create Excel sheet to summarize ------------------------------------
 
 
 for(j in Bayesian_motifs_large){
@@ -768,7 +765,7 @@ for(j in Bayesian_motifs_large){
                         projecting_region = binomial_output_reorder$cluster_label[binomial_cluster])
   
   
-  png(filename = paste0('plots/EC8_new/large_bayesian_motifs/binomial_motif_', j, '.png'),
+  png(filename = paste0('plots/EC8_new/large_bayesian_motifs_new80/binomial_motif_', j, '.png'),
       width = 1500,
       height = 2000)
   
@@ -794,7 +791,7 @@ for(j in Bayesian_motifs_large){
 
 # Number of neurons in each cluster for the large Bayesian clusters
 
-png(filename = paste0('plots/EC8_new/large_cluster/number_of_neurons_by_EC_new.png'),
+png(filename = paste0('plots/EC8_new/large_cluster_J80/number_of_neurons_by_EC_new.png'),
     width = 1500,
     height = 700)
 
@@ -805,7 +802,7 @@ opt.clustering.frequency1_large(clustering = mcmc_unique_EC8$Z,
 dev.off()
 
 
-png(filename = paste0('plots/EC8_new/large_cluster/number_of_neurons_new.png'),
+png(filename = paste0('plots/EC8_new/large_cluster_J80/number_of_neurons_new.png'),
     width = 1500,
     height = 700)
 
@@ -814,7 +811,7 @@ opt.clustering.frequency_large(clustering = mcmc_unique_EC8$Z,
 
 dev.off()
 
-png(filename = paste0('plots/EC8_new/large_cluster/proportion_of_EC_new.png'),
+png(filename = paste0('plots/EC8_new/large_cluster_J80/proportion_of_EC_new.png'),
     width = 1500,
     height = 700)
 
@@ -825,7 +822,7 @@ opt.clustering.frequency2_large(clustering = mcmc_unique_EC8$Z,
 dev.off()
 
 
-png(filename = paste0('plots/EC8_new/large_cluster/estimated_pp_new.png'),
+png(filename = paste0('plots/EC8_new/large_cluster_J80/estimated_pp_new.png'),
     width = 1500,
     height = 1000)
 
@@ -836,7 +833,7 @@ estimated_projection_strength_large(mcmc_run_unique_output = mcmc_unique_EC8,
 dev.off()
 
 
-png(filename = paste0('plots/EC8_new/large_cluster/q_tilde_new.png'),
+png(filename = paste0('plots/EC8_new/large_cluster_J80/q_tilde_new.png'),
     width = 1500,
     height = 700)
 
@@ -845,3 +842,7 @@ q_tilde_plot_large(mcmc_run_unique_output = mcmc_unique_EC8,
                    region.name = rownames(EC8_new[[1]]))
 
 dev.off()
+
+##------------------------------ Mouse comparison -----------------------------------------
+
+
