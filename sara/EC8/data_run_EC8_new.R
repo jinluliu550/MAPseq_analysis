@@ -754,15 +754,18 @@ for(j in Bayesian_motifs_large){
              x = unique(df_j$motif),
              y = 0.95,
              label = df_j$count,
-             size = 6,
+             size = 4,
              angle = 90)+
     geom_hline(yintercept = mean(unlist(EC8_EC_label) == 'MEC'), col = "red")
   
   
   # Binomial clusters
   binomial_cluster <- parse_number(LEC_binom$motif)
-  table00 <- data.frame(binomial_cluster = binomial_cluster,
-                        projecting_region = binomial_output_reorder$cluster_label[binomial_cluster])
+  table00 <- data.frame(binomial_cluster = binomial_cluster[1:round(length(binomial_cluster)/2)],
+                        projecting_region = binomial_output_reorder$cluster_label[binomial_cluster][1:round(length(binomial_cluster)/2)])
+  
+  table01 <- data.frame(binomial_cluster = binomial_cluster[(round(length(binomial_cluster)/2)+1):length(binomial_cluster)],
+                        projecting_region = binomial_output_reorder$cluster_label[binomial_cluster][(round(length(binomial_cluster)/2)+1):length(binomial_cluster)])
   
   
   png(filename = paste0('plots/EC8_new/large_bayesian_motifs_new80/binomial_motif_', j, '.png'),
@@ -772,12 +775,13 @@ for(j in Bayesian_motifs_large){
   
   grid.arrange(
     tableGrob(table00),
+    tableGrob(table01),
     plot1,
     plot2,
     plot3,
     plot4,
     ncol = 2,
-    widths = c(1.5, 1),
+    widths = c(1, 1),
     clip = FALSE
   )
   
