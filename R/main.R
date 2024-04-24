@@ -27,6 +27,7 @@ suppressPackageStartupMessages({
   library(grid)
   library(gridExtra)
   library(coda)
+  library(mcclust)
 })
 
 `%notin%` <- Negate(`%in%`)
