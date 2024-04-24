@@ -225,6 +225,15 @@ opt.clustering.frequency2(clustering = mcmc_unique_EC8$Z,
 
 dev.off()
 
+# Number of neurons by cluster and mosue
+png(file = './plots/EC8_new/number_of_neuron_by_m_new80.png',
+    width = 2500,
+    height = 700)
+
+opt.clustering.frequency(clustering = mcmc_unique_EC8$Z)
+
+dev.off()
+
 # Plot of estimated projection strength
 png(file = './plots/EC8_new/estimated_pp_new80.png',
     width = 3500,
