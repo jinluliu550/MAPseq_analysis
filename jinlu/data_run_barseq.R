@@ -2,15 +2,9 @@
 
 
 # Load data
-data1 <- read.csv('./data/Bar-seq-100010/BRAIN_C9.csv')
-data2 <- read.csv('./data/Bar-seq-100010/BRAIN_C14.csv')
-data3 <- read.csv('./data/Bar-seq-100010/BRAIN_C28.csv')
-
-# Load data
-load('data/Bar-seq-100010/psm_barseq.RData')
-load('data/Bar-seq-100010/mcmc_all_barseq.RData')
-load('data/Bar-seq-100010/opt.clust0.barseq.RData')
-load('data/Bar-seq-100010/mcmc_unique_barseq.RData')
+data1 <- read.csv('./data/barseq/BRAIN_C9.csv')
+data2 <- read.csv('./data/barseq/BRAIN_C14.csv')
+data3 <- read.csv('./data/barseq/BRAIN_C28.csv')
 
 
 # Round to integers
@@ -25,23 +19,37 @@ data_barseq <- list(t(data1),
 M <- length(data_barseq)
 C <- sapply(1:M, function(m) ncol(data_barseq[[m]]))
 
-# Save data
-# save(data_barseq, file = './data/bar_seq.RData')
+
+#Initialize z
+data_barseq_cbind <- do.call(cbind, data_barseq)
+
+df <- t(data_barseq_cbind)
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
+
+
+C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(data_barseq[[m]]))))
+
+# k-means
+k_mean_clust_60 <- kmeans(df, 60, iter.max = 100, nstart = 25)$cluster
+
+clust60 <- lapply(1:M,
+                  function(m) k_mean_clust_60[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
 
 # MCMC run
 mcmc_all_barseq <- mcmc_run_all(Y = data_barseq,
-                                J = 150,
-                                number_iter = 8000,
+                                J = 80,
+                                number_iter = 20000,
                                 thinning = 5,
-                                burn_in = 3000,
-                                adaptive_prop = 0.1,
+                                burn_in = 5000,
+                                adaptive_prop = 0.0001,
                                 print_Z = TRUE,
-                                
-                                a_gamma = 1000,
-                                b_gamma = 10,
+                                a_gamma = 30,
+                                b_gamma = 1,
                                 a_alpha = 1/5,
                                 b_alpha = 1/2,
-                                num.cores = 10)
+                                Z.init = clust60)
 
 
 

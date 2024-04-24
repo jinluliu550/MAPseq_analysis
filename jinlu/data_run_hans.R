@@ -1,3 +1,6 @@
+
+# Hans data
+
 Hans_data1 <- read.csv('./data/Han-data/han_brain4_gh.csv')
 Hans_data2 <- read.csv('./data/Han-data/han_brain5_gh.csv')
 Hans_data3 <- read.csv('./data/Han-data/han_brain6_gh.csv')
@@ -6,37 +9,72 @@ data_Hans <- list(t(Hans_data1),
                   t(Hans_data2),
                   t(Hans_data3))
 
-load('./data/Han-data/mcmc_all_hans.RData')
-load('./data/Han-data/psm_hans.RData')
-load('./data/Han-data/mcmc_unique_Han.RData')
+M <- length(data_Hans)
+C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
+
+
+#Initialize z
+data_Hans_cbind <- do.call(cbind, data_Hans)
+
+df <- t(data_Hans_cbind)
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
+
+
+C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(data_Hans[[m]]))))
+
+# k-means
+k_mean_clust_20 <- kmeans(df, 20, iter.max = 100, nstart = 25)$cluster
+
+clust20 <- lapply(1:M,
+                  function(m) k_mean_clust_20[(C_cumsum[m]+1):C_cumsum[m+1]])
+
 
 mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
-                             J = 20,
-                             number_iter = 8000,
-                             thinning = 5,
-                             burn_in = 3000,
-                             adaptive_prop = 0.1,
-                             print_Z = TRUE,
-                             
-                             
-                             a_gamma = 300,
-                             b_gamma = 10,
-                             a_alpha = 1/5,
-                             b_alpha = 1/2,
-                             num.cores = 10)
+                              J = 40,
+                              number_iter = 20000,
+                              thinning = 5,
+                              burn_in = 5000,
+                              adaptive_prop = 0.0001,
+                              print_Z = TRUE,
+                              a_gamma = 30,
+                              b_gamma = 1,
+                              a_alpha = 1/5,
+                              b_alpha = 1/2,
+                              Z.init = clust20)
 
 
+Zmat = matrix(unlist(mcmc_all_hans$Z_output), length(mcmc_all_hans$Z_output), sum(C),byrow = TRUE)
 
-psm_hans <- similarity_matrix(mcmc_run_all_output = mcmc_all_hans,
-                              num.cores = 10,
-                              run.on.pc = FALSE)
+# Number of occupied components
+k = apply(Zmat,1,function(x){length(unique(x))})
+plot(k, type = 'l')
 
-# Optimal clustering
-han_Z <- opt.clustering.comb(mcmc_run_all_output = mcmc_all_hans,
-                             post_similarity = psm_hans)
+
+# Posterior similarity matrix
+psm_hans = similarity_matrix(mcmc_run_all_output = mcmc_all_hans)
+
+
+# Reordered posterior samples of z
+hans_z_reordered <- z_trace_updated(mcmc_run_all_output = mcmc_all_hans)
+
+
+# optimal clustering
+hans_Z <- opt.clustering.comb(z_trace = hans_z_reordered,
+                              post_similarity = psm_hans,
+                              max.k = max(k))
+
+
+#-- Convert to a list
+C_cumsum <- c(0, cumsum(C))
+hans_Z <- lapply(1:M,
+                function(m) hans_Z[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
 # Plot of posterior similarity matrix
+png(file = './plots/Hans/heatmap_psm_1.png',
+    width = 664,
+    height = 664)
+
 plotpsm(psm.ind = psm_hans$psm.within,
         psm.tot = psm_hans$psm.combined,
         xlab = 'neurons',
@@ -46,6 +84,12 @@ plotpsm(psm.ind = psm_hans$psm.within,
         plot.type = 'ind',
         cex.main = 1.5)
 
+dev.off()
+
+
+png(file = './plots/Hans/heatmap_psm_2.png',
+    width = 664,
+    height = 664)
 
 plotpsm(psm.ind = psm_hans$psm.within,
         psm.tot = psm_hans$psm.combined,
@@ -56,56 +100,65 @@ plotpsm(psm.ind = psm_hans$psm.within,
         cex.main = 1.5,
         plot.type = 'tot')
 
-# MCMC unique
-mcmc_unique_Han <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
-                                 Z = han_Z,
-                                 thinning = 5,
-                                 burn_in = 1500,
-                                 number_iter = 3000,
-                                 Y = data_Hans,
-                                 a_gamma = 500,
-                                 b_gamma = 10,
-                                 regions.name = rownames(data_Hans[[1]]))
+dev.off()
 
-# Number of neurons in each cluster
-png(file = './plots/Hans/number_of_neuron.png',
-    width = 1000,
+# MCMC unique
+mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
+                                  Z = hans_Z,
+                                  thinning = 5,
+                                  burn_in = 2000,
+                                  number_iter = 12000,
+                                  Y = data_Hans,
+                                  a_gamma = 30,
+                                  b_gamma = 1,
+                                  regions.name = rownames(data_Hans[[1]]))
+                                 
+
+hans_Z_reordered <- mcmc_unique_hans$Z
+
+
+# Number of neurons by cluster and mosue
+png(file = './plots/Hans/number_of_neuron_by_m.png',
+    width = 2500,
     height = 700)
 
-opt.clustering.frequency(clustering = mcmc_unique_Han$Z)
+opt.clustering.frequency(clustering = mcmc_unique_hans$Z)
 
 dev.off()
+
 
 # Plot of estimated projection strength
 png(file = './plots/Hans/estimated_pp.png',
-    width = 1500,
-    height = 800)
+    width = 3500,
+    height = 2000)
 
-mcmc_unique_Han$estimated.pp.plot
+mcmc_unique_hans$estimated.pp.plot
 
 dev.off()
 
-# q_tilde
+
+# q tilde
 png(file = './plots/Hans/q_tilde.png',
-    width = 1000,
-    height = 300)
+    width = 3000,
+    height = 600)
 
-mcmc_unique_Han$q_tilde_plot
+mcmc_unique_hans$q_tilde_plot
 
 dev.off()
-
 
 
 # Function below obtains posterior samples of mouse-specific component probabilities
 omega_JM_mcmc <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_hans,
-                                   mcmc_run_post_output = mcmc_unique_Han,
+                                   mcmc_run_post_output = mcmc_unique_hans,
                                    thinning = 5,
-                                   burn_in = 1500,
-                                   number_iter = 3000)
+                                   burn_in = 2000,
+                                   number_iter = 12000)
 
-png(file = './plots/Hans/w_jm_EC.png',
-    width = 1500,
-    height = 800)
+
+
+png(file = './plots/Hans/w_jm.png',
+    width = 2000,
+    height = 1100)
 
 omega_JM_mcmc$omega_JM_plot
 
@@ -118,44 +171,54 @@ difference_omega_JM <- difference_in_omega_jm(mcmc_run_omega_output = omega_JM_m
 
 png(file = './plots/Hans/w_jm_difference.png',
     width = 1000,
-    height = 300)
+    height = 400)
 
 difference_omega_JM$probability_plot
 
 dev.off()
 
 
+png(file = './plots/Hans/w_jm_difference_eg.png',
+    width = 1000,
+    height = 400)
+
+difference_in_omega_jm_plot(difference_in_omega_jm_output = difference_omega_JM,
+                            mcmc_run_omega_output = omega_JM_mcmc,
+                            N = 10)
+
+dev.off()
+
+
 # Heatmap of projection stength of neurons in each cluster
 png(file = './plots/Hans/heatmap_neuron.png',
-    width = 600,
-    height = 600)
+    width = 900,
+    height = 900)
 
 pp.standard.ordering(Y = data_Hans,
-                     Z = mcmc_unique_Han$Z,
+                     Z = mcmc_unique_hans$Z,
                      regions.name = rownames(data_Hans[[1]]))
 
 dev.off()
 
 
 # Distribution of N_{i,m} for neurons within the same cluster
-data_EC_N <- lapply(1:length(data_Hans),
+data_hans_N <- lapply(1:length(data_Hans),
                     function(m) colSums(data_Hans[[m]]))
 
-df <- data.frame(N = unlist(data_EC_N),
-                 motif = unlist(mcmc_unique_Han$Z))
+df <- data.frame(N = unlist(data_hans_N),
+                 motif = unlist(mcmc_unique_hans$Z))
 
 png(file = './plots/Hans/N_sum_by_cluster.png',
-    width = 1000,
-    height = 400)
+    width = 1200,
+    height = 600)
 
 ggplot(df)+
-  geom_boxplot(mapping = aes(x = factor(motif, levels = 1:max(unlist(mcmc_unique_Han$Z))),
+  geom_boxplot(mapping = aes(x = factor(motif, levels = 1:max(unlist(mcmc_unique_hans$Z))),
                              y = N))+
   theme_bw()+
   xlab('Cluster')
 
 dev.off()
-
 
 # Posterior predictive check with multiple replicates
 ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_hans,
@@ -172,6 +235,7 @@ ppc_multiple$zero.plot
 
 dev.off()
 
+
 png(file = './plots/Hans/ppc_nonzero.png',
     width = 1200,
     height = 700)
@@ -180,13 +244,12 @@ ppc_multiple$non.zero.plot
 
 dev.off()
 
-
 # Posterior predictive check with single replicated data
 ppc_single <- ppc_single_f(mcmc_run_all_output = mcmc_all_hans,
                            Y = data_Hans,
                            regions.name = rownames(data_Hans[[1]]))
 
-for(m in 1:length(data_Hans)){
+for(m in 1:M){
   
   png(file = paste0('./plots/Hans/ppc_single_mouse_', m, '.png'),
       width = 1200,
@@ -196,3 +259,63 @@ for(m in 1:length(data_Hans)){
   
   dev.off()
 }
+
+#--------------------------------------------------- K-means -----------------------------
+
+k_mean_clust_20 <- kmeans(df, 20, nstart = 25)$cluster
+
+clust20 <- lapply(1:M,
+                  function(m) k_mean_clust_20[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+clust20_r <- k_means_reorder(Y = data_Hans,
+                             Z = clust20)
+
+k_mean_clust_30 <- kmeans(df, 30, nstart = 25)$cluster
+
+clust30 <- lapply(1:M,
+                  function(m) k_mean_clust_30[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
+clust30_r <- k_means_reorder(Y = data_Hans,
+                             Z = clust30)
+
+
+k_mean_clust_40 <- kmeans(df, 40, nstart = 25)$cluster
+
+clust40 <- lapply(1:M,
+                  function(m) k_mean_clust_40[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
+clust40_r <- k_means_reorder(Y = data_Hans,
+                             Z = clust40)
+
+# Heatmap of projection strength of neurons in each cluster
+png(file = './plots/Hans/k_means_20.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = data_Hans,
+                     Z = clust20_r,
+                     regions.name = rownames(data_Hans[[1]]))
+
+dev.off()
+
+png(file = './plots/Hans/k_means_30.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = data_Hans,
+                     Z = clust30_r,
+                     regions.name = rownames(data_Hans[[1]]))
+
+dev.off()
+
+png(file = './plots/Hans/k_means_40.png',
+    width = 900,
+    height = 900)
+
+pp.standard.ordering(Y = data_Hans,
+                     Z = clust40_r,
+                     regions.name = rownames(data_Hans[[1]]))
+
+dev.off()
