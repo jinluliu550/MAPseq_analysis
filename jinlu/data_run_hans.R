@@ -12,6 +12,7 @@ data_Hans <- list(t(Hans_data1),
 M <- length(data_Hans)
 C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
 
+# 
 
 #Initialize z
 data_Hans_cbind <- do.call(cbind, data_Hans)
@@ -177,6 +178,28 @@ difference_omega_JM$probability_plot
 
 dev.off()
 
+# data 1
+significant_obs <- difference_omega_JM$significant_obs
+
+data1_significant <- significant_obs %>%
+  filter((data1 == 1) | (data2 == 1)) %>%
+  pull(cluster)
+
+length(data1_significant)
+
+# data 2
+data2_significant <- significant_obs %>%
+  filter(data1 == 2 | data2 == 2) %>%
+  pull(cluster)
+
+length(data2_significant)
+
+# data 3
+data3_significant <- significant_obs %>%
+  filter(data1 == 3 | data2 == 3) %>%
+  pull(cluster)
+
+length(data3_significant)
 
 png(file = './plots/Hans/w_jm_difference_eg.png',
     width = 1000,
@@ -261,6 +284,12 @@ for(m in 1:M){
 }
 
 #--------------------------------------------------- K-means -----------------------------
+
+#Initialize z
+data_Hans_cbind <- do.call(cbind, data_Hans)
+
+df <- t(data_Hans_cbind)
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
 
 k_mean_clust_20 <- kmeans(df, 20, nstart = 25)$cluster
 
