@@ -334,3 +334,27 @@ pp.standard.ordering(Y = data_barseq,
                      regions.name = rownames(data_barseq[[1]]))
 
 dev.off()
+
+
+# data 1
+significant_obs <- difference_omega_JM$significant_obs
+
+data1_significant <- significant_obs %>%
+  filter((data1 == 1) | (data2 == 1)) %>%
+  pull(cluster)
+
+length(data1_significant)
+
+# data 2
+data2_significant <- significant_obs %>%
+  filter(data1 == 2 | data2 == 2) %>%
+  pull(cluster)
+
+length(data2_significant)
+
+# data 3
+data3_significant <- significant_obs %>%
+  filter(data1 == 3 | data2 == 3) %>%
+  pull(cluster)
+
+length(data3_significant)
