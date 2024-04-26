@@ -525,6 +525,10 @@ df <- do.call(rbind, df)
 
 df$EC_label <- unlist(EC8_EC_label)
 
+df %>%
+  filter(bayesian_allocation == 13,
+         binomial_allocation == 49)
+
 
 
 
@@ -675,6 +679,7 @@ for(j in Bayesian_motifs_large){
   df_j <- df %>%
     filter(bayesian_allocation == j)
   
+  
   df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
                     binomial_allocation = rep(df_j$binomial_allocation, each = R),
                     projection_probability = unlist(lapply(1:nrow(df_j),
@@ -711,6 +716,7 @@ for(j in Bayesian_motifs_large){
                                         each = nrow(EC8_new[[1]])),
                                     levels = rep(1:length(which(unlist(EC8_Z_reordered)==j)))))
   
+  group.colors <- c('LEC'= "#F8766D",'MEC'= "#00BFC4")
   
   # Line graph
   plot3 <- ggplot(df2)+
@@ -721,7 +727,8 @@ for(j in Bayesian_motifs_large){
     theme_bw()+
     xlab('region')+
     ylab('projection strengths')+
-    ggtitle(paste('cluster', j))
+    ggtitle(paste('cluster', j))+
+    scale_color_manual(values=group.colors)
   
   #-- Plot 4
   
@@ -765,23 +772,52 @@ for(j in Bayesian_motifs_large){
              label = df_j$count,
              size = 4,
              angle = 90)+
-    geom_hline(yintercept = mean(unlist(EC8_EC_label) == 'MEC'), col = "red")
+    geom_hline(yintercept = mean(unlist(EC8_EC_label) == 'MEC'), col = "red")+
+    scale_fill_manual(values = group.colors)
   
   
   # Binomial clusters
   binomial_cluster <- parse_number(LEC_binom$motif)
+  
+  if(length(binomial_cluster) <= 10){
+    
+    
+    table00 <- data.frame(binomial_cluster = binomial_cluster,
+                          projecting_region = binomial_output_reorder$cluster_label[binomial_cluster])
+    
+    
+    
+  }else{
   table00 <- data.frame(binomial_cluster = binomial_cluster[1:round(length(binomial_cluster)/2)],
                         projecting_region = binomial_output_reorder$cluster_label[binomial_cluster][1:round(length(binomial_cluster)/2)])
   
   table01 <- data.frame(binomial_cluster = binomial_cluster[(round(length(binomial_cluster)/2)+1):length(binomial_cluster)],
                         projecting_region = binomial_output_reorder$cluster_label[binomial_cluster][(round(length(binomial_cluster)/2)+1):length(binomial_cluster)])
+  }
   
   
-  png(filename = paste0('plots/EC8_new/large_bayesian_motifs_new80/binomial_motif_', j, '.png'),
+  png(filename = paste0('plots/EC8_new/large_bayesian_motifs_new80/bayesian_motif_', j, '.png'),
       width = 1500,
       height = 2000)
   
-  
+  if(length(binomial_cluster) <= 10){
+    
+    ggempty <- ggplot() + theme_void()
+    
+    grid.arrange(
+      tableGrob(table00),
+      ggempty,
+      plot1,
+      plot2,
+      plot3,
+      plot4,
+      ncol = 2,
+      widths = c(1, 1),
+      clip = FALSE
+    )
+    
+    
+  }else{
   grid.arrange(
     tableGrob(table00),
     tableGrob(table01),
@@ -793,9 +829,203 @@ for(j in Bayesian_motifs_large){
     widths = c(1, 1),
     clip = FALSE
   )
+  }
   
   dev.off()
   
+}
+
+
+for(j in 1:length(unique(unlist(mcmc_unique_EC8$Z)))){
+  
+  #-- Plot 1
+  
+  # Plot of estimated projection strength
+  projection.strength.j <- data.frame(med = mcmc_unique_EC8$proj_prob_med[j,],
+                                      lower_bound = mcmc_unique_EC8$proj_prob_lower[j,],
+                                      upper_bound = mcmc_unique_EC8$proj_prob_upper[j,],
+                                      region.name = factor(rownames(EC8_new[[1]]),
+                                                           levels = rownames(EC8_new[[1]])))
+  
+  # Projection region in the Bayesian cluster
+  projecting.region.j <- rownames(EC8_new[[1]])[mcmc_unique_EC8$q_tilde_001[j,] > 0.5]
+  
+  plot1 <- projection.strength.j %>%
+    ggplot(mapping = aes(x = region.name, y = med))+
+    geom_line(color = 'black', group = 1)+
+    geom_point()+
+    geom_errorbar(aes(ymin = lower_bound,
+                      ymax = upper_bound),
+                  width = 0.1)+
+    ylim(c(0,1))+
+    theme_bw()+
+    ylab('Estimated projection probability')+
+    ggtitle(paste('Cluster', j))+
+    annotate('text',
+             x = 'ACA',
+             y = 0.8,
+             label = paste0('[', knitr::combine_words(projecting.region.j, and = ""), ']'),
+             size = 10)
+  
+  #-- Plot 2
+  
+  df_j <- df %>%
+    filter(bayesian_allocation == j)
+  
+  
+  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
+                    binomial_allocation = rep(df_j$binomial_allocation, each = R),
+                    projection_probability = unlist(lapply(1:nrow(df_j),
+                                                           function(i) EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
+                                                             sum(EC8_new[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
+                    brain_region = rownames(EC8_new[[1]]))
+  
+  df1$binomial_allocation <- factor(df1$binomial_allocation,
+                                    levels = unique(df1$binomial_allocation))
+  
+  df1$brain_region <- factor(df1$brain_region,
+                             levels = rownames(EC8_new[[1]]))
+  
+  
+  plot2 <- df1 %>%
+    ggplot()+
+    geom_line(mapping = aes(x = brain_region, y = projection_probability, color = binomial_allocation, group = neuron_index))+
+    theme_bw()+
+    ylab('projection probability')+
+    xlab('brain region')+
+    ggtitle(paste('Cluster', j))
+  
+  #-- Plot 3
+  
+  group.colors <- c('LEC'= "#F8766D",'MEC'= "#00BFC4")
+  
+  df2.0 <- t(data_EC_cbind)
+  df2.0 = t(apply(df2.0, 1, function(x){return(x/sum(x))}))
+  
+  df2 <- data.frame(projection.probability = as.vector(t(df2.0[which(unlist(EC8_Z_reordered)==j),])),
+                    region.name = factor(rownames(EC8_new[[1]]),
+                                         levels = rownames(EC8_new[[1]])),
+                    EC_group = rep(unlist(EC8_EC_label)[which(unlist(EC8_Z_reordered)==j)],
+                                   each = R),
+                    neuron = factor(rep(1:length(which(unlist(EC8_Z_reordered)==j)), 
+                                        each = nrow(EC8_new[[1]])),
+                                    levels = rep(1:length(which(unlist(EC8_Z_reordered)==j)))))
+  
+  
+  # Line graph
+  plot3 <- ggplot(df2)+
+    geom_line(mapping = aes(x = region.name,
+                            y = projection.probability,
+                            colour = EC_group,
+                            group = interaction(neuron, EC_group)))+
+    theme_bw()+
+    xlab('region')+
+    ylab('projection strengths')+
+    ggtitle(paste('cluster', j))+
+    scale_color_manual(values=group.colors)
+  
+  #-- Plot 4
+  
+  
+  LEC_prop_bayesian <- length(which(df_j$EC_label == 'LEC'))/nrow(df_j)
+  n_bayesian <- nrow(df_j)
+  
+  # Binomial
+  LEC_binom <- df_j %>%
+    group_by(binomial_allocation) %>%
+    summarise(LEC = length(which(EC_label == 'LEC'))/n(),
+              count = n()) %>%
+    mutate(MEC = 1-LEC) %>%
+    mutate(binomial_allocation = paste0('binomial motif ', binomial_allocation)) %>%
+    rename(motif = binomial_allocation)
+  
+  # Combine both
+  df_j <- rbind(data.frame(motif = paste0('bayesian motif ', j),
+                           LEC = LEC_prop_bayesian,
+                           count = n_bayesian,
+                           MEC = 1-LEC_prop_bayesian),
+                
+                LEC_binom)
+  
+  df_j$motif <- factor(df_j$motif, levels = unique(df_j$motif))
+  
+  plot4 <- df_j %>%
+    pivot_longer(cols = c(2,4)) %>%
+    rename(EC_group = name) %>%
+    ggplot()+
+    geom_bar(mapping = aes(x = motif,
+                           y = value,
+                           fill = EC_group),
+             stat = 'identity')+
+    theme_bw()+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    ggtitle(paste0('bayesian motif ', j))+
+    annotate('text',
+             x = unique(df_j$motif),
+             y = 0.95,
+             label = df_j$count,
+             size = 4,
+             angle = 90)+
+    geom_hline(yintercept = mean(unlist(EC8_EC_label) == 'MEC'), col = "red")+
+    scale_fill_manual(values = group.colors)
+  
+  
+  # Binomial clusters
+  binomial_cluster <- parse_number(LEC_binom$motif)
+  
+  if(length(binomial_cluster) <= 10){
+    
+    
+    table00 <- data.frame(binomial_cluster = binomial_cluster,
+                          projecting_region = binomial_output_reorder$cluster_label[binomial_cluster])
+    
+    
+    
+  }else{
+    table00 <- data.frame(binomial_cluster = binomial_cluster[1:round(length(binomial_cluster)/2)],
+                          projecting_region = binomial_output_reorder$cluster_label[binomial_cluster][1:round(length(binomial_cluster)/2)])
+    
+    table01 <- data.frame(binomial_cluster = binomial_cluster[(round(length(binomial_cluster)/2)+1):length(binomial_cluster)],
+                          projecting_region = binomial_output_reorder$cluster_label[binomial_cluster][(round(length(binomial_cluster)/2)+1):length(binomial_cluster)])
+  }
+  
+  
+  png(filename = paste0('plots/EC8_new/all_bayesian_motifs_new80/bayesian_motif_', j, '.png'),
+      width = 1500,
+      height = 2000)
+  
+  if(length(binomial_cluster) <= 10){
+    
+    ggempty <- ggplot() + theme_void()
+    
+    grid.arrange(
+      tableGrob(table00),
+      ggempty,
+      plot1,
+      plot2,
+      plot3,
+      plot4,
+      ncol = 2,
+      widths = c(1, 1),
+      clip = FALSE
+    )
+    
+    
+  }else{
+    grid.arrange(
+      tableGrob(table00),
+      tableGrob(table01),
+      plot1,
+      plot2,
+      plot3,
+      plot4,
+      ncol = 2,
+      widths = c(1, 1),
+      clip = FALSE
+    )
+  }
+  
+  dev.off()
   
   
   
