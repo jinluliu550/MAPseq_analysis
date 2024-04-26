@@ -76,6 +76,8 @@ pp_m6 = projection_prob(6,100,mcmc_all_EC8)
 
 ## Plots
 
+R <- 8
+
 #Mouse 1
 pp1 = data.frame(pp_m1$pprob_pair, row.names = rownames(EC8_new[[1]]))
 names(pp1) = rownames(EC8_new[[1]])
