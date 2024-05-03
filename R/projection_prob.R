@@ -54,7 +54,45 @@ projection_prob= function(m,N,mcmc_all_out){
   return(list(pprob = pprob, pprob_pair = pprob_pair, pprob_ci = pprob_ci, pprob_pair_ci = pprobpair_ci))
 }
 
-# pprob_pair + pprob_pair_temp 
+
+# CI for the difference in the proability of non-zero counts for region one given another
+# between two mice
+projection_prob_d= function(m1,m2,N,mcmc_all_out){
+  
+  R= mcmc_all_out$R
+  I = length(mcmc_all_out$alpha_output)
+  
+  #output
+  pprob_pair_array_1 = array(0,dim= c(I,R,R))
+  pprob_mat_1 = matrix(0,I,R)
+  
+  pprob_pair_array_2 = array(0,dim= c(I,R,R))
+  pprob_mat_2 = matrix(0,I,R)
+  
+  for(i in 1:I){
+    wjm1 = mcmc_all_out$omega_J_M_output[[i]][,m1]
+    wjm2 = mcmc_all_out$omega_J_M_output[[i]][,m2]
+    qstarjm = mcmc_all_out$q_star_1_J_output[[i]]
+    gammastarjm = mcmc_all_out$gamma_star_1_J_output[[i]]
+    pzero_i1 = ppzero(N,qstarjm*gammastarjm, wjm1)
+    pzero_i2 = ppzero(N,qstarjm*gammastarjm, wjm2)
+    pzero_pair_i1 = ppzero_pair(N,qstarjm*gammastarjm, wjm1)
+    pzero_pair_i2 = ppzero_pair(N,qstarjm*gammastarjm, wjm2)
+    pprob_mat_1[i,] = 1- pzero_i1
+    pprob_mat_2[i,] = 1- pzero_i2
+    pprob_pair_temp1 =  (1-(matrix(pzero_i1, R,R) + t(matrix(pzero_i1, R,R)) - pzero_pair_i1))/matrix(1-pzero_i1, R,R)
+    pprob_pair_temp2 =  (1-(matrix(pzero_i2, R,R) + t(matrix(pzero_i2, R,R)) - pzero_pair_i2))/matrix(1-pzero_i2, R,R)
+    diag(pprob_pair_temp1) = 1
+    diag(pprob_pair_temp2) = 1
+    pprob_pair_array_1[i,,] = pprob_pair_temp1
+    pprob_pair_array_2[i,,] = pprob_pair_temp2 
+  }
+  pprob_d = apply(pprob_mat_1-pprob_mat_2,2,mean)
+  pprob_pair_d = apply(pprob_pair_array_1-pprob_pair_array_2,c(2,3),mean)
+  pprob_d_ci = apply(pprob_mat_1-pprob_mat_2,2,function(x){HPDinterval(as.mcmc(x))})
+  pprobpair_d_ci = apply(pprob_pair_array_1-pprob_pair_array_2,c(2,3),function(x){HPDinterval(as.mcmc(x))})
+  return(list(pprob = pprob_d, pprob_pair = pprob_pair_d, pprob_ci = pprob_d_ci, pprob_pair_ci = pprobpair_d_ci))
+}
 
 #Mouse 1
 pp_m1 = projection_prob(1,100,mcmc_all_EC8)
@@ -73,6 +111,9 @@ pp_m5 = projection_prob(5,100,mcmc_all_EC8)
 
 #Mouse 6
 pp_m6 = projection_prob(6,100,mcmc_all_EC8)
+
+# Difference between Mouse 1 and Mouse 6
+pp_m16 = projection_prob_d(1,6,100,mcmc_all_EC8)
 
 ## Plots
 
@@ -221,6 +262,57 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()
+
+#Mouse 1- Mouse 6
+pp16 = data.frame(pp_m16$pprob_pair, row.names = rownames(EC8_new[[1]]))
+names(pp16) = rownames(EC8_new[[1]])
+print(pp16)
+d = (pp_m16$pprob_pair_ci[1,,]>0) |(pp_m16$pprob_pair_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
+
+pp16 = data.frame(pp16, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(pp16)[1:R] = rownames(EC8_new[[1]])
+pp16 <-  pivot_longer(pp16,
+                     cols = !Region.B,
+                     names_to = "Region.A", 
+                     values_to = "CP"
+)
+pp16$Region.A = factor(pp16$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+pp16 = merge(pp16,ds)
+
+ggplot(pp16, aes(x = Region.A, y = Region.B, fill = CP)) +
+  geom_tile() +
+  labs(x = "Region A",
+       y = "Region B",
+       fill= "P(B|A)") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(CP,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(pp16, aes(x = Region.A, y = Region.B, fill = CP)) +
+  geom_tile() +
+  labs(x = "Region A",
+       y = "Region B",
+       fill= "P(B|A)") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+
+# Projection probability across mice
 
 group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D",'4'= "#009999",'5'= "#333BFF",'6'= "#9633FF")
 
