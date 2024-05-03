@@ -280,6 +280,20 @@ projection_by_EC(Y = EC8_new,
 
 dev.off()
 
+# Projection strength of each neuron in each cluster, color-coded by the injection site
+png(file = './plots/EC8_new/projection_by_EVI80.png',
+    width = 4000,
+    height = 2200)
+
+evi.c = evi.contribution(Zmat,unlist(mcmc_unique_EC8$Z))
+
+projection_by_evi(Y = EC8_new,
+                 evi = evi.c,
+                 Z = mcmc_unique_EC8$Z,
+                 region_name = rownames(EC8_new[[1]]))
+
+dev.off()
+
 
 # Examining the difference of omega_jm between any 2 mice:
 difference_omega_JM <- difference_in_omega_jm(mcmc_run_omega_output = omega_JM_mcmc)
