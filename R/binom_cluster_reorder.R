@@ -70,28 +70,9 @@ binom_cluster_reorder <- function(Y,
                            function(c) which(old_ordering == Z[[d]][c]))
                   })
   
-  cluster_summary <- binomial_output$cluster_summary
-  
-  cluster_summary_list <- lapply(1:max(cluster_summary$cluster_index),
-                                 function(j){
-                                   
-                                   cluster_summary %>%
-                                     filter(cluster_index == j)
-                                 })
-  
-  cluster_summary_list_new <- lapply(1:max(cluster_summary$cluster_index),
-                                     function(j){
-                                       
-                                       cluster_summary_list_j <- cluster_summary_list[[old_ordering[j]]]
-                                       
-                                       cluster_summary_list_j$cluster_index <- j
-                                       
-                                       cluster_summary_list_j
-                                     })
   
   return(list('allocation' = Z_new,
-              'cluster_label' = binomial_output$cluster_label[old_ordering],
-              'cluster_summary' = do.call(rbind, cluster_summary_list_new)))
+              'cluster_label' = binomial_output$cluster_label[old_ordering]))
 }
 
 
