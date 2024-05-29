@@ -30,11 +30,11 @@ binomial_model <- function(data){
                                 decision <- ifelse(region_names %in% str_split(cluster_label[j], " ")[[1]], 1, 0)
                               })
   
-  cluster_summary_df <- data.frame(cluster_index = rep(1:length(cluster_label), each = nrow(data)),
-                                   
-                                   projecting = unlist(projecting_region),
-                                   
-                                   region = region_names)
+  # cluster_summary_df <- data.frame(cluster_index = rep(1:length(cluster_label), each = nrow(data)),
+  #                                  
+  #                                  projecting = unlist(projecting_region),
+  #                                  
+  #                                  region = region_names)
   
   # Separate allocations
   C_cumsum <- c(0, cumsum(C))
@@ -43,7 +43,7 @@ binomial_model <- function(data){
                        function(m) allocation[(C_cumsum[m]+1):(C_cumsum[m+1])])
   
   return(list('allocation' = allocation,
-              'cluster_label' = cluster_label,
-              'cluster_summary' = cluster_summary_df))
+              'cluster_label' = cluster_label))
+              # 'cluster_summary' = cluster_summary_df))
 }
 
