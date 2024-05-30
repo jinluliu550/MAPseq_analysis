@@ -66,3 +66,30 @@ df00 %>%
   scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
 
 
+# Flow graph
+df01 <- all_brains_set_sub %>%
+  pivot_longer(cols = 1:11,
+               names_to = 'brain_region',
+               values_to = 'barcode_counts') %>%
+  mutate(brain_region = factor(brain_region,
+                               levels = list_of_regions)) %>%
+  group_by(id) %>%
+  mutate(Region_max = brain_region[which.max(rank(barcode_counts[1:8], ties.method = 'random'))]) %>%
+  ungroup() %>%
+  mutate(projection = ifelse(barcode_counts == 0, 'No', 'Yes')) %>%
+  group_by(EC,
+           brain_region,
+           Region_max) %>%
+  summarise(Freq = length(which(projection == 'Yes'))) %>%
+  ungroup()
+
+ggplot(data = df01,
+       aes(y = Freq,
+           axis1 = Region_max,
+           axis2 = brain_region))+
+  geom_flow(aes(fill = EC))+
+  geom_stratum()+
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)))+
+  scale_x_discrete(limits = c("Strongest Projecting Regions", "All Regions"))+
+  theme_bw()+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
