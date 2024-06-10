@@ -22,7 +22,7 @@ gel_plot <- function(Y){
                          matrix0 <- matrix(Y_m_prop[,which(strongest_projecting_region == r)],
                                            nrow = nrow(Y_m_prop))
                          
-                         matrix0[,order(Y_m_prop[r,which(strongest_projecting_region == r)])]
+                         matrix0[,order(-Y_m_prop[r,which(strongest_projecting_region == r)])]
 
                           
                         }else{
@@ -36,27 +36,52 @@ gel_plot <- function(Y){
     df1 <- data.frame(projection_strength = as.vector(df),
                       region = rownames(Y_m),
                       cell_index = rep(1:ncol(df), each = nrow(Y_m)))
-    
-    plot.output[[m]] <- df1 %>%
-      ggplot(mapping = aes(x = factor(region, levels = rownames(Y_m)),
-                           y = cell_index,
-                           fill = projection_strength))+
-      geom_tile()+
-      theme_bw()+
-      scale_fill_gradientn(colours = c('white', 'yellow', 'red'),
-                           values = scales::rescale(c(0, 0.25, 1)),
-                           limits = c(0,1))+
-      guides(fill=guide_legend(title="projection strength"))+
-      xlab('region')+
-      theme(axis.text = element_text(size = 12),
-            axis.title = element_text(size = 12),
-            plot.title = element_text(size=12),
-            legend.position = 'none',
-            panel.grid = element_blank(),
-            panel.border = element_blank())+
-      ylab('neurons')+
-      ggtitle(paste('mouse', m))+
-      ylim(c(0, ncol(Y_m)))
+    if(m != M){
+      
+      plot.output[[m]] <- df1 %>%
+        ggplot(mapping = aes(x = factor(region, levels = rownames(Y_m)),
+                             y = cell_index,
+                             fill = projection_strength))+
+        geom_tile()+
+        theme_bw()+
+        scale_fill_gradientn(colours = c('white', 'yellow', 'red'),
+                             values = scales::rescale(c(0, 0.25, 1)),
+                             limits = c(0,1))+
+        guides(fill=guide_legend(title="projection strength"))+
+        xlab('region')+
+        theme(axis.text = element_text(size = 12),
+              axis.title = element_text(size = 12),
+              plot.title = element_text(size=12),
+              legend.position = 'none',
+              panel.grid = element_blank(),
+              panel.border = element_blank())+
+        ylab('neurons')+
+        ggtitle(paste('mouse', m))+
+        ylim(c(0, ncol(Y_m)))
+      
+    }else{
+      
+      
+      plot.output[[m]] <- df1 %>%
+        ggplot(mapping = aes(x = factor(region, levels = rownames(Y_m)),
+                             y = cell_index,
+                             fill = projection_strength))+
+        geom_tile()+
+        theme_bw()+
+        scale_fill_gradientn(colours = c('white', 'yellow', 'red'),
+                             values = scales::rescale(c(0, 0.25, 1)),
+                             limits = c(0,1))+
+        guides(fill=guide_legend(title="projection strength"))+
+        xlab('region')+
+        theme(axis.text = element_text(size = 12),
+              axis.title = element_text(size = 12),
+              plot.title = element_text(size=12),
+              panel.grid = element_blank(),
+              panel.border = element_blank())+
+        ylab('neurons')+
+        ggtitle(paste('mouse', m))+
+        ylim(c(0, ncol(Y_m)))
+    }
     
     
   }

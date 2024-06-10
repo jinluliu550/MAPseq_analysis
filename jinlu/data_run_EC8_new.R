@@ -55,7 +55,9 @@ binomial_output_reorder <- binom_cluster_reorder(Y = EC8_new,
 #-------------------------------- Empirical Analysis ---------------------------------------
 
 # Number of neurons in each mouse
-png(file = './plots/EC8_new/number_of_neurons_in_each_m.png')
+png(file = './plots/EC8_new2/number_of_neurons_in_each_m.png',
+    width = 300,
+    height = 200)
 
 data.frame(mouse = paste('mouse', 1:M),
            C = C) %>%
@@ -79,12 +81,15 @@ proportion_of_EC <- lapply(1:6,
 
 proportion_of_EC <- do.call(rbind, proportion_of_EC)
 
-png(file = './plots/EC8_new/prop_of_EC_in_each_m.png')
+png(file = './plots/EC8_new2/prop_of_EC_in_each_m.png',
+    width = 400,
+    height = 200)
 
 ggplot(proportion_of_EC, aes(x = mouse, y = count, fill = EC))+
   geom_bar(position = 'fill', stat = 'identity')+
   ylab('proportion of LEC and MEC')+
-  theme_bw()
+  theme_bw()+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
 
 dev.off()
 
@@ -219,7 +224,10 @@ png(file = './plots/EC8_new2/number_of_neuron_by_m.png',
 
 opt.clustering.frequency(clustering = mcmc_unique_EC8$Z)
 
+
 dev.off()
+
+opt.clustering.frequency.large(clustering = mcmc_unique_EC8$Z)
 
 # Plot of estimated projection strength
 png(file = './plots/EC8_new2/estimated_pp.png',

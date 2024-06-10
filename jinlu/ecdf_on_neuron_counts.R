@@ -93,3 +93,8 @@ ggplot(data = df01,
   scale_x_discrete(limits = c("Strongest Projecting Regions", "All Regions"))+
   theme_bw()+
   scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
+
+
+
+
+

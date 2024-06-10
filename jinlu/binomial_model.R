@@ -30,12 +30,6 @@ binomial_model <- function(data){
                                 decision <- ifelse(region_names %in% str_split(cluster_label[j], " ")[[1]], 1, 0)
                               })
   
-  # cluster_summary_df <- data.frame(cluster_index = rep(1:length(cluster_label), each = nrow(data)),
-  #                                  
-  #                                  projecting = unlist(projecting_region),
-  #                                  
-  #                                  region = region_names)
-  
   # Separate allocations
   C_cumsum <- c(0, cumsum(C))
   
