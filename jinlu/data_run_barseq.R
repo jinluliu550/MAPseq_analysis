@@ -127,8 +127,8 @@ barseq_Z_reordered <- mcmc_unique_barseq$Z
 
 # Number of neurons by cluster and mosue
 png(file = './plots/barseq/number_of_neuron_by_m.png',
-    width = 2500,
-    height = 700)
+    width = 1200,
+    height = 500)
 
 opt.clustering.frequency(clustering = mcmc_unique_barseq$Z)
 
@@ -137,8 +137,8 @@ dev.off()
 
 # Plot of estimated projection strength
 png(file = './plots/barseq/estimated_pp.png',
-    width = 3500,
-    height = 2000)
+    width = 1500,
+    height = 800)
 
 mcmc_unique_barseq$estimated.pp.plot
 
@@ -147,8 +147,8 @@ dev.off()
 
 # q tilde
 png(file = './plots/barseq/q_tilde.png',
-    width = 3000,
-    height = 600)
+    width = 1200,
+    height = 300)
 
 mcmc_unique_barseq$q_tilde_plot
 
@@ -165,8 +165,8 @@ omega_JM_mcmc <- mcmc_run_omega_JM(mcmc_run_all_output = mcmc_all_barseq,
 
 
 png(file = './plots/barseq/w_jm.png',
-    width = 3000,
-    height = 1500)
+    width = 1800,
+    height = 900)
 
 omega_JM_mcmc$omega_JM_plot
 
@@ -177,8 +177,8 @@ difference_omega_JM <- difference_in_omega_jm(mcmc_run_omega_output = omega_JM_m
 
 
 png(file = './plots/barseq/w_jm_difference.png',
-    width = 1000,
-    height = 400)
+    width = 1200,
+    height = 300)
 
 difference_omega_JM$probability_plot
 
@@ -186,20 +186,20 @@ dev.off()
 
 
 png(file = './plots/barseq/w_jm_difference_eg.png',
-    width = 1000,
+    width = 800,
     height = 400)
 
 difference_in_omega_jm_plot(difference_in_omega_jm_output = difference_omega_JM,
                             mcmc_run_omega_output = omega_JM_mcmc,
-                            N = 10)
+                            N = 6)
 
 dev.off()
 
 
 # Heatmap of projection stength of neurons in each cluster
 png(file = './plots/barseq/heatmap_neuron.png',
-    width = 900,
-    height = 900)
+    width = 600,
+    height = 600)
 
 pp.standard.ordering(Y = data_barseq,
                      Z = mcmc_unique_barseq$Z,
@@ -216,8 +216,8 @@ df <- data.frame(N = unlist(data_barseq_N),
                  motif = unlist(mcmc_unique_barseq$Z))
 
 png(file = './plots/barseq/N_sum_by_cluster.png',
-    width = 1200,
-    height = 600)
+    width = 1000,
+    height = 400)
 
 ggplot(df)+
   geom_boxplot(mapping = aes(x = factor(motif, levels = 1:max(unlist(mcmc_unique_barseq$Z))),
@@ -236,8 +236,8 @@ ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_barseq,
 
 
 png(file = './plots/barseq/ppc_zero.png',
-    width = 1200,
-    height = 700)
+    width = 600,
+    height = 250)
 
 ppc_multiple$zero.plot
 
@@ -245,8 +245,8 @@ dev.off()
 
 
 png(file = './plots/barseq/ppc_nonzero.png',
-    width = 1200,
-    height = 700)
+    width = 600,
+    height = 250)
 
 ppc_multiple$non.zero.plot
 
@@ -262,7 +262,7 @@ for(m in 1:M){
   
   png(file = paste0('./plots/barseq/ppc_single_mouse_', m, '.png'),
       width = 1200,
-      height = 700)
+      height = 400)
   
   print(ppc_single[[m]])
   
@@ -306,8 +306,8 @@ clust80_r <- k_means_reorder(Y = data_barseq,
 
 # Heatmap of projection strength of neurons in each cluster
 png(file = './plots/barseq/k_means_40.png',
-    width = 900,
-    height = 900)
+    width = 600,
+    height = 600)
 
 pp.standard.ordering(Y = data_barseq,
                      Z = clust40_r,
@@ -316,8 +316,8 @@ pp.standard.ordering(Y = data_barseq,
 dev.off()
 
 png(file = './plots/barseq/k_means_60.png',
-    width = 900,
-    height = 900)
+    width = 600,
+    height = 600)
 
 pp.standard.ordering(Y = data_barseq,
                      Z = clust60_r,
@@ -326,8 +326,8 @@ pp.standard.ordering(Y = data_barseq,
 dev.off()
 
 png(file = './plots/barseq/k_means_80.png',
-    width = 900,
-    height = 900)
+    width = 600,
+    height = 600)
 
 pp.standard.ordering(Y = data_barseq,
                      Z = clust80_r,
@@ -358,3 +358,374 @@ data3_significant <- significant_obs %>%
   pull(cluster)
 
 length(data3_significant)
+
+
+#--------------------------- Binomial clustering ----------------------------------
+
+barseq_binomial <- binomial_model(data = data_barseq)
+
+barseq_binomial_reorder <- binom_cluster_reorder(Y = data_barseq,
+                                                 binomial_output = barseq_binomial)
+
+
+png(file = './plots/barseq/binomial_cluster.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = data_barseq,
+                     Z = barseq_binomial_reorder$allocation,
+                     regions.name = rownames(data_barseq[[1]]))
+
+dev.off()
+
+#-------------------------- Variation of information between different estimates -------------------------------------
+
+
+# No1. Bayesian clustering
+# No2. Binomial clustering
+
+# No3. k-means with 40 clusters
+# No4. k-means with 60 clusters
+# No5. k-means with 80 clusters
+
+clusterings <- list(mcmc_unique_barseq$Z,
+                    barseq_binomial_reorder$allocation,
+                    clust40_r,
+                    clust60_r,
+                    clust80_r)
+
+mx <- matrix(0, nrow = 5, ncol = 5)
+
+colnames(mx) <- c('bayesian_motif',
+                  'binomial_motif',
+                  'k_means_40',
+                  'k_means_60',
+                  'k_means_80')
+
+rownames(mx) <- c('bayesian_motif',
+                  'binomial_motif',
+                  'k_means_40',
+                  'k_means_60',
+                  'k_means_80')
+
+
+for(i in 1:5){
+  
+  mx[i,] <- sapply(1:5,
+                   function(v) variation_info(unlist(clusterings[[i]]),
+                                              unlist(clusterings[[v]])))
+}
+
+mx <- mx/log(base = 2, x = sum(sapply(1:length(data_barseq),
+                                      function(m) ncol(data_barseq[[m]]))))
+
+mx <- round(mx, 2)
+
+
+
+ds <-  pivot_longer(as.data.frame(mx),
+                    cols = 1:5,
+                    names_to = "class.B", 
+                    values_to = "vi"
+)
+
+# plot
+ds$class.A <- rep(rownames(mx), each = 5)
+
+
+png(file = './plots/barseq/comparison_vi.png',
+    width = 664,
+    height = 545)
+
+ggplot(ds, aes(x = class.A, y = class.B, fill = vi)) +
+  geom_tile() +
+  labs(x = "Method A",
+       y = "Method B") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0)
+
+dev.off()
+
+
+#------------------------ Add a 10 percent noise ----------------------------------
+
+barseq_added_noise <- add_noise(mcmc_run_all_output = mcmc_all_barseq,
+                                Y = data_barseq,
+                                regions.name = rownames(data_barseq[[1]]))
+
+barseq_added_noise_gelplot <- gel_plot(barseq_added_noise)
+
+
+png(file = './plots/barseq/gelplot_added_noise.png',
+    width = 1500,
+    height = 500)
+
+ggarrange(barseq_added_noise_gelplot[[1]],
+          barseq_added_noise_gelplot[[2]],
+          barseq_added_noise_gelplot[[3]],
+          nrow = 1,
+          widths = c(1,1,1.3))
+
+dev.off()
+
+# Binomial clustering
+
+#Initialize z
+
+df <- t(do.call(cbind, barseq_added_noise))
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
+
+
+C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(barseq_added_noise[[m]]))))
+
+#---------------------------------- K-means ------------------------------------------------
+
+
+#--------------------------- K-means -------------------------------------
+
+# K = 40
+k_mean_clust_40_added_noise <- kmeans(df, 40, nstart = 25)$cluster
+
+clust40_added_noise <- lapply(1:M,
+                              function(m) k_mean_clust_40_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+clust40_r_added_noise <- k_means_reorder(Y = barseq_added_noise,
+                                         Z = clust40_added_noise)
+
+
+# K = 60
+k_mean_clust_60_added_noise <- kmeans(df, 60, nstart = 25)$cluster
+
+clust60_added_noise <- lapply(1:M,
+                              function(m) k_mean_clust_60_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
+clust60_r_added_noise <- k_means_reorder(Y = barseq_added_noise,
+                                         Z = clust60_added_noise)
+
+
+# K = 80
+k_mean_clust_80_added_noise <- kmeans(df, 80, nstart = 25)$cluster
+
+clust80_added_noise <- lapply(1:M,
+                              function(m) k_mean_clust_80_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
+clust80_r_added_noise <- k_means_reorder(Y = barseq_added_noise,
+                                         Z = clust80_added_noise)
+
+
+
+# Heatmap of projection strength of neurons in each cluster
+png(file = './plots/barseq/k_means_40_added_noise.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise,
+                     Z = clust40_r_added_noise,
+                     regions.name = rownames(barseq_added_noise[[1]]))
+
+dev.off()
+
+png(file = './plots/barseq/k_means_60_added_noise.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise,
+                     Z = clust60_r_added_noise,
+                     regions.name = rownames(barseq_added_noise[[1]]))
+
+dev.off()
+
+png(file = './plots/barseq/k_means_80_added_noise.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise,
+                     Z = clust60_r_added_noise,
+                     regions.name = rownames(barseq_added_noise[[1]]))
+
+dev.off()
+
+
+
+#--------------------------- Binomial clustering ----------------------------------
+
+barseq_binomial_added_noise <- binomial_model(data = barseq_added_noise)
+
+barseq_binomial_reorder_added_noise <- binom_cluster_reorder(Y = barseq_added_noise,
+                                                 binomial_output = barseq_binomial_added_noise)
+
+
+png(file = './plots/barseq/binomial_cluster_added_noise.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise,
+                     Z = barseq_binomial_reorder_added_noise$allocation,
+                     regions.name = rownames(barseq_added_noise[[1]]))
+
+dev.off()
+
+
+#-------------------------------------------- MCMC ----------------------------------------------
+
+
+
+# MCMC run
+mcmc_all_barseq_added_noise <- mcmc_run_all(Y = barseq_added_noise,
+                                J = 80,
+                                number_iter = 20000,
+                                thinning = 5,
+                                burn_in = 5000,
+                                adaptive_prop = 0.0001,
+                                print_Z = TRUE,
+                                a_gamma = 30,
+                                b_gamma = 1,
+                                a_alpha = 1/5,
+                                b_alpha = 1/2,
+                                Z.init = clust60_r_added_noise)
+
+
+Zmat_added_noise = matrix(unlist(mcmc_all_barseq_added_noise$Z_output), length(mcmc_all_barseq_added_noise$Z_output), sum(C),byrow = TRUE)
+
+# Number of occupied components
+k = apply(Zmat_added_noise,1,function(x){length(unique(x))})
+plot(k, type = 'l')
+
+
+# Posterior similarity matrix
+psm_barseq_added_noise = similarity_matrix(mcmc_run_all_output = mcmc_all_barseq_added_noise)
+
+
+# Reordered posterior samples of z
+barseq_z_reordered_added_noise <- z_trace_updated(mcmc_run_all_output = mcmc_all_barseq_added_noise)
+
+
+# optimal clustering
+barseq_Z_added_noise <- opt.clustering.comb(z_trace = barseq_z_reordered_added_noise,
+                                          post_similarity = psm_barseq_added_noise,
+                                          max.k = max(k))
+
+
+#-- Convert to a list
+C_cumsum <- c(0, cumsum(C))
+barseq_Z_added_noise <- lapply(1:M,
+                             function(m) barseq_Z_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+# MCMC unique
+mcmc_unique_barseq_added_noise <- mcmc_run_post(mcmc_run_all_output = mcmc_all_barseq_added_noise,
+                                              Z = barseq_Z_added_noise,
+                                              thinning = 5,
+                                              burn_in = 2000,
+                                              number_iter = 12000,
+                                              Y = barseq_added_noise,
+                                              a_gamma = 30,
+                                              b_gamma = 1,
+                                              regions.name = rownames(barseq_added_noise[[1]]))
+
+
+
+# Heatmap of projection stength of neurons in each cluster
+png(file = './plots/barseq/heatmap_neuron_added_noise.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise,
+                     Z = mcmc_unique_barseq_added_noise$Z,
+                     regions.name = rownames(barseq_added_noise[[1]]))
+
+dev.off()
+
+
+
+#---------------------------------------- Compare variation of information ----------------------------------------------
+
+added_noise_vi <- NULL
+added_noise_vi$bayesian <- variation_info(unlist(mcmc_unique_barseq$Z),
+                                          unlist(mcmc_unique_barseq_added_noise$Z))/log(base = 2, x = sum(sapply(1:length(data_barseq),
+                                                                                                               function(m) ncol(data_barseq[[m]]))))
+
+added_noise_vi$k_mean_40 <- variation_info(unlist(clust40_r),
+                                           unlist(clust40_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_barseq),
+                                                                                                       function(m) ncol(data_barseq[[m]]))))
+
+
+added_noise_vi$k_mean_60 <- variation_info(unlist(clust60_r),
+                                           unlist(clust60_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_barseq),
+                                                                                                       function(m) ncol(data_barseq[[m]]))))
+
+
+added_noise_vi$k_mean_80 <- variation_info(unlist(clust80_r),
+                                           unlist(clust80_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_barseq),
+                                                                                                       function(m) ncol(data_barseq[[m]]))))
+
+
+added_noise_vi$binomial <- variation_info(unlist(barseq_binomial_reorder$allocation),
+                                          unlist(barseq_binomial_reorder_added_noise$allocation))/log(base = 2, x = sum(sapply(1:length(data_barseq),
+                                                                                                                             function(m) ncol(data_barseq[[m]]))))
+
+
+
+#------------------------------------- Show how a Binomial cluster splits into multiple Bayesian cluster ----------------------------
+
+
+# Combine binomial results with Bayesian results
+df_compare <- lapply(1:M,
+             function(m){
+               
+               data.frame(dataset = m,
+                          neuron_index = 1:C[m],
+                          binomial_allocation = barseq_binomial_reorder$allocation[[m]],
+                          bayesian_allocation = mcmc_unique_barseq$Z[[m]])
+             })
+
+df_compare <- do.call(rbind, df_compare)
+
+
+# Top 20 binomial motifs with the largest number of neurons
+large_binomial_motifs <- df_compare %>%
+  group_by(binomial_allocation) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  top_n(20) %>%
+  select(binomial_allocation) %>%
+  pull() %>%
+  sort()
+
+
+for(j in large_binomial_motifs){
+  
+  df_j <- df_compare %>%
+    filter(binomial_allocation == j)
+  
+  
+  df1 <- data.frame(neuron_index = rep(1:nrow(df_j), each = R),
+                    bayesian_allocation = rep(df_j$bayesian_allocation, each = R),
+                    projection_probability = unlist(lapply(1:nrow(df_j),
+                                                           function(i) data_barseq[[df_j$dataset[i]]][,df_j$neuron_index[i]]/
+                                                             sum(data_barseq[[df_j$dataset[i]]][,df_j$neuron_index[i]]))),
+                    brain_region = rownames(data_barseq[[1]]))
+  
+  df1$bayesian_allocation <- factor(df1$bayesian_allocation,
+                                    levels = unique(df1$bayesian_allocation))
+  
+  df1$brain_region <- factor(df1$brain_region,
+                             levels = rownames(data_barseq[[1]]))
+  
+  png(filename = paste0('plots/barseq/binomial_motif_', j, '.png'),
+      width = 800,
+      height = 500)
+  
+  
+  print(df1 %>%
+          ggplot()+
+          geom_line(mapping = aes(x = brain_region, y = projection_probability, color = bayesian_allocation, group = neuron_index))+
+          theme_bw()+
+          ylab('projection probability')+
+          xlab('brain region')+
+          ggtitle(paste('Cluster', j))
+  )
+  
+  dev.off()
+}

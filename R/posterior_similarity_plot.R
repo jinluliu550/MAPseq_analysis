@@ -26,7 +26,7 @@ plotpsm <- function(psm.ind,
     
     image.plot(1:n,
                1:n,
-               psm_hc[nrow(psm_hc):1,],
+               psm_hc,
                col=rev(heat.colors(100)),
                axis.args=list(yaxt='n', xaxt='n'),
                ...)
@@ -82,7 +82,7 @@ plotpsm <- function(psm.ind,
     
     image.plot(1:n.max, 
                1:n.max,
-               psm_matrix_output[nrow(psm_matrix_output):1,], 
+               psm_matrix_output, 
                col=rev(heat.colors(100)),
                axis.args=list(yaxt='n', xaxt='n'),
                ...)
@@ -90,7 +90,7 @@ plotpsm <- function(psm.ind,
     
     
     abline(v=n[-c(1,M+1)], lwd=3)
-    abline(h=n[-c(1,M+1)], lwd=3)
+    abline(h=n.max - n[-c(1,M+1)], lwd=3)
     
     
   }

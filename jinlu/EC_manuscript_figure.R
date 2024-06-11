@@ -21,7 +21,9 @@ df2 <- lapply(figure_3b_cluster,
                 
                 data.frame(cluster = paste('cluster', j),
                            region = rownames(EC8_new[[1]]),
-                           mean_projection_strength = mcmc_unique_EC8$proj_prob_mean[j,])
+                           mean_projection_strength = mcmc_unique_EC8$proj_prob_med[j,],
+                           lower_projection_strength = mcmc_unique_EC8$proj_prob_lower[j,],
+                           upper_projection_strength = mcmc_unique_EC8$proj_prob_upper[j,])
               })
 
 df2 <- do.call(rbind, df2)
@@ -59,9 +61,12 @@ plot1 <- lapply(figure_3b_cluster,
                                          y = mean_projection_strength,
                                          group = 1))+
                     geom_line()+
+                    geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
+                                                ymax = upper_projection_strength),
+                                  width = 0.1)+
                     geom_point()+
                     theme_bw()+
-                    ylab('projection strength')+
+                    ylab('projection probability')+
                     geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
                               mapping = aes(x = -Inf, y = 0.9, label = label),
                               hjust   = -0.1)+
@@ -135,7 +140,7 @@ dev.off()
 
 
 # Figure 3c
-figure_3c_cluster <- c(25,41,37,55)
+figure_3c_cluster <- c(35,25,41,53)
 
 
 
@@ -155,7 +160,9 @@ df2 <- lapply(figure_3c_cluster,
                 
                 data.frame(cluster = paste('cluster', j),
                            region = rownames(EC8_new[[1]]),
-                           mean_projection_strength = mcmc_unique_EC8$proj_prob_mean[j,])
+                           mean_projection_strength = mcmc_unique_EC8$proj_prob_med[j,],
+                           lower_projection_strength = mcmc_unique_EC8$proj_prob_lower[j,],
+                           upper_projection_strength = mcmc_unique_EC8$proj_prob_upper[j,])
               })
 
 df2 <- do.call(rbind, df2)
@@ -194,8 +201,11 @@ plot1 <- lapply(figure_3c_cluster,
                                          group = 1))+
                     geom_line()+
                     geom_point()+
+                    geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
+                                                ymax = upper_projection_strength),
+                                  width = 0.1)+
                     theme_bw()+
-                    ylab('projection strength')+
+                    ylab('projection probability')+
                     geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
                               mapping = aes(x = -Inf, y = 0.9, label = label),
                               hjust   = -0.1)+
@@ -286,7 +296,9 @@ df2 <- lapply(figure_3d_cluster,
                 
                 data.frame(cluster = paste('cluster', j),
                            region = rownames(EC8_new[[1]]),
-                           mean_projection_strength = mcmc_unique_EC8$proj_prob_mean[j,])
+                           mean_projection_strength = mcmc_unique_EC8$proj_prob_med[j,],
+                           lower_projection_strength = mcmc_unique_EC8$proj_prob_lower[j,],
+                           upper_projection_strength = mcmc_unique_EC8$proj_prob_upper[j,])
               })
 
 df2 <- do.call(rbind, df2)
@@ -325,8 +337,11 @@ plot1 <- lapply(figure_3d_cluster,
                                          group = 1))+
                     geom_line()+
                     geom_point()+
+                    geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
+                                                ymax = upper_projection_strength),
+                                  width = 0.1)+
                     theme_bw()+
-                    ylab('projection strength')+
+                    ylab('projection probability')+
                     geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
                               mapping = aes(x = -Inf, y = 0.9, label = label),
                               hjust   = -0.1)+
@@ -452,7 +467,9 @@ df2 <- lapply(figure_3bs_LEC,
                 
                 data.frame(cluster = paste('cluster', j),
                            region = rownames(EC8_new[[1]]),
-                           mean_projection_strength = mcmc_unique_EC8$proj_prob_mean[j,])
+                           mean_projection_strength = mcmc_unique_EC8$proj_prob_med[j,],
+                           lower_projection_strength = mcmc_unique_EC8$proj_prob_lower[j,],
+                           upper_projection_strength = mcmc_unique_EC8$proj_prob_upper[j,])
               })
 
 df2 <- do.call(rbind, df2)
@@ -487,10 +504,13 @@ plot1 <- lapply(figure_3bs_LEC,
                     ggplot(mapping = aes(x = region,
                                          y = mean_projection_strength,
                                          group = 1))+
+                    geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
+                                                ymax = upper_projection_strength),
+                                  width = 0.1)+
                     geom_line()+
                     geom_point()+
                     theme_bw()+
-                    ylab('projection strength')+
+                    ylab('projection probability')+
                     geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
                               mapping = aes(x = -Inf, y = 0.9, label = label),
                               hjust   = -0.1)+
@@ -604,7 +624,9 @@ df2 <- lapply(figure_3cs_cluster,
                 
                 data.frame(cluster = paste('cluster', j),
                            region = rownames(EC8_new[[1]]),
-                           mean_projection_strength = mcmc_unique_EC8$proj_prob_mean[j,])
+                           mean_projection_strength = mcmc_unique_EC8$proj_prob_med[j,],
+                           lower_projection_strength = mcmc_unique_EC8$proj_prob_lower[j,],
+                           upper_projection_strength = mcmc_unique_EC8$proj_prob_upper[j,])
               })
 
 df2 <- do.call(rbind, df2)
@@ -642,8 +664,11 @@ plot1 <- lapply(figure_3cs_cluster,
                                          group = 1))+
                     geom_line()+
                     geom_point()+
+                    geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
+                                                ymax = upper_projection_strength),
+                                  width = 0.1)+
                     theme_bw()+
-                    ylab('projection strength')+
+                    ylab('projection probability')+
                     geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
                               mapping = aes(x = -Inf, y = 0.9, label = label),
                               hjust   = -0.1)+
@@ -766,12 +791,47 @@ df_VIS_RSC$brain_region <- factor(df_VIS_RSC$brain_region,
 df_VIS_RSC$mouse_index <- factor(df_VIS_RSC$mouse_index,
                                  levels = 1:max(df_VIS_RSC$mouse_index))
 
+# Proportion of LEC and MEC in each cluster
+VIS_RSC_EC_prop <- rbind(data.frame(cluster = 25,
+                                    EC = c('LEC', 'MEC'),
+                                    count = c(length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==25]=='LEC')),
+                                              length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==25]=='MEC')))),
+                         
+                         data.frame(cluster = 37,
+                                    EC = c('LEC', 'MEC'),
+                                    count = c(length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==37]=='LEC')),
+                                              length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==37]=='MEC')))))
+
+VIS_RSC_EC_prop$cluster <- factor(VIS_RSC_EC_prop$cluster,
+                                  levels = c(25, 37))
+
+VIS_RSC_EC_prop <- VIS_RSC_EC_prop %>%
+  group_by(cluster) %>%
+  mutate(proportion = c(count[1]/sum(count),
+                        count[2]/sum(count))) %>%
+  ungroup()
 
 png(file = './plots/EC8_new2/VIS_RSC.png',
-    width = 400,
-    height = 300)
+    width = 350,
+    height = 350)
 
-df_VIS_RSC %>%
+
+plot1 <- VIS_RSC_EC_prop %>%
+  ggplot(aes(x = cluster,
+             y = proportion,
+             fill = EC))+
+  geom_bar(stat = 'identity')+
+  theme_bw()+
+  xlab('cluster')+
+  ylab('neuron proportion')+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+  geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+             color = "red")+
+  coord_flip()+
+  xlab('')+
+  scale_y_continuous(breaks = c(0,1))
+
+plot2 <- df_VIS_RSC %>%
   ggplot()+
   geom_line(mapping = aes(x = brain_region,
                           y = projection_strength,
@@ -779,8 +839,12 @@ df_VIS_RSC %>%
                           group = mouse_index))+
   theme_bw()+
   xlab('region')+
-  ylab('projection strength')+
+  ylab('projection probability')+
   ggtitle('[VIS, RSC]')
+
+
+ggarrange(plot1, plot2, nrow = 2, heights = c(0.35,1))
+
 
 dev.off()
 
@@ -805,11 +869,48 @@ df_SS_VIS$mouse_index <- factor(df_SS_VIS$mouse_index,
                                  levels = 1:max(df_SS_VIS$mouse_index))
 
 
-png(file = './plots/EC8_new2/SS_VIS.png',
-    width = 400,
-    height = 300)
+# Proportion of LEC and MEC in each cluster
+SS_VIS_EC_prop <- rbind(data.frame(cluster = 16,
+                                    EC = c('LEC', 'MEC'),
+                                    count = c(length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==16]=='LEC')),
+                                              length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==16]=='MEC')))),
+                         
+                         data.frame(cluster = 34,
+                                    EC = c('LEC', 'MEC'),
+                                    count = c(length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==34]=='LEC')),
+                                              length(which(unlist(EC8_EC_label)[unlist(mcmc_unique_EC8$Z)==34]=='MEC')))))
 
-df_SS_VIS %>%
+SS_VIS_EC_prop$cluster <- factor(SS_VIS_EC_prop$cluster,
+                                  levels = c(16, 34))
+
+SS_VIS_EC_prop <- SS_VIS_EC_prop %>%
+  group_by(cluster) %>%
+  mutate(proportion = c(count[1]/sum(count),
+                        count[2]/sum(count))) %>%
+  ungroup()
+
+png(file = './plots/EC8_new2/SS_VIS.png',
+    width = 350,
+    height = 350)
+
+
+plot1 <- SS_VIS_EC_prop %>%
+  ggplot(aes(x = cluster,
+             y = proportion,
+             fill = EC))+
+  geom_bar(stat = 'identity')+
+  theme_bw()+
+  xlab('cluster')+
+  ylab('neuron proportion')+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+  geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+             color = "red")+
+  coord_flip()+
+  xlab('')+
+  scale_y_continuous(breaks = c(0,1))
+
+
+plot2 <- df_SS_VIS %>%
   ggplot()+
   geom_line(mapping = aes(x = brain_region,
                           y = projection_strength,
@@ -817,8 +918,11 @@ df_SS_VIS %>%
                           group = mouse_index))+
   theme_bw()+
   xlab('region')+
-  ylab('projection strength')+
+  ylab('projection probability')+
   ggtitle('[SS, VIS]')
+
+
+ggarrange(plot1, plot2, nrow = 2, heights = c(0.35,1))
 
 dev.off()
 

@@ -259,7 +259,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  ggtitle('mouse 1 conditional probability')
 
 #Mouse 2
 pp1 = data.frame(pp_m2$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -283,7 +284,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  ggtitle('mouse 2 conditional probability')
 
 #Mouse 3
 pp1 = data.frame(pp_m3$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -307,7 +309,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  ggtitle('mouse 3 conditional probability')
 
 #Mouse 4
 pp1 = data.frame(pp_m4$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -331,7 +334,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  ggtitle('mouse 4 conditional probability')
 
 #Mouse 5
 pp1 = data.frame(pp_m5$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -355,7 +359,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  ggtitle('mouse 5 conditional probability')
 
 #Mouse 6
 pp1 = data.frame(pp_m6$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -379,7 +384,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  ggtitle('mouse 6 conditional probability')
 
 #Mouse 1- Mouse 6
 pp16 = data.frame(pp_m16$pprob_pair, row.names = rownames(EC8_new[[1]]))

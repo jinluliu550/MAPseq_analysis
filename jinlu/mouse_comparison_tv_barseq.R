@@ -26,12 +26,18 @@ tv_dist = tv_dist %>%
 
 group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
 
+png(file = './plots/barseq/mouse1_tv.png',
+    width = 350,
+    height = 300)
+
 ggplot(tv_dist) +
   geom_density(aes(x=TV,col=Mouse, fill=Mouse), alpha=0.25) +
   ggtitle(paste('Mouse',m,'comparisons')) + 
   theme_bw()+
   scale_fill_manual(values=group.colors) +
   scale_color_manual(values=group.colors)
+
+dev.off()
 
 
 m =  2 # index of mouse
@@ -50,12 +56,20 @@ tv_dist = tv_dist %>%
 
 group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
 
+
+png(file = './plots/barseq/mouse2_tv.png',
+    width = 350,
+    height = 300)
+
+
 ggplot(tv_dist) +
   geom_density(aes(x=TV,col=Mouse, fill=Mouse), alpha=0.25) +
   ggtitle(paste('Mouse',m,'comparisons')) + 
   theme_bw()+
   scale_fill_manual(values=group.colors) +
   scale_color_manual(values=group.colors)
+
+dev.off()
 
 
 m =  3 # index of mouse
@@ -74,6 +88,11 @@ tv_dist = tv_dist %>%
 
 group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
 
+
+png(file = './plots/barseq/mouse3_tv.png',
+    width = 350,
+    height = 300)
+
 ggplot(tv_dist) +
   geom_density(aes(x=TV,col=Mouse, fill=Mouse), alpha=0.25) +
   ggtitle(paste('Mouse',m,'comparisons')) + 
@@ -81,7 +100,7 @@ ggplot(tv_dist) +
   scale_fill_manual(values=group.colors) +
   scale_color_manual(values=group.colors)
 
-
+dev.off()
 
 
 # Compute the posterior mean

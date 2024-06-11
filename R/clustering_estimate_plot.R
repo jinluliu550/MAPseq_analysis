@@ -30,6 +30,45 @@ opt.clustering.frequency <- function(clustering,
     ggtitle(main)
 }
 
+
+# For clusters with N >= 30 only
+opt.clustering.frequency.large <- function(clustering,
+                                           main = ''){
+  
+  cluster.names <- paste('cluster', 1:length(unique(unlist(clustering))))
+  
+  loop.result <- lapply(1:length(clustering), function(m){
+    
+    data.frame(cluster = factor(cluster.names,
+                                levels = cluster.names),
+               mouse = paste('mouse', m),
+               counts = as.vector(table(factor(clustering[[m]],
+                                               levels = 1:length(cluster.names)))))
+  })
+  
+  # Size of each cluster
+  N_j <- data.frame(cluster = unique(unlist(clustering)),
+                    size = sapply(unique(unlist(clustering)),
+                                  function(j) length(which(unlist(clustering)==j))))
+  
+  N_j_large <- N_j$cluster[N_j$size >= 30]
+  
+  # Frequency table
+  z.frequency <- do.call(rbind, loop.result) %>%
+    filter(cluster %in% paste('cluster', N_j_large))
+  
+  # Bar chart
+  z.frequency %>%
+    ggplot(mapping = aes(x = cluster, y = counts, fill = mouse))+
+    geom_bar(stat="identity")+
+    theme_bw()+
+    ylab('Number of neurons')+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+    ggtitle(main)
+}
+
+
+
 ##-- For the EC data
 opt.clustering.frequency1 <- function(clustering,
                                       main='',

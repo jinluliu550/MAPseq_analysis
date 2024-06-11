@@ -34,6 +34,9 @@ pp.standard.ordering <- function(Y,
   
 
   df0 <- do.call(cbind, df0)
+  
+  N.j <- sapply(1:J,
+                function(j) length(which(unlist(Z)==j)))
 
   # Convert to data frame for plotting
   Y.prop.df <- data.frame(region = rep(regions.name,
