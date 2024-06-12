@@ -1,5 +1,6 @@
 ## Compute conditional probabilities of projection
 library(coda)
+library(latex2exp)
 
 # Compute the marginal probability of zero counts for each region for a DirMult mixture
 ppzero <- function(n, alpha, w){
@@ -207,22 +208,27 @@ cps_m1 = post_cpstrength(1,100,mcmc_all_EC8)
 #Mouse 2
 pp_m2 = projection_prob(2,100,mcmc_all_EC8)
 ps_m2 = post_epstrength(2,100,mcmc_all_EC8)
+cps_m2 = post_cpstrength(2,100,mcmc_all_EC8)
 
 #Mouse 3
 pp_m3 = projection_prob(3,100,mcmc_all_EC8)
 ps_m3 = post_epstrength(3,100,mcmc_all_EC8)
+cps_m3 = post_cpstrength(3,100,mcmc_all_EC8)
 
 #Mouse 4
 pp_m4 = projection_prob(4,100,mcmc_all_EC8)
 ps_m4 = post_epstrength(4,100,mcmc_all_EC8)
+cps_m4 = post_cpstrength(4,100,mcmc_all_EC8)
 
 #Mouse 5
 pp_m5 = projection_prob(5,100,mcmc_all_EC8)
 ps_m5 = post_epstrength(5,100,mcmc_all_EC8)
+cps_m5 = post_cpstrength(5,100,mcmc_all_EC8)
 
 #Mouse 6
 pp_m6 = projection_prob(6,100,mcmc_all_EC8)
 ps_m6 = post_epstrength(6,100,mcmc_all_EC8)
+cps_m6 = post_cpstrength(6,100,mcmc_all_EC8)
 
 # Difference between Mouse 1 and Mouse 6
 pp_m16 = projection_prob_d(1,6,100,mcmc_all_EC8)
@@ -413,7 +419,7 @@ ggplot(pp16, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
        y = "Region B",
-       fill= "P(B|A)") +
+       fill= "") +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = paste(round(CP,3),d)), color = "black", size = 4) +
@@ -423,13 +429,302 @@ ggplot(pp16, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
        y = "Region B",
-       fill= "P(B|A)") +
+       fill= "") +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
   coord_fixed()
 
+######################
+#Covariance for Mouse 1
+cps1 = data.frame(cps_m1$cps, row.names = rownames(EC8_new[[1]]))
+names(cps1) = rownames(EC8_new[[1]])
+print(cps1)
+d = (cps_m1$cps_ci[1,,]>0) |(cps_m1$cps_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
 
+cps1 = data.frame(cps1, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(cps1)[1:R] = rownames(EC8_new[[1]])
+cps1 <-  pivot_longer(cps1,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "Cov"
+)
+cps1$Region.A = factor(cps1$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                    cols = !Region.B,
+                    names_to = "Region.A", 
+                    values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+cps1 = merge(cps1,ds)
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+#Covariance for Mouse 2
+cps1 = data.frame(cps_m2$cps, row.names = rownames(EC8_new[[1]]))
+names(cps1) = rownames(EC8_new[[1]])
+print(cps1)
+d = (cps_m2$cps_ci[1,,]>0) |(cps_m2$cps_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
+
+cps1 = data.frame(cps1, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(cps1)[1:R] = rownames(EC8_new[[1]])
+cps1 <-  pivot_longer(cps1,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "Cov"
+)
+cps1$Region.A = factor(cps1$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                    cols = !Region.B,
+                    names_to = "Region.A", 
+                    values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+cps1 = merge(cps1,ds)
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+#Covariance for Mouse 3
+cps1 = data.frame(cps_m3$cps, row.names = rownames(EC8_new[[1]]))
+names(cps1) = rownames(EC8_new[[1]])
+print(cps1)
+d = (cps_m3$cps_ci[1,,]>0) |(cps_m3$cps_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
+
+cps1 = data.frame(cps1, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(cps1)[1:R] = rownames(EC8_new[[1]])
+cps1 <-  pivot_longer(cps1,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "Cov"
+)
+cps1$Region.A = factor(cps1$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                    cols = !Region.B,
+                    names_to = "Region.A", 
+                    values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+cps1 = merge(cps1,ds)
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+#Covariance for Mouse 4
+cps1 = data.frame(cps_m4$cps, row.names = rownames(EC8_new[[1]]))
+names(cps1) = rownames(EC8_new[[1]])
+print(cps1)
+d = (cps_m4$cps_ci[1,,]>0) |(cps_m4$cps_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
+
+cps1 = data.frame(cps1, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(cps1)[1:R] = rownames(EC8_new[[1]])
+cps1 <-  pivot_longer(cps1,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "Cov"
+)
+cps1$Region.A = factor(cps1$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                    cols = !Region.B,
+                    names_to = "Region.A", 
+                    values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+cps1 = merge(cps1,ds)
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+#Covariance for Mouse 5
+cps1 = data.frame(cps_m5$cps, row.names = rownames(EC8_new[[1]]))
+names(cps1) = rownames(EC8_new[[1]])
+print(cps1)
+d = (cps_m5$cps_ci[1,,]>0) |(cps_m5$cps_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
+
+cps1 = data.frame(cps1, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(cps1)[1:R] = rownames(EC8_new[[1]])
+cps1 <-  pivot_longer(cps1,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "Cov"
+)
+cps1$Region.A = factor(cps1$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                    cols = !Region.B,
+                    names_to = "Region.A", 
+                    values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+cps1 = merge(cps1,ds)
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+#Covariance for Mouse 6
+cps1 = data.frame(cps_m6$cps, row.names = rownames(EC8_new[[1]]))
+names(cps1) = rownames(EC8_new[[1]])
+print(cps1)
+d = (cps_m6$cps_ci[1,,]>0) |(cps_m6$cps_ci[2,,]<0)
+ds = d
+ds[d] = '*'
+ds[!d] = ''
+print(d)
+
+cps1 = data.frame(cps1, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(cps1)[1:R] = rownames(EC8_new[[1]])
+cps1 <-  pivot_longer(cps1,
+                      cols = !Region.B,
+                      names_to = "Region.A", 
+                      values_to = "Cov"
+)
+cps1$Region.A = factor(cps1$Region.A, levels = rownames(EC8_new[[1]]))
+ds = data.frame(ds, "Region B" = factor(rownames(EC8_new[[1]]), levels = rownames(EC8_new[[1]])))
+names(ds)[1:R] = rownames(EC8_new[[1]])
+ds <-  pivot_longer(ds,
+                    cols = !Region.B,
+                    names_to = "Region.A", 
+                    values_to = "d"
+)
+ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
+cps1 = merge(cps1,ds)
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
+  coord_fixed()
+
+ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
+  geom_tile() +
+  labs(x = "",
+       y = "",
+       fill= "Cov") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
+  geom_text(aes(label = d), color = "black", size = 8) +
+  coord_fixed()
+
+##############################
 # Projection probability across mice
 
 group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D",'4'= "#009999",'5'= "#333BFF",'6'= "#9633FF")
