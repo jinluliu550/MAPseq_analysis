@@ -96,5 +96,24 @@ ggplot(data = df01,
 
 
 
+df02 <- data.frame(barcode_count = as.vector(t(all_brains_set_sub[,1:11])),
+                   region = colnames(all_brains_set_sub)[1:11],
+                   EC = rep(unlist(EC8_EC_label), each = 11))
 
+df02$region <- factor(df02$region, levels = colnames(all_brains_set_sub)[1:11])
+
+df02 %>%
+  mutate(projection = ifelse(barcode_count == 0, 'No', 'Yes')) %>%
+  group_by(region, EC) %>%
+  summarise(Frequency = length(which(projection == 'Yes'))) %>%
+  ungroup() %>%
+  ggplot(mapping = aes(y = Frequency,
+                       axis1 = EC,
+                       axis2 = region))+
+  geom_flow(aes(fill = EC))+
+  geom_stratum()+
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)))+
+  scale_x_discrete(limits = c("EC", "Brain regions"))+
+  theme_bw()+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
 
