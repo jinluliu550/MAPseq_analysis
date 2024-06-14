@@ -437,6 +437,17 @@ ggplot(ds, aes(x = class.A, y = class.B, fill = vi)) +
 
 dev.off()
 
+
+#--------------------------- Uncertainty in the neuron allocation ------------------------
+
+evi_hans <- evi.contribution(Zmat = Zmat,
+                             Zhat = unlist(mcmc_unique_hans$Z))
+
+projection_by_evi(Y = data_Hans,
+                  evi = evi_hans,
+                  Z = mcmc_unique_hans$Z, 
+                  region_name = rownames(data_Hans[[1]]))
+
 #------------------------ Add a 10 percent noise ----------------------------------
 
 hans_added_noise <- add_noise(mcmc_run_all_output = mcmc_all_hans,
