@@ -446,6 +446,23 @@ ggplot(ds, aes(x = class.A, y = class.B, fill = vi)) +
 
 dev.off()
 
+#--------------------------- Uncertainty in the neuron allocation ------------------------
+
+evi_barseq <- evi.contribution(Zmat = Zmat,
+                               Zhat = unlist(mcmc_unique_barseq$Z))
+
+
+png(file = './plots/barseq/expected_vi.png',
+    width = 3000,
+    height = 1300)
+
+projection_by_evi(Y = data_barseq,
+                  evi = evi_barseq,
+                  Z = mcmc_unique_barseq$Z, 
+                  region_name = rownames(data_barseq[[1]]))
+
+dev.off()
+
 
 #------------------------ Add a 10 percent noise ----------------------------------
 
@@ -729,3 +746,4 @@ for(j in large_binomial_motifs){
   
   dev.off()
 }
+
