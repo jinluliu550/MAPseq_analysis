@@ -38,14 +38,17 @@ add_noise <- function(mcmc_run_all_output,
   Y_rep <- lapply(1:M,
                   function(m){
                     
-                    do.call(cbind, lapply(1:C[m],
-                                          function(c){
-                                            
-                                            prob.c <- rdirichlet(n = 1,
-                                                                 theta$q_j_star[theta$Z[[m]][c],]*theta$gamma_j_star[theta$Z[[m]][c]])
-                                            
-                                            rmultinom(n = 1, size = N_CM[[m]][c], prob = prob.c)
-                                          }))
+                    Y_rep_d <- do.call(cbind, lapply(1:C[m],
+                                                     function(c){
+                                                       
+                                                       prob.c <- rdirichlet(n = 1,
+                                                                            theta$q_j_star[theta$Z[[m]][c],]*theta$gamma_j_star[theta$Z[[m]][c]])
+                                                       
+                                                       rmultinom(n = 1, size = N_CM[[m]][c], prob = prob.c)
+                                                     }))
+                    
+                    rownames(Y_rep_d) <- regions.name
+                    Y_rep_d
                   })
   
   # Add some noise to the Y_rep
@@ -77,7 +80,8 @@ add_noise <- function(mcmc_run_all_output,
                        })
   
   
-  return(noisy_data)
+  return(list('noisy_data' = noisy_data,
+              'replicated_data' = Y_rep))
   
   
   

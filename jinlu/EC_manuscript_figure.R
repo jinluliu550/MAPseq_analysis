@@ -11,7 +11,7 @@ projecting.region.name <- sapply(1:4,
 df_text <- data.frame(label  = sapply(1:4,
                                       function(i){
                                         
-                                        paste0('[', knitr::combine_words(projecting.region.name[[i]], and = ""), ']')
+                                        paste0(knitr::combine_words(projecting.region.name[[i]], and = ""))
                                       }),
                       
                       cluster = paste('cluster', figure_3b_cluster))
@@ -67,65 +67,61 @@ plot1 <- lapply(figure_3b_cluster,
                     geom_point()+
                     theme_bw()+
                     ylab('projection probability')+
-                    geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
-                              mapping = aes(x = -Inf, y = 0.9, label = label),
-                              hjust   = -0.1)+
-                    ylim(c(0,1))
+                    # geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
+                    #           mapping = aes(x = 'VIS', y = 0.6, label = paste(strsplit(label, ', ')[[1]], collapse = '\n')),
+                    #           hjust   = -0.1)+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          axis.text = element_text(size = 10,
+                                                   color = 'black')
+                          )+
+                    scale_y_continuous(breaks = c(0,1), limits = c(0,1))
                 })
+
 
 plot2 <- lapply(figure_3b_cluster,
                 function(j){
                   
-                  if(j == 5){
-                    
-                    figure_3b_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3b_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                    
-                  }else{
-                    
-                    figure_3b_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3b_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      theme(legend.position="none")+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                  }
+                  figure_3b_proportion %>%
+                    filter(cluster == j) %>%
+                    ggplot(aes(x = factor(cluster, levels = figure_3b_cluster),
+                               y = proportion,
+                               fill = EC))+
+                    geom_bar(stat = 'identity')+
+                    theme_bw()+
+                    xlab('')+
+                    ylab('')+
+                    scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+                    geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+                               color = "red",
+                               linewidth = 1.5)+
+                    coord_flip()+
+                    ggtitle(paste0((length(which(unlist(mcmc_unique_EC8$Z)==j))), ' neurons, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'LEC']==j)), ' LEC, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'MEC']==j)), ' MEC'))+
+                    theme(legend.title=element_blank())+
+                    theme(legend.position="none")+
+                    xlab('')+
+                    scale_y_continuous(breaks = c(0,1))+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          plot.title = element_text(size=12))+
+                    theme(axis.text = element_text(size = 12)) 
                   
                 })
 
-plot_all <- lapply(1:4, function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.3,1)))
+plot_all <- lapply(1:4, function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.45,1)))
 
 
 png(file = './plots/EC8_new2/figure_3b.png',
-    width = 1200,
-    height = 300)
+    width = 900,
+    height = 900/4)
 
 ggarrange(plot_all[[1]],
           plot_all[[2]],
@@ -150,7 +146,7 @@ projecting.region.name <- sapply(1:4,
 df_text <- data.frame(label  = sapply(1:4,
                                       function(i){
                                         
-                                        paste0('[', knitr::combine_words(projecting.region.name[[i]], and = ""), ']')
+                                        paste0(knitr::combine_words(projecting.region.name[[i]], and = ""))
                                       }),
                       
                       cluster = paste('cluster', figure_3c_cluster))
@@ -200,71 +196,65 @@ plot1 <- lapply(figure_3c_cluster,
                                          y = mean_projection_strength,
                                          group = 1))+
                     geom_line()+
-                    geom_point()+
                     geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
                                                 ymax = upper_projection_strength),
                                   width = 0.1)+
+                    geom_point()+
                     theme_bw()+
                     ylab('projection probability')+
-                    geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
-                              mapping = aes(x = -Inf, y = 0.9, label = label),
-                              hjust   = -0.1)+
-                    ylim(c(0,1))
+                    # geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
+                    #           mapping = aes(x = 'VIS', y = 0.5, label = paste(strsplit(label, ', ')[[1]], collapse = '\n')),
+                    #           hjust   = -0.1)+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          axis.text = element_text(size = 10,
+                                                   color = 'black'))+
+                    scale_y_continuous(breaks = c(0,1), limits = c(0,1))
                 })
 
 plot2 <- lapply(figure_3c_cluster,
                 function(j){
                   
-                  if(j == 55){
-                    
-                    figure_3c_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3c_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                    
-                  }else{
-                    
-                    figure_3c_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3c_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      theme(legend.position="none")+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                  }
+                  figure_3c_proportion %>%
+                    filter(cluster == j) %>%
+                    ggplot(aes(x = factor(cluster, levels = figure_3c_cluster),
+                               y = proportion,
+                               fill = EC))+
+                    geom_bar(stat = 'identity')+
+                    theme_bw()+
+                    xlab('')+
+                    ylab('')+
+                    scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+                    geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+                               color = "red",
+                               linewidth = 1.5)+
+                    coord_flip()+
+                    ggtitle(paste0((length(which(unlist(mcmc_unique_EC8$Z)==j))), ' neurons, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'LEC']==j)), ' LEC, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'MEC']==j)), ' MEC'))+
+                    theme(legend.title=element_blank())+
+                    theme(legend.position="none")+
+                    xlab('')+
+                    scale_y_continuous(breaks = c(0,1))+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          plot.title = element_text(size=12))+
+                    theme(axis.text = element_text(size = 12)) 
                   
                 })
 
-plot_all <- lapply(1:4, function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.3,1)))
+plot_all <- lapply(1:4, function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.45,1)))
 
 
 png(file = './plots/EC8_new2/figure_3c.png',
-    width = 1200,
-    height = 300)
+    width = 900,
+    height = 900/4)
 
 ggarrange(plot_all[[1]],
           plot_all[[2]],
@@ -276,17 +266,17 @@ dev.off()
 
 
 # Figure 3d
-figure_3d_cluster <- c(48,54,34)
+figure_3d_cluster <- c(48,54)
 
 
 
-projecting.region.name <- sapply(1:3, 
+projecting.region.name <- sapply(1:2, 
                                  function(i) rownames(EC8_new[[1]])[mcmc_unique_EC8$q_tilde_001[figure_3d_cluster[i],] > 0.5])
 
-df_text <- data.frame(label  = sapply(1:3,
+df_text <- data.frame(label  = sapply(1:2,
                                       function(i){
                                         
-                                        paste0('[', knitr::combine_words(projecting.region.name[[i]], and = ""), ']')
+                                        paste0(knitr::combine_words(projecting.region.name[[i]], and = ""))
                                       }),
                       
                       cluster = paste('cluster', figure_3d_cluster))
@@ -336,16 +326,23 @@ plot1 <- lapply(figure_3d_cluster,
                                          y = mean_projection_strength,
                                          group = 1))+
                     geom_line()+
-                    geom_point()+
                     geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
                                                 ymax = upper_projection_strength),
                                   width = 0.1)+
+                    geom_point()+
                     theme_bw()+
                     ylab('projection probability')+
-                    geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
-                              mapping = aes(x = -Inf, y = 0.9, label = label),
-                              hjust   = -0.1)+
-                    ylim(c(0,1))
+                    # geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
+                    #           mapping = aes(x = 'VIS', y = 0.5, label = paste(strsplit(label, ', ')[[1]], collapse = '\n')),
+                    #           hjust   = -0.1)+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          axis.text = element_text(size = 10,
+                                                   color = 'black'))+
+                    scale_y_continuous(breaks = c(0,1), limits = c(0,1))
                 })
 
 
@@ -354,60 +351,46 @@ plot2 <- lapply(figure_3d_cluster,
                 function(j){
                   
                   
-                  if(j == 34){
-                    
-                    figure_3d_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3d_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                    
-                  }else{
-                    
-                    figure_3d_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3d_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      theme(legend.position="none")+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                  }
+                  figure_3d_proportion %>%
+                    filter(cluster == j) %>%
+                    ggplot(aes(x = factor(cluster, levels = figure_3d_cluster),
+                               y = proportion,
+                               fill = EC))+
+                    geom_bar(stat = 'identity')+
+                    theme_bw()+
+                    xlab('')+
+                    ylab('')+
+                    scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+                    geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+                               color = "red",
+                               linewidth = 1.5)+
+                    coord_flip()+
+                    ggtitle(paste0((length(which(unlist(mcmc_unique_EC8$Z)==j))), ' neurons, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'LEC']==j)), ' LEC, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'MEC']==j)), ' MEC'))+
+                    theme(legend.title=element_blank())+
+                    theme(legend.position="none")+
+                    xlab('')+
+                    scale_y_continuous(breaks = c(0,1))+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          plot.title = element_text(size=12))+
+                    theme(axis.text = element_text(size = 12)) 
                   
                 })
 
-plot_all <- lapply(1:3, function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.3,1)))
+plot_all <- lapply(1:2, function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.45,1)))
 
 
 png(file = './plots/EC8_new2/figure_3d.png',
-    width = 900,
-    height = 300)
+    width = 450,
+    height = 450/2)
 
 ggarrange(plot_all[[1]],
           plot_all[[2]],
-          plot_all[[3]],
           nrow = 1)
 
 dev.off()
@@ -457,7 +440,7 @@ projecting.region.name <- sapply(figure_3bs_LEC,
 df_text <- data.frame(label  = sapply(1:length(figure_3bs_LEC),
                                       function(i){
                                         
-                                        paste0('[', knitr::combine_words(projecting.region.name[[i]], and = ""), ']')
+                                        paste0(knitr::combine_words(projecting.region.name[[i]], and = ""))
                                       }),
                       
                       cluster = paste('cluster', figure_3bs_LEC))
@@ -504,17 +487,24 @@ plot1 <- lapply(figure_3bs_LEC,
                     ggplot(mapping = aes(x = region,
                                          y = mean_projection_strength,
                                          group = 1))+
+                    geom_line()+
                     geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
                                                 ymax = upper_projection_strength),
                                   width = 0.1)+
-                    geom_line()+
                     geom_point()+
                     theme_bw()+
                     ylab('projection probability')+
-                    geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
-                              mapping = aes(x = -Inf, y = 0.9, label = label),
-                              hjust   = -0.1)+
-                    ylim(c(0,1))
+                    # geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
+                    #           mapping = aes(x = 'VIS', y = 0.5, label = paste(strsplit(label, ', ')[[1]], collapse = '\n')),
+                    #           hjust   = -0.1)+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          axis.text = element_text(size = 10,
+                                                   color = 'black'))+
+                    scale_y_continuous(breaks = c(0,1), limits = c(0,1))
                 })
 
 
@@ -522,55 +512,44 @@ plot2 <- lapply(figure_3bs_LEC,
                 function(j){
                   
                   
-                  if(j == figure_3bs_LEC[length(figure_3bs_LEC)]){
-                    
-                    figure_3bs_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3bs_LEC),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                    
-                  }else{
-                    
-                    figure_3bs_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3bs_LEC),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      theme(legend.position="none")+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                  }
+                  figure_3bs_proportion %>%
+                    filter(cluster == j) %>%
+                    ggplot(aes(x = factor(cluster, levels = figure_3bs_LEC),
+                               y = proportion,
+                               fill = EC))+
+                    geom_bar(stat = 'identity')+
+                    theme_bw()+
+                    xlab('')+
+                    ylab('')+
+                    scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+                    geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+                               color = "red",
+                               linewidth = 1.5)+
+                    coord_flip()+
+                    ggtitle(paste0((length(which(unlist(mcmc_unique_EC8$Z)==j))), ' neurons, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'LEC']==j)), ' LEC, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'MEC']==j)), ' MEC'))+
+                    theme(legend.title=element_blank())+
+                    theme(legend.position="none")+
+                    xlab('')+
+                    scale_y_continuous(breaks = c(0,1))+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          plot.title = element_text(size = 12))+
+                    theme(axis.text = element_text(size = 12))
+                  
+                  
                 })
 
-plot_all <- lapply(1:length(figure_3bs_LEC), function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.3,1)))
+plot_all <- lapply(1:length(figure_3bs_LEC), function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.45,1)))
 
 
 png(file = './plots/EC8_new2/figure_3bs.png',
-    width = 1200,
-    height = 300)
+    width = 900,
+    height = 900/4)
 
 ggarrange(plot_all[[1]],
           plot_all[[2]],
@@ -614,7 +593,7 @@ projecting.region.name <- sapply(figure_3cs_cluster,
 df_text <- data.frame(label  = sapply(1:length(figure_3cs_cluster),
                                       function(i){
                                         
-                                        paste0('[', knitr::combine_words(projecting.region.name[[i]], and = ""), ']')
+                                        paste0(knitr::combine_words(projecting.region.name[[i]], and = ""))
                                       }),
                       
                       cluster = paste('cluster', figure_3cs_cluster))
@@ -663,71 +642,66 @@ plot1 <- lapply(figure_3cs_cluster,
                                          y = mean_projection_strength,
                                          group = 1))+
                     geom_line()+
-                    geom_point()+
                     geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
                                                 ymax = upper_projection_strength),
                                   width = 0.1)+
+                    geom_point()+
                     theme_bw()+
                     ylab('projection probability')+
-                    geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
-                              mapping = aes(x = -Inf, y = 0.9, label = label),
-                              hjust   = -0.1)+
-                    ylim(c(0,1))
+                    # geom_text(data = df_text[which(df_text$cluster == paste('cluster', j)),],
+                    #           mapping = aes(x = 'VIS', y = 0.5, label = paste(strsplit(label, ', ')[[1]], collapse = '\n')),
+                    #           hjust   = -0.1)+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          axis.text = element_text(size = 10,
+                                                   color = 'black'))+
+                    scale_y_continuous(breaks = c(0,1), limits = c(0,1))
                 })
 
 plot2 <- lapply(figure_3cs_cluster,
                 function(j){
                   
+                  figure_3cs_proportion %>%
+                    filter(cluster == j) %>%
+                    ggplot(aes(x = factor(cluster, levels = figure_3cs_cluster),
+                               y = proportion,
+                               fill = EC))+
+                    geom_bar(stat = 'identity')+
+                    theme_bw()+
+                    xlab('')+
+                    ylab('')+
+                    scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+                    geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+                               color = "red",
+                               linewidth = 1.5)+
+                    coord_flip()+
+                    ggtitle(paste0((length(which(unlist(mcmc_unique_EC8$Z)==j))), ' neurons, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'LEC']==j)), ' LEC, ',
+                                   length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'MEC']==j)), ' MEC'))+
+                    theme(legend.title=element_blank())+
+                    theme(legend.position="none")+
+                    xlab('')+
+                    scale_y_continuous(breaks = c(0,1))+
+                    theme(axis.line = element_line(colour = "black"),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          panel.background = element_blank(),
+                          plot.title = element_text(size = 12))+
+                    theme(axis.text = element_text(size = 12))
                   
-                  if(j %in% c(64, 30)){
-                    
-                    figure_3cs_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3cs_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                    
-                  }else{
-                    
-                    figure_3cs_proportion %>%
-                      filter(cluster == j) %>%
-                      ggplot(aes(x = factor(cluster, levels = figure_3cs_cluster),
-                                 y = proportion,
-                                 fill = EC))+
-                      geom_bar(stat = 'identity')+
-                      theme_bw()+
-                      xlab('cluster')+
-                      ylab('neuron proportion')+
-                      scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-                      geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-                                 color = "red")+
-                      coord_flip()+
-                      ggtitle(paste0('cluster ', j, ' (', length(which(unlist(mcmc_unique_EC8$Z)==j)), ' neurons)'))+
-                      theme(legend.title=element_blank())+
-                      theme(legend.position="none")+
-                      xlab('')+
-                      scale_y_continuous(breaks = c(0,1))
-                  }
+                  
                 })
 
-plot_all <- lapply(1:length(figure_3cs_cluster), function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.3,1)))
+plot_all <- lapply(1:length(figure_3cs_cluster), function(i) ggarrange(plot2[[i]], plot1[[i]], nrow = 2, heights = c(0.45,1)))
 
 
 png(file = './plots/EC8_new2/figure_3cd_supp_plot1.png',
-    width = 1500,
-    height = 300)
+    width = 1125,
+    height = 1125/5)
 
 ggarrange(plot_all[[1]],
           plot_all[[2]],
@@ -740,8 +714,8 @@ dev.off()
 
 
 png(file = './plots/EC8_new2/figure_3cd_supp_plot2.png',
-    width = 1500,
-    height = 300)
+    width = 1125,
+    height = 1125/5)
 
 ggarrange(plot_all[[6]],
           plot_all[[7]],
@@ -751,6 +725,132 @@ ggarrange(plot_all[[6]],
           nrow = 1)
 
 dev.off()
+
+
+# Figure 3D - supplementary
+figure_3ds_cluster <- 34
+
+projecting.region.name <- sapply(figure_3ds_cluster, 
+                                 function(j) rownames(EC8_new[[1]])[mcmc_unique_EC8$q_tilde_001[j,] > 0.5])
+
+df_text <- data.frame(label  = sapply(1:length(figure_3ds_cluster),
+                                      function(i){
+                                        
+                                        paste0(knitr::combine_words(projecting.region.name[[i]], and = ""))
+                                      }),
+                      
+                      cluster = paste('cluster', figure_3ds_cluster))
+
+df2 <- lapply(figure_3ds_cluster,
+              function(j){
+                
+                data.frame(cluster = paste('cluster', j),
+                           region = rownames(EC8_new[[1]]),
+                           mean_projection_strength = mcmc_unique_EC8$proj_prob_med[j,],
+                           lower_projection_strength = mcmc_unique_EC8$proj_prob_lower[j,],
+                           upper_projection_strength = mcmc_unique_EC8$proj_prob_upper[j,])
+              })
+
+df2 <- do.call(rbind, df2)
+df2$region <- factor(df2$region,
+                     levels = rownames(EC8_new[[1]]))
+
+
+
+# Proportion of LEC and MEC
+figure_3ds_proportion <- lapply(figure_3ds_cluster,
+                                function(j){
+                                  
+                                  LEC_proportion <- length(which(unlist(EC8_EC_label)[which(unlist(mcmc_unique_EC8$Z) == j)] == 'LEC'))/
+                                    length(which(unlist(mcmc_unique_EC8$Z) == j))
+                                  MEC_proportion <- 1-LEC_proportion
+                                  
+                                  data.frame(cluster = j,
+                                             EC = c('LEC','MEC'),
+                                             proportion = c(LEC_proportion, MEC_proportion))
+                                })
+
+figure_3ds_proportion <- do.call(rbind, figure_3ds_proportion)
+
+
+plot1 <- 
+  df2 %>%
+  filter(cluster == paste('cluster', 34)) %>%
+  ggplot(mapping = aes(x = region,
+                       y = mean_projection_strength,
+                       group = 1))+
+  geom_line()+
+  geom_errorbar(mapping = aes(ymin = lower_projection_strength, 
+                              ymax = upper_projection_strength),
+                width = 0.1)+
+  geom_point()+
+  theme_bw()+
+  ylab('projection probability')+
+  # geom_text(data = df_text[which(df_text$cluster == paste('cluster', 34)),],
+  #           mapping = aes(x = 'VIS', y = 0.5, label = paste(strsplit(label, ', ')[[1]], collapse = '\n')),
+  #           hjust   = -0.1)+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10,
+                                 color = 'black'))+
+  scale_y_continuous(breaks = c(0,1), limits = c(0,1))
+
+plot2 <- 
+  figure_3ds_proportion %>%
+  filter(cluster == 34) %>%
+  ggplot(aes(x = factor(cluster, levels = figure_3ds_cluster),
+             y = proportion,
+             fill = EC))+
+  geom_bar(stat = 'identity')+
+  theme_bw()+
+  xlab('')+
+  ylab('')+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+  geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
+             color = "red",
+             linewidth = 1.5)+
+  coord_flip()+
+  ggtitle(paste0((length(which(unlist(mcmc_unique_EC8$Z)==j))), ' neurons, ',
+                 length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'LEC']==j)), ' LEC, ',
+                 length(which(unlist(mcmc_unique_EC8$Z)[unlist(EC8_EC_label) == 'MEC']==j)), ' MEC'))+
+  theme(legend.title=element_blank())+
+  theme(legend.position="none")+
+  xlab('')+
+  scale_y_continuous(breaks = c(0,1))+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.title = element_text(size = 12))+
+  theme(axis.text = element_text(size = 12))
+
+
+
+
+png(file = './plots/EC8_new2/figure_3d_supp.png',
+    width = 225,
+    height = 225)
+
+ggarrange(plot2, plot1, nrow = 2, heights = c(0.45,1))
+
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -811,12 +911,9 @@ VIS_RSC_EC_prop <- VIS_RSC_EC_prop %>%
                         count[2]/sum(count))) %>%
   ungroup()
 
-png(file = './plots/EC8_new2/VIS_RSC.png',
-    width = 350,
-    height = 350)
 
 
-plot1 <- VIS_RSC_EC_prop %>%
+plot11 <- VIS_RSC_EC_prop %>%
   ggplot(aes(x = cluster,
              y = proportion,
              fill = EC))+
@@ -826,12 +923,21 @@ plot1 <- VIS_RSC_EC_prop %>%
   ylab('neuron proportion')+
   scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
   geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-             color = "red")+
+             color = "red",
+             linewidth = 1.5)+
   coord_flip()+
   xlab('')+
-  scale_y_continuous(breaks = c(0,1))
+  scale_y_continuous(breaks = c(0,1))+
+  ylab('')+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10))+
+  theme(legend.position="none")
 
-plot2 <- df_VIS_RSC %>%
+plot12 <- df_VIS_RSC %>%
   ggplot()+
   geom_line(mapping = aes(x = brain_region,
                           y = projection_strength,
@@ -840,13 +946,21 @@ plot2 <- df_VIS_RSC %>%
   theme_bw()+
   xlab('region')+
   ylab('projection probability')+
-  ggtitle('[VIS, RSC]')
+  ggtitle('[VIS, RSC]')+
+  scale_y_continuous(breaks = c(0,1), limits = c(0,1))+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10,
+                                 color = 'black'),
+        legend.position = c(0.2, 0.8))
 
 
-ggarrange(plot1, plot2, nrow = 2, heights = c(0.35,1))
+plot1 <- ggarrange(plot11, plot12, nrow = 2, heights = c(0.3,1))
 
 
-dev.off()
 
 
 # Projection to SS and VIS
@@ -889,12 +1003,9 @@ SS_VIS_EC_prop <- SS_VIS_EC_prop %>%
                         count[2]/sum(count))) %>%
   ungroup()
 
-png(file = './plots/EC8_new2/SS_VIS.png',
-    width = 350,
-    height = 350)
 
 
-plot1 <- SS_VIS_EC_prop %>%
+plot21 <- SS_VIS_EC_prop %>%
   ggplot(aes(x = cluster,
              y = proportion,
              fill = EC))+
@@ -904,13 +1015,22 @@ plot1 <- SS_VIS_EC_prop %>%
   ylab('neuron proportion')+
   scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
   geom_hline(yintercept=MEC_proportion_overall, linetype="solid",
-             color = "red")+
+             color = "red",
+             linewidth = 1.5)+
   coord_flip()+
   xlab('')+
-  scale_y_continuous(breaks = c(0,1))
+  scale_y_continuous(breaks = c(0,1))+
+  ylab('')+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10))+
+  theme(legend.position="none")
 
 
-plot2 <- df_SS_VIS %>%
+plot22 <- df_SS_VIS %>%
   ggplot()+
   geom_line(mapping = aes(x = brain_region,
                           y = projection_strength,
@@ -919,10 +1039,19 @@ plot2 <- df_SS_VIS %>%
   theme_bw()+
   xlab('region')+
   ylab('projection probability')+
-  ggtitle('[SS, VIS]')
+  ggtitle('[SS, VIS]')+
+  scale_y_continuous(breaks = c(0,1), limits = c(0,1))+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10,
+                                 color = 'black'),
+        legend.position = c(0.2, 0.8))
 
 
-ggarrange(plot1, plot2, nrow = 2, heights = c(0.35,1))
+plot2 <- ggarrange(plot21, plot22, nrow = 2, heights = c(0.3,1))
 
-dev.off()
+ggarrange(plot1, plot2)
 

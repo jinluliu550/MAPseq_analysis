@@ -467,10 +467,11 @@ dev.off()
 #------------------------ Add a 10 percent noise ----------------------------------
 
 barseq_added_noise <- add_noise(mcmc_run_all_output = mcmc_all_barseq,
-                                Y = data_barseq,
-                                regions.name = rownames(data_barseq[[1]]))
+                              Y = data_barseq,
+                              regions.name = rownames(data_barseq[[1]]))
 
-barseq_added_noise_gelplot <- gel_plot(barseq_added_noise)
+barseq_added_noise_gelplot <- gel_plot(barseq_added_noise$noisy_data)
+barseq_replicated_gelplot <- gel_plot(barseq_added_noise$replicated_data)
 
 
 png(file = './plots/barseq/gelplot_added_noise.png',
@@ -485,20 +486,31 @@ ggarrange(barseq_added_noise_gelplot[[1]],
 
 dev.off()
 
+png(file = './plots/barseq/gelplot_replicated.png',
+    width = 1500,
+    height = 500)
+
+ggarrange(barseq_replicated_gelplot[[1]],
+          barseq_replicated_gelplot[[2]],
+          barseq_replicated_gelplot[[3]],
+          nrow = 1,
+          widths = c(1,1,1.3))
+
+dev.off()
+
 # Binomial clustering
 
 #Initialize z
 
-df <- t(do.call(cbind, barseq_added_noise))
+#---------------------------------- K-means noisy data ------------------------------------------------
+
+
+df <- t(do.call(cbind, barseq_added_noise$noisy_data))
 df = t(apply(df, 1, function(x){return(x/sum(x))}))
 
 
-C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(barseq_added_noise[[m]]))))
+C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(barseq_added_noise$noisy_data[[m]]))))
 
-#---------------------------------- K-means ------------------------------------------------
-
-
-#--------------------------- K-means -------------------------------------
 
 # K = 40
 k_mean_clust_40_added_noise <- kmeans(df, 40, nstart = 25)$cluster
@@ -506,7 +518,7 @@ k_mean_clust_40_added_noise <- kmeans(df, 40, nstart = 25)$cluster
 clust40_added_noise <- lapply(1:M,
                               function(m) k_mean_clust_40_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
 
-clust40_r_added_noise <- k_means_reorder(Y = barseq_added_noise,
+clust40_r_added_noise <- k_means_reorder(Y = barseq_added_noise$noisy_data,
                                          Z = clust40_added_noise)
 
 
@@ -517,7 +529,7 @@ clust60_added_noise <- lapply(1:M,
                               function(m) k_mean_clust_60_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
-clust60_r_added_noise <- k_means_reorder(Y = barseq_added_noise,
+clust60_r_added_noise <- k_means_reorder(Y = barseq_added_noise$noisy_data,
                                          Z = clust60_added_noise)
 
 
@@ -528,8 +540,50 @@ clust80_added_noise <- lapply(1:M,
                               function(m) k_mean_clust_80_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
-clust80_r_added_noise <- k_means_reorder(Y = barseq_added_noise,
+clust80_r_added_noise <- k_means_reorder(Y = barseq_added_noise$noisy_data,
                                          Z = clust80_added_noise)
+
+
+#--------------------------------- K-means replicated data -----------------------------------------
+
+
+df <- t(do.call(cbind, barseq_added_noise$replicated_data))
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
+
+
+# K = 40
+k_mean_clust_40_replicated <- kmeans(df, 40, nstart = 25)$cluster
+
+clust40_replicated <- lapply(1:M,
+                              function(m) k_mean_clust_40_replicated[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+clust40_r_replicated <- k_means_reorder(Y = barseq_added_noise$replicated_data,
+                                         Z = clust40_replicated)
+
+
+# K = 60
+k_mean_clust_60_replicated <- kmeans(df, 60, nstart = 25)$cluster
+
+clust60_replicated <- lapply(1:M,
+                             function(m) k_mean_clust_60_replicated[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+clust60_r_replicated <- k_means_reorder(Y = barseq_added_noise$replicated_data,
+                                        Z = clust60_replicated)
+
+
+# K = 80
+k_mean_clust_80_replicated <- kmeans(df, 80, nstart = 25)$cluster
+
+clust80_replicated <- lapply(1:M,
+                             function(m) k_mean_clust_80_replicated[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+clust80_r_replicated <- k_means_reorder(Y = barseq_added_noise$replicated_data,
+                                        Z = clust80_replicated)
+
+
+
+
+
 
 
 
@@ -538,9 +592,9 @@ png(file = './plots/barseq/k_means_40_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise,
+pp.standard.ordering(Y = barseq_added_noise$noisy_data,
                      Z = clust40_r_added_noise,
-                     regions.name = rownames(barseq_added_noise[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
 
 dev.off()
 
@@ -548,9 +602,9 @@ png(file = './plots/barseq/k_means_60_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise,
+pp.standard.ordering(Y = barseq_added_noise$noisy_data,
                      Z = clust60_r_added_noise,
-                     regions.name = rownames(barseq_added_noise[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
 
 dev.off()
 
@@ -558,19 +612,47 @@ png(file = './plots/barseq/k_means_80_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise,
+pp.standard.ordering(Y = barseq_added_noise$noisy_data,
                      Z = clust60_r_added_noise,
-                     regions.name = rownames(barseq_added_noise[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
 
 dev.off()
 
+png(file = './plots/barseq/k_means_40_replicated.png',
+    width = 600,
+    height = 600)
 
+pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+                     Z = clust40_r_replicated,
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+
+dev.off()
+
+png(file = './plots/barseq/k_means_60_replicated.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+                     Z = clust60_r_replicated,
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+
+dev.off()
+
+png(file = './plots/barseq/k_means_80_replicated.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+                     Z = clust60_r_replicated,
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+
+dev.off()
 
 #--------------------------- Binomial clustering ----------------------------------
 
-barseq_binomial_added_noise <- binomial_model(data = barseq_added_noise)
+barseq_binomial_added_noise <- binomial_model(data = barseq_added_noise$noisy_data)
 
-barseq_binomial_reorder_added_noise <- binom_cluster_reorder(Y = barseq_added_noise,
+barseq_binomial_reorder_added_noise <- binom_cluster_reorder(Y = barseq_added_noise$noisy_data,
                                                  binomial_output = barseq_binomial_added_noise)
 
 
@@ -578,19 +660,33 @@ png(file = './plots/barseq/binomial_cluster_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise,
+pp.standard.ordering(Y = barseq_added_noise$noisy_data,
                      Z = barseq_binomial_reorder_added_noise$allocation,
-                     regions.name = rownames(barseq_added_noise[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
 
 dev.off()
 
 
-#-------------------------------------------- MCMC ----------------------------------------------
+barseq_binomial_replicated <- binomial_model(data = barseq_added_noise$replicated_data)
+
+barseq_binomial_reorder_replicated <- binom_cluster_reorder(Y = barseq_added_noise$replicated_data,
+                                                             binomial_output = barseq_binomial_replicated)
+
+png(file = './plots/barseq/binomial_cluster_replicated.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+                     Z = barseq_binomial_reorder_replicated$allocation,
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+
+dev.off()
 
 
+#-------------------------------------------- MCMC of the noisy data ----------------------------------------------
 
-# MCMC run
-mcmc_all_barseq_added_noise <- mcmc_run_all(Y = barseq_added_noise,
+
+mcmc_all_barseq_added_noise <- mcmc_run_all(Y = barseq_added_noise$noisy_data,
                                 J = 80,
                                 number_iter = 20000,
                                 thinning = 5,
@@ -604,25 +700,53 @@ mcmc_all_barseq_added_noise <- mcmc_run_all(Y = barseq_added_noise,
                                 Z.init = clust60_r_added_noise)
 
 
+#------------------------------------------ MCMC of the replicated data ------------------------------------------------
+
+
+mcmc_all_barseq_replicated <- mcmc_run_all(Y = barseq_added_noise$replicated_data,
+                                            J = 80,
+                                            number_iter = 20000,
+                                            thinning = 5,
+                                            burn_in = 5000,
+                                            adaptive_prop = 0.0001,
+                                            print_Z = TRUE,
+                                            a_gamma = 30,
+                                            b_gamma = 1,
+                                            a_alpha = 1/5,
+                                            b_alpha = 1/2,
+                                            Z.init = clust60_r_replicated)
+
+
+
 Zmat_added_noise = matrix(unlist(mcmc_all_barseq_added_noise$Z_output), length(mcmc_all_barseq_added_noise$Z_output), sum(C),byrow = TRUE)
 
+Zmat_replicated = matrix(unlist(mcmc_all_barseq_replicated$Z_output), length(mcmc_all_barseq_replicated$Z_output), sum(C),byrow = TRUE)
+
+
 # Number of occupied components
-k = apply(Zmat_added_noise,1,function(x){length(unique(x))})
-plot(k, type = 'l')
+
+k_added_noise = apply(Zmat_added_noise,1,function(x){length(unique(x))})
+k_replicated = apply(Zmat_replicated,1,function(x){length(unique(x))})
 
 
 # Posterior similarity matrix
 psm_barseq_added_noise = similarity_matrix(mcmc_run_all_output = mcmc_all_barseq_added_noise)
+psm_barseq_replicated = similarity_matrix(mcmc_run_all_output = mcmc_all_barseq_replicated)
+
 
 
 # Reordered posterior samples of z
 barseq_z_reordered_added_noise <- z_trace_updated(mcmc_run_all_output = mcmc_all_barseq_added_noise)
-
+barseq_z_reordered_replicated <- z_trace_updated(mcmc_run_all_output = mcmc_all_barseq_replicated)
 
 # optimal clustering
 barseq_Z_added_noise <- opt.clustering.comb(z_trace = barseq_z_reordered_added_noise,
-                                          post_similarity = psm_barseq_added_noise,
-                                          max.k = max(k))
+                                            post_similarity = psm_barseq_added_noise,
+                                            max.k = max(k_added_noise))
+
+barseq_Z_replicated <- opt.clustering.comb(z_trace = barseq_z_reordered_replicated,
+                                          post_similarity = psm_barseq_replicated,
+                                          max.k = max(k_replicated))
 
 
 #-- Convert to a list
@@ -630,55 +754,80 @@ C_cumsum <- c(0, cumsum(C))
 barseq_Z_added_noise <- lapply(1:M,
                              function(m) barseq_Z_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
 
+
+barseq_Z_replicated <- lapply(1:M,
+                              function(m) barseq_Z_replicated[(C_cumsum[m]+1):C_cumsum[m+1]])
+
 # MCMC unique
 mcmc_unique_barseq_added_noise <- mcmc_run_post(mcmc_run_all_output = mcmc_all_barseq_added_noise,
                                               Z = barseq_Z_added_noise,
                                               thinning = 5,
                                               burn_in = 2000,
                                               number_iter = 12000,
-                                              Y = barseq_added_noise,
+                                              Y = barseq_added_noise$noisy_data,
                                               a_gamma = 30,
                                               b_gamma = 1,
-                                              regions.name = rownames(barseq_added_noise[[1]]))
+                                              regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
+
+mcmc_unique_barseq_replicated <- mcmc_run_post(mcmc_run_all_output = mcmc_all_barseq_replicated,
+                                                Z = barseq_Z_replicated,
+                                                thinning = 5,
+                                                burn_in = 2000,
+                                                number_iter = 12000,
+                                                Y = barseq_added_noise$replicated_data,
+                                                a_gamma = 30,
+                                                b_gamma = 1,
+                                                regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
 
 
 
-# Heatmap of projection stength of neurons in each cluster
+# Heat-map of projection strength of neurons in each cluster
 png(file = './plots/barseq/heatmap_neuron_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise,
+pp.standard.ordering(Y = barseq_added_noise$noisy_data,
                      Z = mcmc_unique_barseq_added_noise$Z,
-                     regions.name = rownames(barseq_added_noise[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
 
 dev.off()
+
+png(file = './plots/barseq/heatmap_neuron_replicated.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+                     Z = mcmc_unique_barseq_replicated$Z,
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+
+dev.off()
+
 
 
 
 #---------------------------------------- Compare variation of information ----------------------------------------------
 
 added_noise_vi <- NULL
-added_noise_vi$bayesian <- variation_info(unlist(mcmc_unique_barseq$Z),
+added_noise_vi$bayesian <- variation_info(unlist(mcmc_unique_barseq_replicated$Z),
                                           unlist(mcmc_unique_barseq_added_noise$Z))/log(base = 2, x = sum(sapply(1:length(data_barseq),
                                                                                                                function(m) ncol(data_barseq[[m]]))))
 
-added_noise_vi$k_mean_40 <- variation_info(unlist(clust40_r),
+added_noise_vi$k_mean_40 <- variation_info(unlist(clust40_r_replicated),
                                            unlist(clust40_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_barseq),
                                                                                                        function(m) ncol(data_barseq[[m]]))))
 
 
-added_noise_vi$k_mean_60 <- variation_info(unlist(clust60_r),
+added_noise_vi$k_mean_60 <- variation_info(unlist(clust60_r_replicated),
                                            unlist(clust60_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_barseq),
                                                                                                        function(m) ncol(data_barseq[[m]]))))
 
 
-added_noise_vi$k_mean_80 <- variation_info(unlist(clust80_r),
+added_noise_vi$k_mean_80 <- variation_info(unlist(clust80_r_replicated),
                                            unlist(clust80_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_barseq),
                                                                                                        function(m) ncol(data_barseq[[m]]))))
 
 
-added_noise_vi$binomial <- variation_info(unlist(barseq_binomial_reorder$allocation),
+added_noise_vi$binomial <- variation_info(unlist(barseq_binomial_reorder_replicated$allocation),
                                           unlist(barseq_binomial_reorder_added_noise$allocation))/log(base = 2, x = sum(sapply(1:length(data_barseq),
                                                                                                                              function(m) ncol(data_barseq[[m]]))))
 

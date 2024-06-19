@@ -251,6 +251,11 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(EC8_new[[1]]))
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/conditional_probability_mouse1.png',
+    width = 416,
+    height = 355)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -260,7 +265,12 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()+
-  ggtitle('mouse 1 conditional probability')
+  ggtitle('mouse 1 conditional probability')+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
+
 
 #Mouse 2
 pp1 = data.frame(pp_m2$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -276,16 +286,25 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(EC8_new[[1]]))
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/conditional_probability_mouse2.png',
+    width = 416,
+    height = 355)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
        y = "Region B",
-       fill= "P(A|B)") +
+       fill= "P()") +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()+
-  ggtitle('mouse 2 conditional probability')
+  ggtitle('mouse 2 conditional probability')+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Mouse 3
 pp1 = data.frame(pp_m3$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -301,6 +320,11 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(EC8_new[[1]]))
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/conditional_probability_mouse3.png',
+    width = 416,
+    height = 355)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -310,7 +334,11 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()+
-  ggtitle('mouse 3 conditional probability')
+  ggtitle('mouse 3 conditional probability')+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Mouse 4
 pp1 = data.frame(pp_m4$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -326,6 +354,11 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(EC8_new[[1]]))
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/conditional_probability_mouse4.png',
+    width = 416,
+    height = 355)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -335,7 +368,11 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()+
-  ggtitle('mouse 4 conditional probability')
+  ggtitle('mouse 4 conditional probability')+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Mouse 5
 pp1 = data.frame(pp_m5$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -351,6 +388,11 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(EC8_new[[1]]))
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/conditional_probability_mouse5.png',
+    width = 416,
+    height = 355)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -360,7 +402,11 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()+
-  ggtitle('mouse 5 conditional probability')
+  ggtitle('mouse 5 conditional probability')+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Mouse 6
 pp1 = data.frame(pp_m6$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -376,6 +422,11 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(EC8_new[[1]]))
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/conditional_probability_mouse6.png',
+    width = 416,
+    height = 355)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -385,7 +436,11 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()+
-  ggtitle('mouse 6 conditional probability')
+  ggtitle('mouse 6 conditional probability')+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Mouse 1- Mouse 6
 pp16 = data.frame(pp_m16$pprob_pair, row.names = rownames(EC8_new[[1]]))
@@ -464,6 +519,8 @@ ds <-  pivot_longer(ds,
 ds$Region.A = factor(ds$Region.A, levels = rownames(EC8_new[[1]]))
 cps1 = merge(cps1,ds)
 
+
+
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
   labs(x = "",
@@ -472,7 +529,15 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+
+
+png(file = './plots/EC8_new2/mouse_comparisons/cov_mouse_1.png',
+    width = 416,
+    height = 355)
 
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
@@ -482,7 +547,12 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
+
 
 #Covariance for Mouse 2
 cps1 = data.frame(cps_m2$cps, row.names = rownames(EC8_new[[1]]))
@@ -522,6 +592,12 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
   coord_fixed()
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/cov_mouse_2.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
   labs(x = "",
@@ -530,7 +606,11 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Covariance for Mouse 3
 cps1 = data.frame(cps_m3$cps, row.names = rownames(EC8_new[[1]]))
@@ -570,6 +650,12 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
   coord_fixed()
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/cov_mouse_3.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
   labs(x = "",
@@ -578,7 +664,13 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
+
+
 
 #Covariance for Mouse 4
 cps1 = data.frame(cps_m4$cps, row.names = rownames(EC8_new[[1]]))
@@ -618,6 +710,12 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
   coord_fixed()
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/cov_mouse_4.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
   labs(x = "",
@@ -626,7 +724,11 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Covariance for Mouse 5
 cps1 = data.frame(cps_m5$cps, row.names = rownames(EC8_new[[1]]))
@@ -666,6 +768,12 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
   coord_fixed()
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/cov_mouse_5.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
   labs(x = "",
@@ -674,7 +782,11 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 #Covariance for Mouse 6
 cps1 = data.frame(cps_m6$cps, row.names = rownames(EC8_new[[1]]))
@@ -714,6 +826,12 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_text(aes(label = paste(round(Cov,3),d)), color = "black", size = 4) +
   coord_fixed()
 
+
+png(file = './plots/EC8_new2/mouse_comparisons/cov_mouse_6.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   geom_tile() +
   labs(x = "",
@@ -722,7 +840,11 @@ ggplot(cps1, aes(x = Region.A, y = Region.B, fill = Cov)) +
   theme_bw() +
   scale_fill_gradient2(high = "red", mid = "white", low="blue", midpoint = 0) +
   geom_text(aes(label = d), color = "black", size = 8) +
-  coord_fixed()
+  coord_fixed()+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 ##############################
 # Projection probability across mice
@@ -735,6 +857,13 @@ df$Mouse = c(rep('1', R),rep('2', R),rep('3', R),rep('4', R),rep('5', R),rep('6'
 df$lower = c(pp_m1$pprob_ci[1,],pp_m2$pprob_ci[1,],pp_m3$pprob_ci[1,],pp_m4$pprob_ci[1,],pp_m5$pprob_ci[1,],pp_m6$pprob_ci[1,])
 df$upper = c(pp_m1$pprob_ci[2,],pp_m2$pprob_ci[2,],pp_m3$pprob_ci[2,],pp_m4$pprob_ci[2,],pp_m5$pprob_ci[2,],pp_m6$pprob_ci[2,])
 
+
+
+png(file = './plots/EC8_new2/projecting_probability.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   geom_point() +
   geom_line() +
@@ -742,7 +871,11 @@ ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   scale_color_manual(values=group.colors) +
   ylab('P(y>0)') +
   geom_errorbar(aes(ymin = lower, ymax = upper),width = 0.1) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 # Projection strength across mice
 
@@ -754,6 +887,12 @@ df$Mouse = c(rep('1', R),rep('2', R),rep('3', R),rep('4', R),rep('5', R),rep('6'
 df$lower = c(ps_m1$eps_ci[1,],ps_m2$eps_ci[1,],ps_m3$eps_ci[1,],ps_m4$eps_ci[1,],ps_m5$eps_ci[1,],ps_m6$eps_ci[1,])
 df$upper = c(ps_m1$eps_ci[2,],ps_m2$eps_ci[2,],ps_m3$eps_ci[2,],ps_m4$eps_ci[2,],ps_m5$eps_ci[2,],ps_m6$eps_ci[2,])
 
+
+png(file = './plots/EC8_new2/projection_strength.png',
+    width = 416,
+    height = 355)
+
+
 ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   geom_point() +
   geom_line() +
@@ -761,6 +900,10 @@ ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   scale_color_manual(values=group.colors) +
   ylab('E[y/N]') +
   geom_errorbar(aes(ymin = lower, ymax = upper),width = 0.1) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  theme(axis.text = element_text(size = 12,
+                                 color = 'black'))
+
+dev.off()
 
 
