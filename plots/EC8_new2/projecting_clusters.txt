@@ -1,0 +1,42 @@
+Figure 3B
+
+1: PFC, ORB
+6: PFC, ORB, MO
+14: PFC, ORB, MO, SS, ACA
+5: ORB
+
+Figure 3C
+
+35: SS, PTL, VIS, RSC
+25: VIS, RSC
+41: MO, SS, PTL, VIS, RSC
+53: PFC, MO, SS, ACA, PTL, VIS, RSC
+
+Figure 3E
+
+48: PFC, ORB, MO, SS, VIS
+54: PFC, ORB, MO, SS, ACA, PTL, VIS
+
+Supplementary Figure 3(A) - B
+
+19: ORB, MO, SS, PTL, VIS
+15: SS
+18: ORB, SS
+20: ORB, MO, SS, VIS
+
+Supplementary Figure 3(A) - C
+
+37: VIS, RSC
+42: MO, SS, ACA, PTL, VIS, RSC
+29: ORB, VIS
+55: RSC
+64: PFC, ORB, MO, ACA, PTL, VIS, RSC
+27: MO, SS, VIS, RSC
+57: MO, SS, PTL, VIS, RSC
+31: ORB, MO, SS, PTL, VIS, RSC
+39: PFC, ORB, MO, SS, ACA, PTL, VIS, RSC
+30: MO, SS, ACA, PTL, VIS, RSC
+
+Supplementary Figure 3(A) - D
+
+34: SS
