@@ -55,24 +55,29 @@ binomial_output_reorder <- binom_cluster_reorder(Y = EC8_new,
 #-------------------------------- Empirical Analysis ---------------------------------------
 
 # Number of neurons in each mouse
-png(file = './plots/EC8_new2/number_of_neurons_in_each_m.png',
-    width = 300,
-    height = 200)
 
-data.frame(mouse = paste('mouse', 1:M),
-           C = C) %>%
+
+plot1 <- data.frame(mouse = factor(1:M, levels = 1:M),
+                    C = C) %>%
   ggplot()+
   geom_bar(mapping = aes(x = mouse,
                          y = C),
            stat = 'identity')+
   ylab('Number of neurons in each mouse')+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10,
+                                 color = 'black')
+  )
 
-dev.off()
 
 # Proportion of LEC and MEC neurons in each mouse
 proportion_of_EC <- lapply(1:6,
-                           function(m) data.frame(mouse = paste('mouse', m),
+                           function(m) data.frame(mouse = factor(m, levels = 1:M),
                                                   EC = c('LEC','MEC'),
                                                   count = c(length(which(EC8_EC_label[[m]] == 'LEC')),
                                                             length(which(EC8_EC_label[[m]] == 'MEC')))
@@ -81,17 +86,23 @@ proportion_of_EC <- lapply(1:6,
 
 proportion_of_EC <- do.call(rbind, proportion_of_EC)
 
-png(file = './plots/EC8_new2/prop_of_EC_in_each_m.png',
-    width = 400,
-    height = 200)
 
-ggplot(proportion_of_EC, aes(x = mouse, y = count, fill = EC))+
+plot2 <- ggplot(proportion_of_EC, aes(x = mouse, y = count, fill = EC))+
   geom_bar(position = 'fill', stat = 'identity')+
   ylab('proportion of LEC and MEC')+
   theme_bw()+
-  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.text = element_text(size = 10,
+                                 color = 'black')
+  )
 
-dev.off()
+ggarrange(plot1, plot2, widths = c(0.7,1))
+
 
 #-------------------------------------------------------------------------------------------
 

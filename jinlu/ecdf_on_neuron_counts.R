@@ -74,11 +74,12 @@ df00 %>%
                 width = 0.2,
                 stat = 'identity',
                 position = position_dodge(width = 0.9))+
-  facet_wrap(~Region_max, nrow = 3, scales = 'free')+
+  facet_wrap(~Region_max, nrow = 2, scales = 'free')+
   theme_bw()+
   xlab('brain region')+
   ylab('barcode counts')+
-  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+  coord_flip()
 
 
 df00_simple %>%
@@ -97,7 +98,8 @@ df00_simple %>%
   theme_bw()+
   xlab('brain region')+
   ylab('barcode counts')+
-  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+  coord_flip()
 
 # Flow graph
 df01 <- all_brains_set_sub %>%

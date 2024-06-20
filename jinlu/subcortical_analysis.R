@@ -42,3 +42,5 @@ pp.standard.ordering(Y = EC8_sub_new,
 # Neurons which project to the subcortical regions
 EC8_sub_only <- lapply(1:6,
                        function(m) EC8_subnew_list[[m]] %>% filter(OLF > 0 | vStr > 0 | dStr > 0))
+
+

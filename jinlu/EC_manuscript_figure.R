@@ -1,4 +1,84 @@
 
+
+
+
+
+
+
+
+# Bootstrapping
+B <- 1000
+
+
+figure_1f_df_bootstrap <- lapply(1:B,
+                                 function(b){
+                                   
+                                   df1 <- lapply(2:5,
+                                                 function(m){
+                                                   
+                                                   # sample index
+                                                   sample.index <- sample(1:C[m], size = C[m], replace = TRUE)
+                                                   
+                                                   # Bootstrapping
+                                                   EC8_new_m_bootstrap <- EC8_new[[m]][,sample.index]
+                                                   EC8_EC_m_bootstrap <- EC8_EC_label[[m]][sample.index]
+                                                   
+                                                   # Overall MEC proportion in mouse m
+                                                   MEC_proportion_m <- mean(EC8_EC_m_bootstrap == 'MEC')
+                                                   
+                                                   df0 <- lapply(1:R,
+                                                                 function(r){
+                                                                   
+                                                                   # index of neuron projecting to region r
+                                                                   neuron.index.project.to.r <- which(EC8_new_m_bootstrap[r,] != 0)
+                                                                   
+                                                                   # Proportion of MEC neurons
+                                                                   MEC.proportion <- length(which(EC8_EC_m_bootstrap[neuron.index.project.to.r] == 'MEC'))/
+                                                                     length(neuron.index.project.to.r)
+                                                                   
+                                                                   
+                                                                   data.frame(bootstrap.num = b,
+                                                                              mouse = m,
+                                                                              region = regions.name[r],
+                                                                              conditional_probability_diff = MEC.proportion - MEC_proportion_m)
+                                                                 })
+                                                   
+                                                   do.call(rbind, df0)
+                                                   
+                                                 })
+                                   
+                                   do.call(rbind, df1)
+                                   
+                                 })
+
+figure_1f_df_bootstrap <- do.call(rbind, figure_1f_df_bootstrap)
+
+
+figure_1f_df_bootstrap_summary <- figure_1f_df_bootstrap %>%
+  group_by(mouse, region) %>%
+  summarise(median = mean(conditional_probability_diff),
+            diff_lb = mean(conditional_probability_diff)  - qt(0.9875,df=100-1)*sqrt(var(conditional_probability_diff))/sqrt(100),
+            diff_ub = mean(conditional_probability_diff)  + qt(0.9875,df=100-1)*sqrt(var(conditional_probability_diff))/sqrt(100))
+
+figure_1f_df_bootstrap_summary$mouse <- factor(figure_1f_df_bootstrap_summary$mouse, levels = 2:5)
+figure_1f_df_bootstrap_summary$region <- factor(figure_1f_df_bootstrap_summary$region, levels = rownames(EC8_new[[1]]))
+
+ggplot(figure_1f_df_bootstrap_summary,
+       aes(x = region,
+           y = median,
+           fill = mouse))+
+  geom_bar(stat="identity", color="black", 
+           position=position_dodge()) +
+  geom_errorbar(aes(ymin=diff_lb,
+                    ymax = diff_ub), width=.2,
+                position=position_dodge(.9))+
+  theme_bw()+
+  ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')
+
+
+
+
+
 # Figure 3b
 
 
