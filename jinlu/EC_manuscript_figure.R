@@ -76,7 +76,62 @@ ggplot(figure_1f_df_bootstrap_summary,
   ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')
 
 
+# One sided test
+PFC_ORB_p_value <- figure_1f_df_bootstrap %>%
+  filter(region %in% c('PFC', 'ORB')) %>%
+  mutate(region = factor(region, levels = rownames(EC8_new[[1]]))) %>%
+  group_by(mouse, region) %>%
+  summarise(p_value_one_sided = mean(conditional_probability_diff > 0)) %>%
+  mutate(significant = ifelse(p_value_one_sided < 0.05/4, 'significant', 'insignificant'))
 
+all_other_region_p_value <- figure_1f_df_bootstrap %>%
+  filter(region %notin% c('PFC', 'ORB')) %>%
+  mutate(region = factor(region, levels = rownames(EC8_new[[1]]))) %>%
+  group_by(mouse, region) %>%
+  summarise(p_value_one_sided = mean(conditional_probability_diff < 0)) %>%
+  mutate(significant = ifelse(p_value_one_sided < 0.05/4, 'significant', 'insignificant'))
+
+
+p_value <- rbind(PFC_ORB_p_value,
+                 all_other_region_p_value) %>%
+  arrange(mouse, region)
+
+
+ggplot(figure_1f_df_bootstrap_summary)+
+  
+  geom_bar(stat="identity", color="black", 
+           position=position_dodge(),
+           
+           aes(x = region,
+               y = median,
+               fill = mouse)) +
+  
+  geom_errorbar(aes(x = region,
+                    y = median,
+                    group = mouse,
+                    
+                    ymin=diff_lb,
+                    ymax = diff_ub), width=.2,
+                position=position_dodge(.9))+
+  
+  theme_bw()+
+  
+  ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')+
+  
+  geom_point(data = p_value,
+             aes(x = region,
+                 y = 0.3,
+                 group = mouse,
+                 color = significant),
+             stat = 'identity',
+             position = position_dodge(width = 0.9),
+             color = ifelse(p_value$significant == 'significant', 'black', 'white'),
+             shape = 8,
+             show.legend = FALSE)+
+  
+  guides(shape = "none")+
+  
+  ylim(c(-0.3, 0.35))
 
 
 # Figure 3b
