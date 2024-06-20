@@ -22,6 +22,14 @@ all_brains_set_sub <- read_excel("data/EC8_new/all_brains_set_sub.xlsx")
 all_brains_set_sub$id <- factor(1:nrow(all_brains_set_sub),
                                 levels = 1:nrow(all_brains_set_sub))
 
+
+
+all_brains_set_sub <- all_brains_set_sub %>%
+  rename(STRd = dStr,
+         STRv = vStr,
+         'OLF&CTXsp' = OLF) %>%
+  select(c(1:8, 11, 10, 9, 12:14))
+
 # List of brain regions
 list_of_regions <- colnames(all_brains_set_sub)[1:11]
 cortical_regions <- list_of_regions[1:8]
@@ -32,7 +40,7 @@ df00 <- all_brains_set_sub %>%
                names_to = 'brain_region',
                values_to = 'barcode_counts') %>%
   mutate(brain_region = factor(brain_region,
-                               levels = list_of_regions)) %>%
+                               levels = rev(list_of_regions))) %>%
   group_by(id) %>%
   mutate(Region_max = brain_region[which.max(rank(barcode_counts[1:8], ties.method = 'random'))]) %>%
   ungroup() %>%
@@ -50,7 +58,7 @@ df00_simple <- all_brains_set_sub %>%
                names_to = 'brain_region',
                values_to = 'barcode_counts') %>%
   mutate(brain_region = factor(brain_region,
-                               levels = list_of_regions)) %>%
+                               levels = rev(list_of_regions))) %>%
   group_by(EC,
            brain_region) %>%
   summarise(mean_barcode_count = mean(barcode_counts),
