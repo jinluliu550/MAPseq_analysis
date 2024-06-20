@@ -87,7 +87,12 @@ df00 %>%
   xlab('brain region')+
   ylab('barcode counts')+
   scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
-  coord_flip()
+  coord_flip()+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank()
+  )
 
 
 df00_simple %>%
