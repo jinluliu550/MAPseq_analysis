@@ -12,6 +12,10 @@ data_Hans <- list(t(Hans_data1),
 M <- length(data_Hans)
 C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
 
+mouse.index <- c(rep(1, C[1]),
+                 rep(2, C[2]),
+                 rep(3, C[3]))
+
 # 
 
 #Initialize z
@@ -72,34 +76,24 @@ hans_Z <- lapply(1:M,
 
 
 # Plot of posterior similarity matrix
-png(file = './plots/Hans/heatmap_psm_1.png',
-    width = 664,
-    height = 664)
+psm_hans_plot <- plotpsm(psm.ind = psm_hans$psm.within,
+                         psm.tot = psm_hans$psm.combined)
 
-plotpsm(psm.ind = psm_hans$psm.within,
-        psm.tot = psm_hans$psm.combined,
-        xlab = 'neurons',
-        ylab = 'neurons',
-        cex.lab = 1.5,
-        main = 'Posterior Similarity Matrix',
-        plot.type = 'ind',
-        cex.main = 1.5)
+
+png(file = './plots/Hans/heatmap_psm_1.png',
+    width = 450,
+    height = 400)
+
+psm_hans_plot$plot.ind
 
 dev.off()
 
 
 png(file = './plots/Hans/heatmap_psm_2.png',
-    width = 664,
-    height = 664)
+    width = 450,
+    height = 400)
 
-plotpsm(psm.ind = psm_hans$psm.within,
-        psm.tot = psm_hans$psm.combined,
-        xlab = 'neurons',
-        ylab = 'neurons',
-        cex.lab = 1.5,
-        main = 'Posterior Similarity Matrix',
-        cex.main = 1.5,
-        plot.type = 'tot')
+psm_hans_plot$plot.tot
 
 dev.off()
 
@@ -217,9 +211,10 @@ png(file = './plots/Hans/heatmap_neuron.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_Hans,
-                     Z = mcmc_unique_hans$Z,
-                     regions.name = rownames(data_Hans[[1]]))
+pp.standard.ordering2(Y = data_Hans,
+                      Z = mcmc_unique_hans$Z,
+                      regions.name = rownames(data_Hans[[1]]),
+                      mouse.index = mouse.index)
 
 dev.off()
 
@@ -323,9 +318,10 @@ png(file = './plots/Hans/k_means_20.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_Hans,
-                     Z = clust20_r,
-                     regions.name = rownames(data_Hans[[1]]))
+pp.standard.ordering2(Y = data_Hans,
+                      Z = clust20_r,
+                      regions.name = rownames(data_Hans[[1]]),
+                      mouse.index = mouse.index)
 
 dev.off()
 
@@ -333,9 +329,11 @@ png(file = './plots/Hans/k_means_30.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_Hans,
-                     Z = clust30_r,
-                     regions.name = rownames(data_Hans[[1]]))
+
+pp.standard.ordering2(Y = data_Hans,
+                      Z = clust30_r,
+                      regions.name = rownames(data_Hans[[1]]),
+                      mouse.index = mouse.index)
 
 dev.off()
 
@@ -343,9 +341,10 @@ png(file = './plots/Hans/k_means_40.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_Hans,
+pp.standard.ordering2(Y = data_Hans,
                      Z = clust40_r,
-                     regions.name = rownames(data_Hans[[1]]))
+                     regions.name = rownames(data_Hans[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -363,9 +362,10 @@ png(file = './plots/Hans/binomial_cluster.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_Hans,
+pp.standard.ordering2(Y = data_Hans,
                      Z = hans_binomial_reorder$allocation,
-                     regions.name = rownames(data_Hans[[1]]))
+                     regions.name = rownames(data_Hans[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -613,9 +613,10 @@ png(file = './plots/Hans/heatmap_neuron_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$noisy_data,
+pp.standard.ordering2(Y = hans_added_noise$noisy_data,
                      Z = mcmc_unique_hans_added_noise$Z,
-                     regions.name = rownames(hans_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(hans_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -623,9 +624,10 @@ png(file = './plots/Hans/heatmap_neuron_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$replicated_data,
+pp.standard.ordering2(Y = hans_added_noise$replicated_data,
                      Z = mcmc_unique_hans_replicated$Z,
-                     regions.name = rownames(hans_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(hans_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -710,9 +712,10 @@ png(file = './plots/Hans/k_means_20_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$noisy_data,
+pp.standard.ordering2(Y = hans_added_noise$noisy_data,
                      Z = clust20_r_added_noise,
-                     regions.name = rownames(hans_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(hans_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -720,9 +723,10 @@ png(file = './plots/Hans/k_means_30_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$noisy_data,
+pp.standard.ordering2(Y = hans_added_noise$noisy_data,
                      Z = clust30_r_added_noise,
-                     regions.name = rownames(hans_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(hans_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -730,9 +734,10 @@ png(file = './plots/Hans/k_means_40_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$noisy_data,
+pp.standard.ordering2(Y = hans_added_noise$noisy_data,
                      Z = clust40_r_added_noise,
-                     regions.name = rownames(hans_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(hans_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -740,9 +745,10 @@ png(file = './plots/Hans/k_means_20_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$replicated_data,
+pp.standard.ordering2(Y = hans_added_noise$replicated_data,
                      Z = clust20_r_replicated,
-                     regions.name = rownames(hans_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(hans_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -750,9 +756,10 @@ png(file = './plots/Hans/k_means_30_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$replicated_data,
+pp.standard.ordering2(Y = hans_added_noise$replicated_data,
                      Z = clust30_r_replicated,
-                     regions.name = rownames(hans_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(hans_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -760,9 +767,10 @@ png(file = './plots/Hans/k_means_40_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$replicated_data,
+pp.standard.ordering2(Y = hans_added_noise$replicated_data,
                      Z = clust40_r_replicated,
-                     regions.name = rownames(hans_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(hans_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -779,9 +787,10 @@ png(file = './plots/Hans/binomial_cluster_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$noisy_data,
+pp.standard.ordering2(Y = hans_added_noise$noisy_data,
                      Z = hans_binomial_reorder_added_noise$allocation,
-                     regions.name = rownames(hans_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(hans_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -796,9 +805,10 @@ png(file = './plots/Hans/binomial_cluster_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = hans_added_noise$replicated_data,
+pp.standard.ordering2(Y = hans_added_noise$replicated_data,
                      Z = hans_binomial_reorder_replicated$allocation,
-                     regions.name = rownames(hans_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(hans_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 

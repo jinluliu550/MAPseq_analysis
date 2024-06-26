@@ -20,6 +20,11 @@ M <- length(data_barseq)
 C <- sapply(1:M, function(m) ncol(data_barseq[[m]]))
 
 
+mouse.index <- c(rep(1, C[1]),
+                 rep(2, C[2]),
+                 rep(3, C[3]))
+
+
 #Initialize z
 data_barseq_cbind <- do.call(cbind, data_barseq)
 
@@ -80,34 +85,23 @@ barseq_Z <- lapply(1:M,
 
 
 # Plot of posterior similarity matrix
-png(file = './plots/barseq/heatmap_psm_1.png',
-    width = 664,
-    height = 664)
+psm_barseq_plot <- plotpsm(psm.ind = psm_barseq$psm.within,
+                           psm.tot = psm_barseq$psm.combined)
 
-plotpsm(psm.ind = psm_barseq$psm.within,
-        psm.tot = psm_barseq$psm.combined,
-        xlab = 'neurons',
-        ylab = 'neurons',
-        cex.lab = 1.5,
-        main = 'Posterior Similarity Matrix',
-        plot.type = 'ind',
-        cex.main = 1.5)
+png(file = './plots/barseq/heatmap_psm_1.png',
+    width = 450,
+    height = 400)
+
+psm_barseq_plot$plot.ind
 
 dev.off()
 
 
 png(file = './plots/barseq/heatmap_psm_2.png',
-    width = 664,
-    height = 664)
+    width = 450,
+    height = 400)
 
-plotpsm(psm.ind = psm_barseq$psm.within,
-        psm.tot = psm_barseq$psm.combined,
-        xlab = 'neurons',
-        ylab = 'neurons',
-        cex.lab = 1.5,
-        main = 'Posterior Similarity Matrix',
-        cex.main = 1.5,
-        plot.type = 'tot')
+psm_barseq_plot$plot.tot
 
 dev.off()
 
@@ -201,9 +195,10 @@ png(file = './plots/barseq/heatmap_neuron.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_barseq,
+pp.standard.ordering2(Y = data_barseq,
                      Z = mcmc_unique_barseq$Z,
-                     regions.name = rownames(data_barseq[[1]]))
+                     regions.name = rownames(data_barseq[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -309,9 +304,10 @@ png(file = './plots/barseq/k_means_40.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_barseq,
+pp.standard.ordering2(Y = data_barseq,
                      Z = clust40_r,
-                     regions.name = rownames(data_barseq[[1]]))
+                     regions.name = rownames(data_barseq[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -319,9 +315,10 @@ png(file = './plots/barseq/k_means_60.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_barseq,
+pp.standard.ordering2(Y = data_barseq,
                      Z = clust60_r,
-                     regions.name = rownames(data_barseq[[1]]))
+                     regions.name = rownames(data_barseq[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -329,9 +326,10 @@ png(file = './plots/barseq/k_means_80.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_barseq,
+pp.standard.ordering2(Y = data_barseq,
                      Z = clust80_r,
-                     regions.name = rownames(data_barseq[[1]]))
+                     regions.name = rownames(data_barseq[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -372,9 +370,10 @@ png(file = './plots/barseq/binomial_cluster.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = data_barseq,
+pp.standard.ordering2(Y = data_barseq,
                      Z = barseq_binomial_reorder$allocation,
-                     regions.name = rownames(data_barseq[[1]]))
+                     regions.name = rownames(data_barseq[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -592,9 +591,10 @@ png(file = './plots/barseq/k_means_40_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$noisy_data,
+pp.standard.ordering2(Y = barseq_added_noise$noisy_data,
                      Z = clust40_r_added_noise,
-                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -602,9 +602,10 @@ png(file = './plots/barseq/k_means_60_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$noisy_data,
+pp.standard.ordering2(Y = barseq_added_noise$noisy_data,
                      Z = clust60_r_added_noise,
-                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -612,9 +613,10 @@ png(file = './plots/barseq/k_means_80_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$noisy_data,
+pp.standard.ordering2(Y = barseq_added_noise$noisy_data,
                      Z = clust60_r_added_noise,
-                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -622,9 +624,10 @@ png(file = './plots/barseq/k_means_40_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+pp.standard.ordering2(Y = barseq_added_noise$replicated_data,
                      Z = clust40_r_replicated,
-                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -632,9 +635,10 @@ png(file = './plots/barseq/k_means_60_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+pp.standard.ordering2(Y = barseq_added_noise$replicated_data,
                      Z = clust60_r_replicated,
-                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -642,9 +646,10 @@ png(file = './plots/barseq/k_means_80_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+pp.standard.ordering2(Y = barseq_added_noise$replicated_data,
                      Z = clust60_r_replicated,
-                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -660,9 +665,10 @@ png(file = './plots/barseq/binomial_cluster_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$noisy_data,
+pp.standard.ordering2(Y = barseq_added_noise$noisy_data,
                      Z = barseq_binomial_reorder_added_noise$allocation,
-                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -676,9 +682,10 @@ png(file = './plots/barseq/binomial_cluster_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+pp.standard.ordering2(Y = barseq_added_noise$replicated_data,
                      Z = barseq_binomial_reorder_replicated$allocation,
-                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -786,9 +793,10 @@ png(file = './plots/barseq/heatmap_neuron_added_noise.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$noisy_data,
+pp.standard.ordering2(Y = barseq_added_noise$noisy_data,
                      Z = mcmc_unique_barseq_added_noise$Z,
-                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$noisy_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
@@ -796,9 +804,10 @@ png(file = './plots/barseq/heatmap_neuron_replicated.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering(Y = barseq_added_noise$replicated_data,
+pp.standard.ordering2(Y = barseq_added_noise$replicated_data,
                      Z = mcmc_unique_barseq_replicated$Z,
-                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]))
+                     regions.name = rownames(barseq_added_noise$replicated_data[[1]]),
+                     mouse.index = mouse.index)
 
 dev.off()
 
