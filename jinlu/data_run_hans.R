@@ -4,9 +4,12 @@
 M <- length(data_Hans)
 C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
 
+gel_plot_data_Hans <- gel_plot(Y = data_Hans)
+
 mouse.index <- c(rep(1, C[1]),
                  rep(2, C[2]),
-                 rep(3, C[3]))
+                 rep(3, C[3]),
+                 rep(4, C[4]))
 
 
 #Initialize z
