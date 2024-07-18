@@ -1,14 +1,6 @@
 
 # Hans data - also called the VC data
 
-Hans_data1 <- read.csv('./data/Han-data/han_brain4_gh.csv')
-Hans_data2 <- read.csv('./data/Han-data/han_brain5_gh.csv')
-Hans_data3 <- read.csv('./data/Han-data/han_brain6_gh.csv')
-
-data_Hans <- list(t(Hans_data1),
-                  t(Hans_data2),
-                  t(Hans_data3))
-
 M <- length(data_Hans)
 C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
 
@@ -16,7 +8,6 @@ mouse.index <- c(rep(1, C[1]),
                  rep(2, C[2]),
                  rep(3, C[3]))
 
-# 
 
 #Initialize z
 data_Hans_cbind <- do.call(cbind, data_Hans)
@@ -81,7 +72,7 @@ psm_hans_plot <- plotpsm(psm.ind = psm_hans$psm.within,
 
 
 png(file = './plots/Hans/heatmap_psm_1.png',
-    width = 450,
+    width = 500,
     height = 400)
 
 psm_hans_plot$plot.ind
@@ -90,7 +81,7 @@ dev.off()
 
 
 png(file = './plots/Hans/heatmap_psm_2.png',
-    width = 450,
+    width = 500,
     height = 400)
 
 psm_hans_plot$plot.tot
@@ -110,6 +101,9 @@ mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
                                  
 
 hans_Z_reordered <- mcmc_unique_hans$Z
+
+mcmc_unique_hans$estimated.projection.df %>%
+  filter(cluster == 'cluster 30')
 
 
 # Number of neurons by cluster and mosue
@@ -369,6 +363,9 @@ pp.standard.ordering2(Y = data_Hans,
 
 dev.off()
 
+hans_binomial_reorder$cluster_summary %>%
+  filter(cluster.type == 'under-represented')
+
 #-------------------------- Variation of information between different estimates -------------------------------------
 
 
@@ -425,8 +422,8 @@ ds$class.A <- rep(rownames(mx), each = 5)
 
 
 png(file = './plots/Hans/comparison_vi.png',
-    width = 664,
-    height = 545)
+    width = 500,
+    height = 150)
 
 ggplot(ds, aes(x = class.A, y = class.B, fill = vi)) +
   geom_tile() +
@@ -447,6 +444,7 @@ projection_by_evi(Y = data_Hans,
                   evi = evi_hans,
                   Z = mcmc_unique_hans$Z, 
                   region_name = rownames(data_Hans[[1]]))
+
 
 #------------------------ Add a 10 percent noise ----------------------------------
 
@@ -515,6 +513,7 @@ mcmc_all_hans_added_noise <- mcmc_run_all(Y = hans_added_noise$noisy_data,
                               b_alpha = 1/2,
                               Z.init = clust20_added_noise)
 
+
 #---------------------------- MCMC of the replicated data ---------------------------------------
 
 M <- 3
@@ -526,10 +525,10 @@ df = t(apply(df, 1, function(x){return(x/sum(x))}))
 C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(hans_added_noise$replicated_data[[m]]))))
 
 # k-means
-k_mean_clust_20_added_noise <- kmeans(df, 20, iter.max = 100, nstart = 25)$cluster
+k_mean_clust_20_replicated <- kmeans(df, 20, iter.max = 100, nstart = 25)$cluster
 
-clust20_added_noise <- lapply(1:M,
-                              function(m) k_mean_clust_20_added_noise[(C_cumsum[m]+1):C_cumsum[m+1]])
+clust20_replicated <- lapply(1:M,
+                              function(m) k_mean_clust_20_replicated[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
 mcmc_all_hans_replicated <- mcmc_run_all(Y = hans_added_noise$replicated_data,
@@ -543,7 +542,7 @@ mcmc_all_hans_replicated <- mcmc_run_all(Y = hans_added_noise$replicated_data,
                                           b_gamma = 1,
                                           a_alpha = 1/5,
                                           b_alpha = 1/2,
-                                          Z.init = clust20_added_noise)
+                                          Z.init = clust20_replicated)
 
 
 

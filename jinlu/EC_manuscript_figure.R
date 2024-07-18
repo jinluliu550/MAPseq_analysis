@@ -6,132 +6,307 @@
 
 
 
-# Bootstrapping
-B <- 1000
+# # Bootstrapping
+# B <- 1000
+# 
+# 
+# figure_1f_df_bootstrap <- lapply(1:B,
+#                                  function(b){
+#                                    
+#                                    df1 <- lapply(2:5,
+#                                                  function(m){
+#                                                    
+#                                                    # sample index
+#                                                    sample.index <- sample(1:C[m], size = C[m], replace = TRUE)
+#                                                    
+#                                                    # Bootstrapping
+#                                                    EC8_new_m_bootstrap <- EC8_new[[m]][,sample.index]
+#                                                    EC8_EC_m_bootstrap <- EC8_EC_label[[m]][sample.index]
+#                                                    
+#                                                    # Overall MEC proportion in mouse m
+#                                                    MEC_proportion_m <- mean(EC8_EC_m_bootstrap == 'MEC')
+#                                                    
+#                                                    df0 <- lapply(1:R,
+#                                                                  function(r){
+#                                                                    
+#                                                                    # index of neuron projecting to region r
+#                                                                    neuron.index.project.to.r <- which(EC8_new_m_bootstrap[r,] != 0)
+#                                                                    
+#                                                                    # Proportion of MEC neurons
+#                                                                    MEC.proportion <- length(which(EC8_EC_m_bootstrap[neuron.index.project.to.r] == 'MEC'))/
+#                                                                      length(neuron.index.project.to.r)
+#                                                                    
+#                                                                    
+#                                                                    data.frame(bootstrap.num = b,
+#                                                                               mouse = m,
+#                                                                               region = regions.name[r],
+#                                                                               conditional_probability_diff = MEC.proportion - MEC_proportion_m)
+#                                                                  })
+#                                                    
+#                                                    do.call(rbind, df0)
+#                                                    
+#                                                  })
+#                                    
+#                                    do.call(rbind, df1)
+#                                    
+#                                  })
+# 
+# figure_1f_df_bootstrap <- do.call(rbind, figure_1f_df_bootstrap)
+# 
+# 
+# figure_1f_df_bootstrap_summary <- figure_1f_df_bootstrap %>%
+#   group_by(mouse, region) %>%
+#   summarise(median = mean(conditional_probability_diff),
+#             diff_lb = mean(conditional_probability_diff)  - qt(0.9875,df=100-1)*sqrt(var(conditional_probability_diff))/sqrt(100),
+#             diff_ub = mean(conditional_probability_diff)  + qt(0.9875,df=100-1)*sqrt(var(conditional_probability_diff))/sqrt(100))
+# 
+# figure_1f_df_bootstrap_summary$mouse <- factor(figure_1f_df_bootstrap_summary$mouse, levels = 2:5)
+# figure_1f_df_bootstrap_summary$region <- factor(figure_1f_df_bootstrap_summary$region, levels = rownames(EC8_new[[1]]))
+# 
+# ggplot(figure_1f_df_bootstrap_summary,
+#        aes(x = region,
+#            y = median,
+#            fill = mouse))+
+#   geom_bar(stat="identity", color="black", 
+#            position=position_dodge()) +
+#   geom_errorbar(aes(ymin=diff_lb,
+#                     ymax = diff_ub), width=.2,
+#                 position=position_dodge(.9))+
+#   theme_bw()+
+#   ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')
+# 
+# 
+# # One sided test
+# PFC_ORB_p_value <- figure_1f_df_bootstrap %>%
+#   filter(region %in% c('PFC', 'ORB')) %>%
+#   mutate(region = factor(region, levels = rownames(EC8_new[[1]]))) %>%
+#   group_by(mouse, region) %>%
+#   summarise(p_value_one_sided = mean(conditional_probability_diff > 0)) %>%
+#   mutate(significant = ifelse(p_value_one_sided < 0.05/4, 'significant', 'insignificant'))
+# 
+# all_other_region_p_value <- figure_1f_df_bootstrap %>%
+#   filter(region %notin% c('PFC', 'ORB')) %>%
+#   mutate(region = factor(region, levels = rownames(EC8_new[[1]]))) %>%
+#   group_by(mouse, region) %>%
+#   summarise(p_value_one_sided = mean(conditional_probability_diff < 0)) %>%
+#   mutate(significant = ifelse(p_value_one_sided < 0.05/4, 'significant', 'insignificant'))
+# 
+# 
+# p_value <- rbind(PFC_ORB_p_value,
+#                  all_other_region_p_value) %>%
+#   arrange(mouse, region)
+# 
+# 
+# ggplot(figure_1f_df_bootstrap_summary)+
+#   
+#   geom_bar(stat="identity", color="black", 
+#            position=position_dodge(),
+#            
+#            aes(x = region,
+#                y = median,
+#                fill = mouse)) +
+#   
+#   geom_errorbar(aes(x = region,
+#                     y = median,
+#                     group = mouse,
+#                     
+#                     ymin=diff_lb,
+#                     ymax = diff_ub), width=.2,
+#                 position=position_dodge(.9))+
+#   
+#   theme_bw()+
+#   
+#   ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')+
+#   
+#   geom_point(data = p_value,
+#              aes(x = region,
+#                  y = 0.3,
+#                  group = mouse,
+#                  color = significant),
+#              stat = 'identity',
+#              position = position_dodge(width = 0.9),
+#              color = ifelse(p_value$significant == 'significant', 'black', 'white'),
+#              shape = 8,
+#              show.legend = FALSE)+
+#   
+#   guides(shape = "none")+
+#   
+#   ylim(c(-0.3, 0.35))
 
 
-figure_1f_df_bootstrap <- lapply(1:B,
-                                 function(b){
-                                   
-                                   df1 <- lapply(2:5,
-                                                 function(m){
-                                                   
-                                                   # sample index
-                                                   sample.index <- sample(1:C[m], size = C[m], replace = TRUE)
-                                                   
-                                                   # Bootstrapping
-                                                   EC8_new_m_bootstrap <- EC8_new[[m]][,sample.index]
-                                                   EC8_EC_m_bootstrap <- EC8_EC_label[[m]][sample.index]
-                                                   
-                                                   # Overall MEC proportion in mouse m
-                                                   MEC_proportion_m <- mean(EC8_EC_m_bootstrap == 'MEC')
-                                                   
-                                                   df0 <- lapply(1:R,
-                                                                 function(r){
-                                                                   
-                                                                   # index of neuron projecting to region r
-                                                                   neuron.index.project.to.r <- which(EC8_new_m_bootstrap[r,] != 0)
-                                                                   
-                                                                   # Proportion of MEC neurons
-                                                                   MEC.proportion <- length(which(EC8_EC_m_bootstrap[neuron.index.project.to.r] == 'MEC'))/
-                                                                     length(neuron.index.project.to.r)
-                                                                   
-                                                                   
-                                                                   data.frame(bootstrap.num = b,
-                                                                              mouse = m,
-                                                                              region = regions.name[r],
-                                                                              conditional_probability_diff = MEC.proportion - MEC_proportion_m)
-                                                                 })
-                                                   
-                                                   do.call(rbind, df0)
-                                                   
-                                                 })
-                                   
-                                   do.call(rbind, df1)
-                                   
-                                 })
-
-figure_1f_df_bootstrap <- do.call(rbind, figure_1f_df_bootstrap)
 
 
-figure_1f_df_bootstrap_summary <- figure_1f_df_bootstrap %>%
-  group_by(mouse, region) %>%
-  summarise(median = mean(conditional_probability_diff),
-            diff_lb = mean(conditional_probability_diff)  - qt(0.9875,df=100-1)*sqrt(var(conditional_probability_diff))/sqrt(100),
-            diff_ub = mean(conditional_probability_diff)  + qt(0.9875,df=100-1)*sqrt(var(conditional_probability_diff))/sqrt(100))
+# Figure 1 F new
+EC8_new_2_to_5 <- list(EC8_new[[2]],
+                       EC8_new[[3]],
+                       EC8_new[[4]],
+                       EC8_new[[5]])
 
-figure_1f_df_bootstrap_summary$mouse <- factor(figure_1f_df_bootstrap_summary$mouse, levels = 2:5)
-figure_1f_df_bootstrap_summary$region <- factor(figure_1f_df_bootstrap_summary$region, levels = rownames(EC8_new[[1]]))
+EC8_EC_label_2_to_5 <- list(EC8_EC_label[[2]],
+                            EC8_EC_label[[3]],
+                            EC8_EC_label[[4]],
+                            EC8_EC_label[[5]])
 
-ggplot(figure_1f_df_bootstrap_summary,
-       aes(x = region,
-           y = median,
-           fill = mouse))+
-  geom_bar(stat="identity", color="black", 
-           position=position_dodge()) +
-  geom_errorbar(aes(ymin=diff_lb,
-                    ymax = diff_ub), width=.2,
-                position=position_dodge(.9))+
+
+figure_1f_df <- data.frame(EC = c(rep('LEC', 8),
+                                  rep('MEC', 8)),
+                           brain_region = rownames(EC8_new_2_to_5[[1]]),
+                           projection_probability = c(apply(do.call(cbind, EC8_new_2_to_5)[,unlist(EC8_EC_label_2_to_5) == 'LEC'], 1, function(x) mean(x >= 5)),
+                                                      apply(do.call(cbind, EC8_new_2_to_5)[,unlist(EC8_EC_label_2_to_5) == 'MEC'], 1, function(x) mean(x >= 5))))
+
+figure_1f_df$brain_region <- factor(figure_1f_df$brain_region,
+                                    levels = rownames(EC8_new[[1]]))
+
+# Calculate the probability of projection from LEC neurons
+LEC_projection_probability <- lapply(2:5,
+                                     function(m){
+                                       
+                                       EC8_new_m_LEC <- EC8_new[[m]][,EC8_EC_label[[m]]=='LEC']
+                                       
+                                       data.frame(EC = 'LEC',
+                                                  mouse = m,
+                                                  brain_region = rownames(EC8_new_m_LEC),
+                                                  projection_probability = apply(EC8_new_m_LEC, 1, function(x) mean(x >= 5)))
+                                     })
+
+LEC_projection_probability <- do.call(rbind, LEC_projection_probability)
+
+MEC_projection_probability <- lapply(2:5,
+                                     function(m){
+                                       
+                                       EC8_new_m_MEC <- EC8_new[[m]][,EC8_EC_label[[m]]=='MEC']
+                                       
+                                       data.frame(EC = 'MEC',
+                                                  mouse = m,
+                                                  brain_region = rownames(EC8_new_m_MEC),
+                                                  projection_probability = apply(EC8_new_m_MEC, 1, function(x) mean(x >= 5)))
+                                     })
+
+MEC_projection_probability <- do.call(rbind, MEC_projection_probability)
+
+figure_1f_df_01 <- rbind(LEC_projection_probability,
+                         MEC_projection_probability)
+
+figure_1f_df_01$brain_region <- factor(figure_1f_df_01$brain_region,
+                                       levels = rownames(EC8_new[[1]]))
+
+# 
+# ggplot()+
+#   
+#   # Bar chart
+#   geom_bar(data = figure_1f_df,
+#            mapping = aes(x = brain_region,
+#                          y = projection_probability,
+#                          fill = EC),
+#            stat = 'identity', position = position_dodge())+
+#   scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
+#   theme_bw()+
+#   ylab('probability of projecting to the region')+
+#   xlab('brain region')+
+#   
+#   geom_dotplot(data = figure_1f_df_01,
+#     aes(fill = EC, color = EC, x = brain_region, y = projection_probability),
+#     binaxis='y', stackdir='center', dotsize = 0.8,
+#     position = position_dodge(0.8)
+#   )
+
+
+# Hypothesis test
+hypothesis_test_equal_proportion <- function(n1, n2, y1, y2, M, significance){
+  
+  p1_hat <- y1/n1
+  p2_hat <- y2/n2
+  
+  p_hat <- (y1+y2)/(n1+n2)
+  
+  Z = (p1_hat - p2_hat)/sqrt((p_hat)*(1-p_hat)*(1/n1+1/n2))
+  
+  if(Z > 0){
+    
+    p_value = 2*(1-pnorm(Z))
+  }else{
+    
+    p_value = 2*pnorm(Z)
+  }
+  
+  
+  reject_null = (p_value < significance/M)
+  
+  return(list('Z' = Z,
+              'p_value' = p_value,
+              'reject_null' = reject_null))
+}
+
+
+hypothesis_test_result_1f <- lapply(2:5, function(m){
+  
+  result_m <- lapply(1:8,
+                     function(r){
+                       
+                       hypothesis_result <- hypothesis_test_equal_proportion(n1 = length(which(EC8_EC_label[[m]] == 'LEC')),
+                                                                             n2 = length(which(EC8_EC_label[[m]] == 'MEC')),
+                                                                             y1 = length(which(EC8_new[[m]][r,EC8_EC_label[[m]]=='LEC'] >= 5)),
+                                                                             y2 = length(which(EC8_new[[m]][r,EC8_EC_label[[m]]=='MEC'] >= 5)),
+                                                                             M = 4,
+                                                                             significance = 0.1)
+                       
+                       data.frame(mouse = m,
+                                  region = rownames(EC8_new[[m]])[r],
+                                  Z = hypothesis_result$Z,
+                                  p_value = hypothesis_result$p_value,
+                                  reject_null = hypothesis_result$reject_null
+                       )
+                     })
+  
+  do.call(rbind, result_m)
+}
+)
+
+hypothesis_test_result_1f <- do.call(rbind, hypothesis_test_result_1f)
+
+regions_significant_difference <- hypothesis_test_result_1f %>%
+  group_by(region) %>%
+  summarise(reject_null = all(reject_null == TRUE)) %>%
+  filter(reject_null == TRUE)
+
+
+png(file = './plots/EC8_new2/probability_of_projection_five.png',
+    width = 400,
+    height = 230)
+
+ggplot()+
+  
+  # Bar chart
+  geom_bar(data = figure_1f_df,
+           mapping = aes(x = brain_region,
+                         y = projection_probability,
+                         fill = EC),
+           stat = 'identity', position = position_dodge())+
+  scale_fill_manual(values=c(LEC = '#16697A', MEC = '#DB6400'))+
   theme_bw()+
-  ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')
-
-
-# One sided test
-PFC_ORB_p_value <- figure_1f_df_bootstrap %>%
-  filter(region %in% c('PFC', 'ORB')) %>%
-  mutate(region = factor(region, levels = rownames(EC8_new[[1]]))) %>%
-  group_by(mouse, region) %>%
-  summarise(p_value_one_sided = mean(conditional_probability_diff > 0)) %>%
-  mutate(significant = ifelse(p_value_one_sided < 0.05/4, 'significant', 'insignificant'))
-
-all_other_region_p_value <- figure_1f_df_bootstrap %>%
-  filter(region %notin% c('PFC', 'ORB')) %>%
-  mutate(region = factor(region, levels = rownames(EC8_new[[1]]))) %>%
-  group_by(mouse, region) %>%
-  summarise(p_value_one_sided = mean(conditional_probability_diff < 0)) %>%
-  mutate(significant = ifelse(p_value_one_sided < 0.05/4, 'significant', 'insignificant'))
-
-
-p_value <- rbind(PFC_ORB_p_value,
-                 all_other_region_p_value) %>%
-  arrange(mouse, region)
-
-
-ggplot(figure_1f_df_bootstrap_summary)+
+  ylab('probability of projecting to the region')+
+  xlab('brain region')+
   
-  geom_bar(stat="identity", color="black", 
-           position=position_dodge(),
-           
-           aes(x = region,
-               y = median,
-               fill = mouse)) +
+  geom_dotplot(data = figure_1f_df_01,
+               aes(fill = EC, color = EC, x = brain_region, y = projection_probability),
+               binaxis='y', stackdir='center', dotsize = 0.8,
+               position = position_dodge(0.8)
+  )+
+  ylim(c(0,1))+
   
-  geom_errorbar(aes(x = region,
-                    y = median,
-                    group = mouse,
-                    
-                    ymin=diff_lb,
-                    ymax = diff_ub), width=.2,
-                position=position_dodge(.9))+
-  
-  theme_bw()+
-  
-  ylab('P(from MEC|project to r, mouse m) - P(from MEC|mouse m)')+
-  
-  geom_point(data = p_value,
+  geom_point(data = regions_significant_difference,
              aes(x = region,
-                 y = 0.3,
-                 group = mouse,
-                 color = significant),
-             stat = 'identity',
-             position = position_dodge(width = 0.9),
-             color = ifelse(p_value$significant == 'significant', 'black', 'white'),
+                 y = 0.95),
              shape = 8,
              show.legend = FALSE)+
-  
-  guides(shape = "none")+
-  
-  ylim(c(-0.3, 0.35))
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())
+
+dev.off()
+
 
 
 # Figure 3b

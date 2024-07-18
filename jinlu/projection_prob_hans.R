@@ -234,6 +234,10 @@ pp1 <-  pivot_longer(pp1,
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(data_Hans[[1]]))
 
 
+png(file = './plots/Hans/conditional_mouse1.png',
+    width = 400,
+    height = 400)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -243,6 +247,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()
+
+dev.off()
 
 
 
@@ -260,6 +266,11 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(data_Hans[[1]]))
 
+
+png(file = './plots/Hans/conditional_mouse2.png',
+    width = 400,
+    height = 400)
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -269,6 +280,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()
+
+dev.off()
 
 #Mouse 3
 pp1 = data.frame(pp_m3$pprob_pair, row.names = rownames(data_Hans[[1]]))
@@ -284,6 +297,13 @@ pp1 <-  pivot_longer(pp1,
 )
 pp1$Region.A = factor(pp1$Region.A, levels = rownames(data_Hans[[1]]))
 
+
+
+png(file = './plots/Hans/conditional_mouse3.png',
+    width = 400,
+    height = 400)
+
+
 ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   geom_tile() +
   labs(x = "Region A",
@@ -293,6 +313,8 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
   coord_fixed()
+
+dev.off()
 
 
 # Projection probability across mice
@@ -305,6 +327,11 @@ df$Mouse = c(rep('1', R),rep('2', R),rep('3', R))
 df$lower = c(pp_m1$pprob_ci[1,],pp_m2$pprob_ci[1,],pp_m3$pprob_ci[1,])
 df$upper = c(pp_m1$pprob_ci[2,],pp_m2$pprob_ci[2,],pp_m3$pprob_ci[2,])
 
+
+png(file = './plots/Hans/projection_probability.png',
+    width = 400,
+    height = 400)
+
 ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   geom_point() +
   geom_line() +
@@ -313,6 +340,8 @@ ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   ylab('P(y>0)') +
   geom_errorbar(aes(ymin = lower, ymax = upper),width = 0.1) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
 
 # Projection strength across mice
 
@@ -324,6 +353,11 @@ df$Mouse = c(rep('1', R),rep('2', R),rep('3', R))
 df$lower = c(ps_m1$eps_ci[1,],ps_m2$eps_ci[1,],ps_m3$eps_ci[1,])
 df$upper = c(ps_m1$eps_ci[2,],ps_m2$eps_ci[2,],ps_m3$eps_ci[2,])
 
+
+png(file = './plots/Hans/expected_projection_strength.png',
+    width = 400,
+    height = 400)
+
 ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   geom_point() +
   geom_line() +
@@ -333,4 +367,4 @@ ggplot(df, mapping = aes(x = Region, y= p, color = Mouse, group = Mouse)) +
   geom_errorbar(aes(ymin = lower, ymax = upper),width = 0.1) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-
+dev.off()

@@ -169,6 +169,12 @@ tv_upper <-  pivot_longer(tv_upper,
 )
 
 labs = paste0(round(tv_mean$TV,3),' [',round(tv_lower$TV,2),',', round(tv_upper$TV,2),']')
+
+
+png(file = './plots/barseq/total_variation.png',
+    width = 420,
+    height = 300)
+
 ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
   geom_tile() +
   labs(x = "Mouse",
@@ -177,3 +183,5 @@ ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
   scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
   geom_text(aes(label = labs), color = "black", size = 4) +
   coord_fixed()
+
+dev.off()

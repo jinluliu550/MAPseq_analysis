@@ -89,7 +89,7 @@ psm_barseq_plot <- plotpsm(psm.ind = psm_barseq$psm.within,
                            psm.tot = psm_barseq$psm.combined)
 
 png(file = './plots/barseq/heatmap_psm_1.png',
-    width = 450,
+    width = 500,
     height = 400)
 
 psm_barseq_plot$plot.ind
@@ -98,7 +98,7 @@ dev.off()
 
 
 png(file = './plots/barseq/heatmap_psm_2.png',
-    width = 450,
+    width = 500,
     height = 400)
 
 psm_barseq_plot$plot.tot
@@ -433,8 +433,8 @@ ds$class.A <- rep(rownames(mx), each = 5)
 
 
 png(file = './plots/barseq/comparison_vi.png',
-    width = 664,
-    height = 545)
+    width = 500,
+    height = 150)
 
 ggplot(ds, aes(x = class.A, y = class.B, fill = vi)) +
   geom_tile() +
