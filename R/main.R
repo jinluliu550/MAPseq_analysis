@@ -65,6 +65,8 @@ source('R/ppc_single.R')
 source('R/binom_cluster_reorder.R')
 source('R/find_large_cluster.R')
 
+source('R/projection_by_EVI.R')
+
 source('jinlu/binomial_model.R')
 source('jinlu/added_noise.R')
 source('jinlu/gel_plot.R')

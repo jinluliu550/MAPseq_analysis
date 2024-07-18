@@ -72,8 +72,12 @@ binom_cluster_reorder <- function(Y,
   
   
   return(list('allocation' = Z_new,
-              'cluster_label' = binomial_output$cluster_label[old_ordering]))
+              'cluster_label' = binomial_output$cluster_label[old_ordering],
+              'cluster_summary' = binomial_output$cluster_summary[old_ordering,]))
 }
+
+
+
 
 
 # Function to reorder clusters

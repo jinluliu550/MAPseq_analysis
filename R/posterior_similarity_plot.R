@@ -102,10 +102,10 @@ plotpsm <- function(psm.ind,
     labs(fill='posterior similarity')+
     geom_vline(xintercept = n[-c(1,M+1)],
                color = 'black',
-               size = 1)+
+               linewidth = 1)+
     geom_hline(yintercept = n[-c(1,M+1)],
                color = 'black',
-               size = 1)+
+               linewidth = 1)+
     scale_y_continuous(expand = c(0,0))+
     scale_x_continuous(expand = c(0,0))+
     ggtitle(title)
