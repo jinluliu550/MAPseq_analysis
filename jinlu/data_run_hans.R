@@ -6,6 +6,20 @@ C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
 
 gel_plot_data_Hans <- gel_plot(Y = data_Hans)
 
+png(file = './plots/Hans/gelplot_hans.png',
+    width = 2000,
+    height = 500)
+
+ggarrange(gel_plot_data_Hans[[1]],
+          gel_plot_data_Hans[[2]],
+          gel_plot_data_Hans[[3]],
+          gel_plot_data_Hans[[4]],
+          nrow = 1,
+          widths = c(1,1,1,1.3))
+
+dev.off()
+
+
 mouse.index <- c(rep(1, C[1]),
                  rep(2, C[2]),
                  rep(3, C[3]),
@@ -105,8 +119,6 @@ mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
 
 hans_Z_reordered <- mcmc_unique_hans$Z
 
-mcmc_unique_hans$estimated.projection.df %>%
-  filter(cluster == 'cluster 30')
 
 
 # Number of neurons by cluster and mosue
@@ -367,7 +379,7 @@ pp.standard.ordering2(Y = data_Hans,
 dev.off()
 
 hans_binomial_reorder$cluster_summary %>%
-  filter(cluster.type == 'under-represented')
+  filter(significant == 'significant')
 
 #-------------------------- Variation of information between different estimates -------------------------------------
 
@@ -461,26 +473,28 @@ hans_replicated_gelplot <- gel_plot(hans_added_noise$replicated_data)
 
 
 png(file = './plots/Hans/gelplot_added_noise.png',
-    width = 1500,
+    width = 2000,
     height = 500)
 
 ggarrange(hans_added_noise_gelplot[[1]],
           hans_added_noise_gelplot[[2]],
           hans_added_noise_gelplot[[3]],
+          hans_added_noise_gelplot[[4]],
           nrow = 1,
-          widths = c(1,1,1.3))
+          widths = c(1,1,1,1.3))
 
 dev.off()
 
 png(file = './plots/Hans/gelplot_replicated.png',
-    width = 1500,
+    width = 2000,
     height = 500)
 
 ggarrange(hans_replicated_gelplot[[1]],
           hans_replicated_gelplot[[2]],
           hans_replicated_gelplot[[3]],
+          hans_replicated_gelplot[[4]],
           nrow = 1,
-          widths = c(1,1,1.3))
+          widths = c(1,1,1, 1.3))
 
 dev.off()
 
@@ -488,7 +502,7 @@ dev.off()
 
 #----------------------------- MCMC of the noisy data ----------------------------------------
 
-M <- 3
+M <- 4
 
 df <- t(do.call(cbind, hans_added_noise$noisy_data))
 df = t(apply(df, 1, function(x){return(x/sum(x))}))
@@ -519,7 +533,7 @@ mcmc_all_hans_added_noise <- mcmc_run_all(Y = hans_added_noise$noisy_data,
 
 #---------------------------- MCMC of the replicated data ---------------------------------------
 
-M <- 3
+M <- 4
 
 df <- t(do.call(cbind, hans_added_noise$replicated_data))
 df = t(apply(df, 1, function(x){return(x/sum(x))}))

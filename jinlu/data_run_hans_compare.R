@@ -3,15 +3,21 @@ df <- t(data_Hans_cbind)
 df = t(apply(df, 1, function(x){return(x/sum(x))}))
 
 # large Bayesian motifs
-bayesian_motif_large <- c(7,20,22)
+table(unlist(mcmc_unique_hans$Z))
+
+# Greater than 30 neurons
+bayesian_motif_large <- c(7,16,23,26)
 
 # significant Binomial motifs
 hans_binomial_reorder$cluster_summary$cluster_index <- 1:nrow(hans_binomial_reorder$cluster_summary)
 
 binomial_motif_large <- hans_binomial_reorder$cluster_summary %>%
-  filter(significant == 'significant') %>%
+  filter(significant == 'significant',
+         cluster.type == 'over-represented') %>%
   select(cluster_index) %>%
   pull()
+
+length(which(unlist(hans_binomial_reorder$allocation) %in% binomial_motif_large))
 
 
 # Large Bayesian motifs 
@@ -75,7 +81,7 @@ binomial_motif_pp %>%
   guides(color = guide_legend(title="mouse"))
 
 # Large motifs with k-means
-large_k_mean_cluster <- which(as.vector(table(unlist(clust30_r))) >= 20)
+large_k_mean_cluster <- which(as.vector(table(unlist(clust30_r))) >= 30)
 
 
 # Large K-means
@@ -107,3 +113,4 @@ k_means_motif_pp %>%
   xlab('region')+
   ylab('projection strength')+
   guides(color = guide_legend(title="mouse"))
+

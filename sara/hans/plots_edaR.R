@@ -14,12 +14,13 @@ library(mvtnorm)
 #                   t(Hans_data2),
 #                   t(Hans_data3))
 
-M = 3 # number of Mice
+M = 4 # number of Mice
 R = dim(data_Hans[[1]])[1] # number of regions
 # number of neurons
 n <- list(t(dim(data_Hans[[1]])[2]),
-                  t(dim(data_Hans[[2]])[2]),
-                  t(dim(data_Hans[[3]])[2]))
+          t(dim(data_Hans[[2]])[2]),
+          t(dim(data_Hans[[3]])[2]),
+          t(dim(data_Hans[[4]])[2]))
 
 # Histogram of empirical projection strengths
 #Mouse 1
@@ -103,36 +104,66 @@ p36 = ggplot() +
   theme_bw() +
   labs(x ="y/N", title = paste0("Mouse = ",3,", Region = ", row.names(phat)[6])) 
 
+
+# Mouse 4
+phat4 = data_Hans[[4]]/t(matrix(colSums(data_Hans[[4]]),n[[4]], R))
+p41 <- ggplot() +
+  geom_histogram(aes(x = phat4[1,])) +
+  theme_bw() +
+  labs(x ="y/N", title = paste0("Mouse = ",4,", Region = ", row.names(phat)[1])) 
+p42 <- ggplot() +
+  geom_histogram(aes(x = phat4[2,])) +
+  theme_bw() +
+  labs(x ="y/N", title = paste0("Mouse = ",4,", Region = ", row.names(phat)[2])) 
+p43 = ggplot() +
+  geom_histogram(aes(x = phat4[3,])) +
+  theme_bw() +
+  labs(x ="y/N", title = paste0("Mouse = ",4,", Region = ", row.names(phat)[3])) 
+p44 = ggplot() +
+  geom_histogram(aes(x = phat4[4,])) +
+  theme_bw() +
+  labs(x ="y/N", title = paste0("Mouse = ",4,", Region = ", row.names(phat)[4])) 
+p45 = ggplot() +
+  geom_histogram(aes(x = phat4[5,])) +
+  theme_bw() +
+  labs(x ="y/N", title = paste0("Mouse = ",4,", Region = ", row.names(phat)[5])) 
+p46 = ggplot() +
+  geom_histogram(aes(x = phat4[6,])) +
+  theme_bw() +
+  labs(x ="y/N", title = paste0("Mouse = ",4,", Region = ", row.names(phat)[6])) 
+
 library(patchwork)
 
 png(file = './plots/Hans/eda/hist_li_lm.png',
-    width = 800,
+    width = 1000,
     height = 400)
 
-p11+ p21 + p31 + p12 + p22 + p32 + plot_layout(ncol = 3)
+p11+ p21 + p31 + p41 + p12 + p22 + p32 + p42 + plot_layout(ncol = 4)
 
 dev.off()
 
 
 png(file = './plots/Hans/eda/hist_al_pm.png',
-    width = 800,
+    width = 1000,
     height = 400)
 
-p13+ p23 + p33 + p14 + p24 + p34  + plot_layout(ncol = 3)
+p13+ p23 + p33 + p43 + p14 + p24 + p34  + p44 + plot_layout(ncol = 4)
 
 dev.off()
 
 png(file = './plots/Hans/eda/hist_am_rl.png',
-    width = 800,
+    width = 1000,
     height = 400)
 
-p15+ p25 + p35 + p16 + p26 + p36 + plot_layout(ncol = 3)
+p15+ p25 + p35 + p45 + p16 + p26 + p36 + p46 + plot_layout(ncol = 4)
 
 dev.off()
 
 # Scatter plots in 2d - space
 
-df = data.frame(x = c(phat[1,],phat2[1,],phat3[1,]), y = c(phat[2,],phat2[2,],phat3[2,]), mouse = as.factor(c(rep(1,n[[1]]), rep(2,n[[2]]), rep(3,n[[3]]))))
+df = data.frame(x = c(phat[1,],phat2[1,],phat3[1,],phat4[1,]), 
+                y = c(phat[2,],phat2[2,],phat3[2,],phat4[2,]),
+                mouse = as.factor(c(rep(1,n[[1]]), rep(2,n[[2]]), rep(3,n[[3]]), rep(4,n[[4]]))))
 
 png(file = './plots/Hans/eda/scatter_li_lm.png',
     width = 450,
@@ -145,7 +176,11 @@ ggplot(df) +
 
 dev.off()
 
-df = data.frame(x = c(phat[3,],phat2[3,],phat3[3,]), y = c(phat[4,],phat2[4,],phat3[4,]), mouse = as.factor(c(rep(1,n[[1]]), rep(2,n[[2]]), rep(3,n[[3]]))))
+
+
+df = data.frame(x = c(phat[3,],phat2[3,],phat3[3,],phat4[3,]), 
+                y = c(phat[4,],phat2[4,],phat3[4,],phat4[4,]), 
+                mouse = as.factor(c(rep(1,n[[1]]), rep(2,n[[2]]), rep(3,n[[3]]), rep(4,n[[4]]))))
 
 png(file = './plots/Hans/eda/scatter_al_pm.png',
     width = 450,
@@ -158,7 +193,11 @@ ggplot(df) +
 
 dev.off()
 
-df = data.frame(x = c(phat[5,],phat2[5,],phat3[5,]), y = c(phat[6,],phat2[6,],phat3[6,]), mouse = as.factor(c(rep(1,n[[1]]), rep(2,n[[2]]), rep(3,n[[3]]))))
+
+
+df = data.frame(x = c(phat[5,],phat2[5,],phat3[5,],phat4[5,]), 
+                y = c(phat[6,],phat2[6,],phat3[6,],phat4[6,]), 
+                mouse = as.factor(c(rep(1,n[[1]]), rep(2,n[[2]]), rep(3,n[[3]]), rep(4,n[[4]]))))
 
 
 png(file = './plots/Hans/eda/scatter_am_rl.png',
@@ -176,20 +215,20 @@ dev.off()
 
 #sort neurons
 
-gel_plot_hans <- gel_plot(data_Hans)
-
-
-png(file = './plots/Hans/eda/gelplot_hans.png',
-    width = 1000,
-    height = 1000/3)
-
-ggarrange(gel_plot_hans[[1]],
-          gel_plot_hans[[2]],
-          gel_plot_hans[[3]],
-          nrow = 1,
-          widths = c(1,1,1.3))
-
-dev.off()
+# gel_plot_hans <- gel_plot(data_Hans)
+# 
+# 
+# png(file = './plots/Hans/eda/gelplot_hans.png',
+#     width = 1000,
+#     height = 1000/3)
+# 
+# ggarrange(gel_plot_hans[[1]],
+#           gel_plot_hans[[2]],
+#           gel_plot_hans[[3]],
+#           nrow = 1,
+#           widths = c(1,1,1.3))
+# 
+# dev.off()
 
 # sort_neurons = function(p, R){
 #   max_strength = apply(p,2,max)

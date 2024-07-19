@@ -13,7 +13,7 @@ mytv_dist = function(x,ind){
 m =  1 # index of mouse
 tv_dist = lapply(mcmc_all_hans$omega_J_M_output,mytv_dist, ind = m )
 tv_dist <- data.frame(matrix(unlist(tv_dist), nrow=length(tv_dist), byrow=TRUE))
-names(tv_dist) = c("1", "2", "3")
+names(tv_dist) = c("1", "2", "3", "4")
 tv_dist = tv_dist[-m]
 
 tv_dist = tv_dist %>% 
@@ -24,7 +24,7 @@ tv_dist = tv_dist %>%
   )
 
 
-group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
+group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D", '4' = '#74d42b')
 
 
 png(file = './plots/Hans/mouse1_tv.png',
@@ -45,7 +45,7 @@ dev.off()
 m =  2 # index of mouse
 tv_dist = lapply(mcmc_all_hans$omega_J_M_output,mytv_dist, ind = m )
 tv_dist <- data.frame(matrix(unlist(tv_dist), nrow=length(tv_dist), byrow=TRUE))
-names(tv_dist) = c("1", "2", "3")
+names(tv_dist) = c("1", "2", "3", '4')
 tv_dist = tv_dist[-m]
 
 tv_dist = tv_dist %>% 
@@ -55,9 +55,6 @@ tv_dist = tv_dist %>%
     values_to = "TV"
   )
 
-
-
-group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
 
 
 
@@ -74,10 +71,12 @@ ggplot(tv_dist) +
 
 dev.off()
 
+
+
 m =  3 # index of mouse
 tv_dist = lapply(mcmc_all_hans$omega_J_M_output,mytv_dist, ind = m )
 tv_dist <- data.frame(matrix(unlist(tv_dist), nrow=length(tv_dist), byrow=TRUE))
-names(tv_dist) = c("1", "2", "3")
+names(tv_dist) = c("1", "2", "3", '4')
 tv_dist = tv_dist[-m]
 
 tv_dist = tv_dist %>% 
@@ -87,8 +86,6 @@ tv_dist = tv_dist %>%
     values_to = "TV"
   )
 
-
-group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
 
 
 png(file = './plots/Hans/mouse3_tv.png',
@@ -104,20 +101,48 @@ ggplot(tv_dist) +
 
 dev.off()
 
+m =  4 # index of mouse
+tv_dist = lapply(mcmc_all_hans$omega_J_M_output,mytv_dist, ind = m )
+tv_dist <- data.frame(matrix(unlist(tv_dist), nrow=length(tv_dist), byrow=TRUE))
+names(tv_dist) = c("1", "2", "3", '4')
+tv_dist = tv_dist[-m]
+
+tv_dist = tv_dist %>% 
+  pivot_longer(
+    cols = everything(),
+    names_to = "Mouse", 
+    values_to = "TV"
+  )
+
+
+
+png(file = './plots/Hans/mouse4_tv.png',
+    width = 350,
+    height = 300)
+
+ggplot(tv_dist) +
+  geom_density(aes(x=TV,col=Mouse, fill=Mouse), alpha=0.25) +
+  ggtitle(paste('Mouse',m,'comparisons')) + 
+  theme_bw()+
+  scale_fill_manual(values=group.colors) +
+  scale_color_manual(values=group.colors)
+
+dev.off()
+
 
 # Compute the posterior mean
-tv_mean = matrix(0, 3,3)
-for (m in c(1:3)){
+tv_mean = matrix(0,4,4)
+for (m in c(1:4)){
   tv_dist_m = lapply(mcmc_all_hans$omega_J_M_output,mytv_dist, ind = m )
   tv_dist_m = data.frame(matrix(unlist(tv_dist_m), nrow=length(tv_dist_m), byrow=TRUE))
   tv_mean[m,] = colMeans(tv_dist_m)
 }
-tv_mean = data.frame(tv_mean, row.names = c("1", "2", "3"))
-names(tv_mean) = c("1", "2", "3")
+tv_mean = data.frame(tv_mean, row.names = c("1", "2", "3", '4'))
+names(tv_mean) = c("1", "2", "3", '4')
 print(tv_mean)
 
-tv_mean = data.frame(tv_mean, "Mouse 1" = c("1", "2", "3"))
-names(tv_mean)[1:3] = c("1", "2", "3")
+tv_mean = data.frame(tv_mean, "Mouse 1" = c("1", "2", "3", '4'))
+names(tv_mean)[1:4] = c("1", "2", "3", '4')
 tv_mean <-  pivot_longer(tv_mean,
                          cols = !Mouse.1,
                          names_to = "Mouse.2", 
@@ -136,7 +161,7 @@ ggplot(tv_mean, aes(x = Mouse.1, y = Mouse.2, fill = TV)) +
 ##### Compute HPD interval
 library(coda)
 # Compute HPD intervals
-M <- 3
+M <- 4
 tv_lower = matrix(0, mcmc_all_hans$M,mcmc_all_hans$M)
 tv_upper = matrix(0, mcmc_all_hans$M,mcmc_all_hans$M)
 for (m in c(1:mcmc_all_hans$M)){
