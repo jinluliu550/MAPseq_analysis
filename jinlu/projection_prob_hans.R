@@ -214,6 +214,10 @@ pp_m3 = projection_prob(3,100,mcmc_all_hans)
 ps_m3 = post_epstrength(3,100,mcmc_all_hans)
 cps_m3 = post_cpstrength(3,100,mcmc_all_hans)
 
+#Mouse 4
+pp_m4 = projection_prob(4,100,mcmc_all_hans)
+ps_m4 = post_epstrength(4,100,mcmc_all_hans)
+cps_m4 = post_cpstrength(4,100,mcmc_all_hans)
 
 ## Plots
 
