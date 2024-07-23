@@ -412,7 +412,11 @@ dev.off()
 
 #--------------------------- Binomial clustering ----------------------------------
 
-hans_binomial <- binomial_model2(data = data_Hans)
+hans_binomial_1 <- binomial_model2(data = data_Hans,
+                                   threshold = 5)
+
+hans_binomial_1$cluster_summary %>%
+  filter(significant == 'significant')
 
 
 hans_binomial_reorder <- binom_cluster_reorder(Y = data_Hans,

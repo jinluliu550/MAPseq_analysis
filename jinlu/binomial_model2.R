@@ -1,7 +1,8 @@
 
 
 
-binomial_model2 <- function(data){
+binomial_model2 <- function(data,
+                            threshold = 1){
   
   
   # If the data is supplied in a list
@@ -25,7 +26,7 @@ binomial_model2 <- function(data){
   Nf <- ncol(data)
   
   si <- sapply(1:nrow(data),
-               function(r) length(which(data[r,] >= 5)))
+               function(r) length(which(data[r,] >= threshold)))
   
   N_0 <- round(fzero(function(x) Nf - x*(1-prod(1-si/x)), Nf)$x, 0)
   
@@ -36,7 +37,7 @@ binomial_model2 <- function(data){
   
   # Find the set of unique clusters
   cluster_neuron <- sapply(1:ncol(data),
-                           function(c) paste(rownames(data)[data[,c] >= 5],
+                           function(c) paste(rownames(data)[data[,c] >= threshold],
                                              collapse = " "))
   
   # Unique set of cluster
