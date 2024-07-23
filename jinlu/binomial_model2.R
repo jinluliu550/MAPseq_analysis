@@ -108,6 +108,8 @@ binomial_model2 <- function(data){
                                         'insignificant',
                                         'significant')
   
+  cluster_summary %>%
+    filter(significant == 'significant')
   
   return(list('allocation' = allocation,
               'cluster_label' = cluster_label,

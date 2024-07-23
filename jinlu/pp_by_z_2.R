@@ -96,6 +96,7 @@ pp.standard.ordering2 <- function(Y,
                          fill = mouse))+
     
     geom_tile(mapping = aes(alpha = projection.strength))+
+    scale_alpha_identity()+
     theme_bw()+
     xlab('region')+
     theme(axis.text = element_text(size = 12),

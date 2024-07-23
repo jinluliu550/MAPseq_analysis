@@ -4,6 +4,10 @@
 M <- length(data_Hans)
 C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
 
+# Add threshold
+# data_Hans <- lapply(1:M,
+#                       function(m) apply(data_Hans[[m]], c(1,2), function(x) ifelse(x >= 5, x, 0)))
+
 gel_plot_data_Hans <- gel_plot(Y = data_Hans)
 
 png(file = './plots/Hans/gelplot_hans.png',
@@ -55,6 +59,31 @@ mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
                               b_alpha = 1/2,
                               Z.init = clust20)
 
+# mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
+#                               J = 40,
+#                               number_iter = 20000,
+#                               thinning = 5,
+#                               burn_in = 5000,
+#                               adaptive_prop = 0.0001,
+#                               print_Z = TRUE,
+#                               a_gamma = 20,
+#                               b_gamma = 1,
+#                               a_alpha = 1/5,
+#                               b_alpha = 1/2,
+#                               Z.init = clust20)
+
+# mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
+#                               J = 40,
+#                               number_iter = 20000,
+#                               thinning = 5,
+#                               burn_in = 5000,
+#                               adaptive_prop = 0.0001,
+#                               print_Z = TRUE,
+#                               a_gamma = 10,
+#                               b_gamma = 1,
+#                               a_alpha = 1/5,
+#                               b_alpha = 1/2,
+#                               Z.init = clust20)
 
 Zmat = matrix(unlist(mcmc_all_hans$Z_output), length(mcmc_all_hans$Z_output), sum(C),byrow = TRUE)
 
@@ -115,9 +144,31 @@ mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
                                   a_gamma = 30,
                                   b_gamma = 1,
                                   regions.name = rownames(data_Hans[[1]]))
+
+# mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
+#                                   Z = hans_Z,
+#                                   thinning = 5,
+#                                   burn_in = 2000,
+#                                   number_iter = 12000,
+#                                   Y = data_Hans,
+#                                   a_gamma = 20,
+#                                   b_gamma = 1,
+#                                   regions.name = rownames(data_Hans[[1]]))
+
+# mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
+#                                   Z = hans_Z,
+#                                   thinning = 5,
+#                                   burn_in = 2000,
+#                                   number_iter = 12000,
+#                                   Y = data_Hans,
+#                                   a_gamma = 10,
+#                                   b_gamma = 1,
+#                                   regions.name = rownames(data_Hans[[1]]))
+
                                  
 
 hans_Z_reordered <- mcmc_unique_hans$Z
+
 
 
 
@@ -361,7 +412,8 @@ dev.off()
 
 #--------------------------- Binomial clustering ----------------------------------
 
-hans_binomial <- binomial_model(data = data_Hans)
+hans_binomial <- binomial_model2(data = data_Hans)
+
 
 hans_binomial_reorder <- binom_cluster_reorder(Y = data_Hans,
                                                binomial_output = hans_binomial)
