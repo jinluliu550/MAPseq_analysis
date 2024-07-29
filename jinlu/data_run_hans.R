@@ -1,27 +1,27 @@
 
 # Hans data - also called the VC data
 
-M <- length(data_Hans)
-C <- sapply(1:M, function(m) ncol(data_Hans[[m]]))
+M <- length(data_Hans_5)
+C <- sapply(1:M, function(m) ncol(data_Hans_5[[m]]))
 
 # Add threshold
-# data_Hans <- lapply(1:M,
-#                       function(m) apply(data_Hans[[m]], c(1,2), function(x) ifelse(x >= 5, x, 0)))
+# data_Hans_5 <- lapply(1:M,
+#                       function(m) apply(data_Hans_5[[m]], c(1,2), function(x) ifelse(x >= 5, x, 0)))
 
-gel_plot_data_Hans <- gel_plot(Y = data_Hans)
-
-png(file = './plots/Hans/gelplot_hans.png',
-    width = 2000,
-    height = 500)
-
-ggarrange(gel_plot_data_Hans[[1]],
-          gel_plot_data_Hans[[2]],
-          gel_plot_data_Hans[[3]],
-          gel_plot_data_Hans[[4]],
-          nrow = 1,
-          widths = c(1,1,1,1.3))
-
-dev.off()
+# gel_plot_data_Hans_5 <- gel_plot(Y = data_Hans_5)
+# 
+# png(file = './plots/Hans/gelplot_hans.png',
+#     width = 2000,
+#     height = 500)
+# 
+# ggarrange(gel_plot_data_Hans_5[[1]],
+#           gel_plot_data_Hans_5[[2]],
+#           gel_plot_data_Hans_5[[3]],
+#           gel_plot_data_Hans_5[[4]],
+#           nrow = 1,
+#           widths = c(1,1,1,1.3))
+# 
+# dev.off()
 
 
 mouse.index <- c(rep(1, C[1]),
@@ -31,6 +31,37 @@ mouse.index <- c(rep(1, C[1]),
 
 
 #Initialize z
+data_Hans_5_cbind <- do.call(cbind, data_Hans_5)
+
+df <- t(data_Hans_5_cbind)
+df = t(apply(df, 1, function(x){return(x/sum(x))}))
+
+
+C_cumsum <- c(0, cumsum(sapply(1:M, function(m) ncol(data_Hans_5[[m]]))))
+
+# k-means
+k_mean_clust_20 <- kmeans(df, 20, iter.max = 100, nstart = 25)$cluster
+
+clust20 <- lapply(1:M,
+                  function(m) k_mean_clust_20[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+
+# Run with threshold
+mcmc_all_hans_5 <- mcmc_run_all(Y = data_Hans_5,
+                              J = 40,
+                              number_iter = 20000,
+                              thinning = 5,
+                              burn_in = 5000,
+                              adaptive_prop = 0.0001,
+                              print_Z = TRUE,
+                              a_gamma = 20,
+                              b_gamma = 1,
+                              a_alpha = 1/5,
+                              b_alpha = 1/2,
+                              Z.init = clust20)
+
+#---------------------------------------------------------------------------------------
+
 data_Hans_cbind <- do.call(cbind, data_Hans)
 
 df <- t(data_Hans_cbind)
@@ -45,7 +76,7 @@ k_mean_clust_20 <- kmeans(df, 20, iter.max = 100, nstart = 25)$cluster
 clust20 <- lapply(1:M,
                   function(m) k_mean_clust_20[(C_cumsum[m]+1):C_cumsum[m+1]])
 
-
+# Run without threshold
 mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
                               J = 40,
                               number_iter = 20000,
@@ -53,37 +84,14 @@ mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
                               burn_in = 5000,
                               adaptive_prop = 0.0001,
                               print_Z = TRUE,
-                              a_gamma = 30,
+                              a_gamma = 20,
                               b_gamma = 1,
                               a_alpha = 1/5,
                               b_alpha = 1/2,
                               Z.init = clust20)
 
-# mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
-#                               J = 40,
-#                               number_iter = 20000,
-#                               thinning = 5,
-#                               burn_in = 5000,
-#                               adaptive_prop = 0.0001,
-#                               print_Z = TRUE,
-#                               a_gamma = 20,
-#                               b_gamma = 1,
-#                               a_alpha = 1/5,
-#                               b_alpha = 1/2,
-#                               Z.init = clust20)
-
-# mcmc_all_hans <- mcmc_run_all(Y = data_Hans,
-#                               J = 40,
-#                               number_iter = 20000,
-#                               thinning = 5,
-#                               burn_in = 5000,
-#                               adaptive_prop = 0.0001,
-#                               print_Z = TRUE,
-#                               a_gamma = 10,
-#                               b_gamma = 1,
-#                               a_alpha = 1/5,
-#                               b_alpha = 1/2,
-#                               Z.init = clust20)
+#----------------------------------------------------------------------------------------
+                              
 
 Zmat = matrix(unlist(mcmc_all_hans$Z_output), length(mcmc_all_hans$Z_output), sum(C),byrow = TRUE)
 
@@ -110,6 +118,8 @@ hans_Z <- opt.clustering.comb(z_trace = hans_z_reordered,
 C_cumsum <- c(0, cumsum(C))
 hans_Z <- lapply(1:M,
                 function(m) hans_Z[(C_cumsum[m]+1):C_cumsum[m+1]])
+
+#-------------------------------------------------------------------------------------------
 
 
 # Plot of posterior similarity matrix
@@ -140,34 +150,36 @@ mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
                                   thinning = 5,
                                   burn_in = 2000,
                                   number_iter = 12000,
-                                  Y = data_Hans,
+                                  Y = data_Hans_5,
                                   a_gamma = 30,
                                   b_gamma = 1,
-                                  regions.name = rownames(data_Hans[[1]]))
+                                  regions.name = rownames(data_Hans_5[[1]]))
 
 # mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
 #                                   Z = hans_Z,
 #                                   thinning = 5,
 #                                   burn_in = 2000,
 #                                   number_iter = 12000,
-#                                   Y = data_Hans,
+#                                   Y = data_Hans_5,
 #                                   a_gamma = 20,
 #                                   b_gamma = 1,
-#                                   regions.name = rownames(data_Hans[[1]]))
+#                                   regions.name = rownames(data_Hans_5[[1]]))
 
 # mcmc_unique_hans <- mcmc_run_post(mcmc_run_all_output = mcmc_all_hans,
 #                                   Z = hans_Z,
 #                                   thinning = 5,
 #                                   burn_in = 2000,
 #                                   number_iter = 12000,
-#                                   Y = data_Hans,
+#                                   Y = data_Hans_5,
 #                                   a_gamma = 10,
 #                                   b_gamma = 1,
-#                                   regions.name = rownames(data_Hans[[1]]))
+#                                   regions.name = rownames(data_Hans_5[[1]]))
 
                                  
 
 hans_Z_reordered <- mcmc_unique_hans$Z
+
+large.bayesian.cluster <- which(as.vector(table(unlist(hans_Z_reordered))) >= 20)
 
 
 
@@ -271,19 +283,19 @@ png(file = './plots/Hans/heatmap_neuron.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering2(Y = data_Hans,
+pp.standard.ordering2(Y = data_Hans_5,
                       Z = mcmc_unique_hans$Z,
-                      regions.name = rownames(data_Hans[[1]]),
+                      regions.name = rownames(data_Hans_5[[1]]),
                       mouse.index = mouse.index)
 
 dev.off()
 
 
 # Distribution of N_{i,m} for neurons within the same cluster
-data_hans_N <- lapply(1:length(data_Hans),
-                    function(m) colSums(data_Hans[[m]]))
+data_Hans_5_N <- lapply(1:length(data_Hans_5),
+                    function(m) colSums(data_Hans_5[[m]]))
 
-df <- data.frame(N = unlist(data_hans_N),
+df <- data.frame(N = unlist(data_Hans_5_N),
                  motif = unlist(mcmc_unique_hans$Z))
 
 png(file = './plots/Hans/N_sum_by_cluster.png',
@@ -300,9 +312,9 @@ dev.off()
 
 # Posterior predictive check with multiple replicates
 ppc_multiple <- ppc_f(mcmc_run_all_output = mcmc_all_hans,
-                      Y = data_Hans,
+                      Y = data_Hans_5,
                       N = 3,
-                      regions.name = rownames(data_Hans[[1]]))
+                      regions.name = rownames(data_Hans_5[[1]]))
 
 
 png(file = './plots/Hans/ppc_zero.png',
@@ -324,8 +336,8 @@ dev.off()
 
 # Posterior predictive check with single replicated data
 ppc_single <- ppc_single_f(mcmc_run_all_output = mcmc_all_hans,
-                           Y = data_Hans,
-                           regions.name = rownames(data_Hans[[1]]))
+                           Y = data_Hans_5,
+                           regions.name = rownames(data_Hans_5[[1]]))
 
 for(m in 1:M){
   
@@ -341,9 +353,9 @@ for(m in 1:M){
 #--------------------------------------------------- K-means -----------------------------
 
 #Initialize z
-data_Hans_cbind <- do.call(cbind, data_Hans)
+data_Hans_5_cbind <- do.call(cbind, data_Hans_5)
 
-df <- t(data_Hans_cbind)
+df <- t(data_Hans_5_cbind)
 df = t(apply(df, 1, function(x){return(x/sum(x))}))
 
 k_mean_clust_20 <- kmeans(df, 20, nstart = 25)$cluster
@@ -351,7 +363,7 @@ k_mean_clust_20 <- kmeans(df, 20, nstart = 25)$cluster
 clust20 <- lapply(1:M,
                   function(m) k_mean_clust_20[(C_cumsum[m]+1):C_cumsum[m+1]])
 
-clust20_r <- k_means_reorder(Y = data_Hans,
+clust20_r <- k_means_reorder(Y = data_Hans_5,
                              Z = clust20)
 
 k_mean_clust_30 <- kmeans(df, 30, nstart = 25)$cluster
@@ -360,7 +372,7 @@ clust30 <- lapply(1:M,
                   function(m) k_mean_clust_30[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
-clust30_r <- k_means_reorder(Y = data_Hans,
+clust30_r <- k_means_reorder(Y = data_Hans_5,
                              Z = clust30)
 
 
@@ -370,7 +382,7 @@ clust40 <- lapply(1:M,
                   function(m) k_mean_clust_40[(C_cumsum[m]+1):C_cumsum[m+1]])
 
 
-clust40_r <- k_means_reorder(Y = data_Hans,
+clust40_r <- k_means_reorder(Y = data_Hans_5,
                              Z = clust40)
 
 # Heatmap of projection strength of neurons in each cluster
@@ -378,9 +390,9 @@ png(file = './plots/Hans/k_means_20.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering2(Y = data_Hans,
+pp.standard.ordering2(Y = data_Hans_5,
                       Z = clust20_r,
-                      regions.name = rownames(data_Hans[[1]]),
+                      regions.name = rownames(data_Hans_5[[1]]),
                       mouse.index = mouse.index)
 
 dev.off()
@@ -390,9 +402,9 @@ png(file = './plots/Hans/k_means_30.png',
     height = 600)
 
 
-pp.standard.ordering2(Y = data_Hans,
+pp.standard.ordering2(Y = data_Hans_5,
                       Z = clust30_r,
-                      regions.name = rownames(data_Hans[[1]]),
+                      regions.name = rownames(data_Hans_5[[1]]),
                       mouse.index = mouse.index)
 
 dev.off()
@@ -401,9 +413,9 @@ png(file = './plots/Hans/k_means_40.png',
     width = 600,
     height = 600)
 
-pp.standard.ordering2(Y = data_Hans,
+pp.standard.ordering2(Y = data_Hans_5,
                      Z = clust40_r,
-                     regions.name = rownames(data_Hans[[1]]),
+                     regions.name = rownames(data_Hans_5[[1]]),
                      mouse.index = mouse.index)
 
 dev.off()
@@ -412,30 +424,56 @@ dev.off()
 
 #--------------------------- Binomial clustering ----------------------------------
 
-hans_binomial_1 <- binomial_model2(data = data_Hans,
+
+# Assume less than 5 are noise
+hans_binomial_5 <- binomial_model2(data = data_Hans,
                                    threshold = 5)
 
-hans_binomial_1$cluster_summary %>%
-  filter(significant == 'significant')
+
+hans_binomial_reorder5 <- binom_cluster_reorder(Y = data_Hans,
+                                                binomial_output = hans_binomial_5)
 
 
-hans_binomial_reorder <- binom_cluster_reorder(Y = data_Hans,
-                                               binomial_output = hans_binomial)
+# Assume no noise
+hans_binomial_1 <- binomial_model2(data = data_Hans,
+                                   threshold = 1)
 
 
-png(file = './plots/Hans/binomial_cluster.png',
-    width = 600,
-    height = 600)
+hans_binomial_reorder1 <- binom_cluster_reorder(Y = data_Hans,
+                                                binomial_output = hans_binomial_1)
 
-pp.standard.ordering2(Y = data_Hans,
-                     Z = hans_binomial_reorder$allocation,
-                     regions.name = rownames(data_Hans[[1]]),
-                     mouse.index = mouse.index)
 
-dev.off()
+# Assume general p_e
+hans_binomial_5_pe <- binomial_model(data = data_Hans,
+                                     threshold = 5)
 
-hans_binomial_reorder$cluster_summary %>%
-  filter(significant == 'significant')
+hans_binomial_reorder5_pe <- binom_cluster_reorder(Y = data_Hans,
+                                                   binomial_output = hans_binomial_5_pe)
+
+hans_binomial_1_pe <- binomial_model(data = data_Hans,
+                                     threshold = 1)
+
+hans_binomial_reorder1_pe <- binom_cluster_reorder(Y = data_Hans,
+                                                   binomial_output = hans_binomial_1_pe)
+
+
+
+hans_binomial_reorder1_pe$cluster_summary %>%
+  filter(significant == 'significant',
+         cluster.type == 'over-represented')
+
+
+# png(file = './plots/Hans/binomial_cluster.png',
+#     width = 600,
+#     height = 600)
+# 
+# pp.standard.ordering2(Y = data_Hans_5,
+#                      Z = hans_binomial_reorder$allocation,
+#                      regions.name = rownames(data_Hans_5[[1]]),
+#                      mouse.index = mouse.index)
+# 
+# dev.off()
+
 
 #-------------------------- Variation of information between different estimates -------------------------------------
 
@@ -475,8 +513,8 @@ for(i in 1:5){
                                               unlist(clusterings[[v]])))
 }
 
-mx <- mx/log(base = 2, x = sum(sapply(1:length(data_Hans),
-                                      function(m) ncol(data_Hans[[m]]))))
+mx <- mx/log(base = 2, x = sum(sapply(1:length(data_Hans_5),
+                                      function(m) ncol(data_Hans_5[[m]]))))
 
 mx <- round(mx, 2)
 
@@ -511,17 +549,17 @@ dev.off()
 evi_hans <- evi.contribution(Zmat = Zmat,
                              Zhat = unlist(mcmc_unique_hans$Z))
 
-projection_by_evi(Y = data_Hans,
+projection_by_evi(Y = data_Hans_5,
                   evi = evi_hans,
                   Z = mcmc_unique_hans$Z, 
-                  region_name = rownames(data_Hans[[1]]))
+                  region_name = rownames(data_Hans_5[[1]]))
 
 
 #------------------------ Add a 10 percent noise ----------------------------------
 
 hans_added_noise <- add_noise(mcmc_run_all_output = mcmc_all_hans,
-                              Y = data_Hans,
-                              regions.name = rownames(data_Hans[[1]]))
+                              Y = data_Hans_5,
+                              regions.name = rownames(data_Hans_5[[1]]))
 
 hans_added_noise_gelplot <- gel_plot(hans_added_noise$noisy_data)
 
@@ -890,24 +928,24 @@ dev.off()
 # Compare variation of information
 added_noise_vi <- NULL
 added_noise_vi$bayesian <- variation_info(unlist(mcmc_unique_hans_replicated$Z),
-                                          unlist(mcmc_unique_hans_added_noise$Z))/log(base = 2, x = sum(sapply(1:length(data_Hans),
-                                                                                                               function(m) ncol(data_Hans[[m]]))))
+                                          unlist(mcmc_unique_hans_added_noise$Z))/log(base = 2, x = sum(sapply(1:length(data_Hans_5),
+                                                                                                               function(m) ncol(data_Hans_5[[m]]))))
 
 added_noise_vi$k_mean_20 <- variation_info(unlist(clust20_r_replicated),
-                                           unlist(clust20_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_Hans),
-                                                                                                                function(m) ncol(data_Hans[[m]]))))
+                                           unlist(clust20_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_Hans_5),
+                                                                                                                function(m) ncol(data_Hans_5[[m]]))))
 
 
 added_noise_vi$k_mean_30 <- variation_info(unlist(clust30_r_replicated),
-                                           unlist(clust30_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_Hans),
-                                                                                                       function(m) ncol(data_Hans[[m]]))))
+                                           unlist(clust30_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_Hans_5),
+                                                                                                       function(m) ncol(data_Hans_5[[m]]))))
 
 
 added_noise_vi$k_mean_40 <- variation_info(unlist(clust40_r_replicated),
-                                           unlist(clust40_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_Hans),
-                                                                                                       function(m) ncol(data_Hans[[m]]))))
+                                           unlist(clust40_r_added_noise))/log(base = 2, x = sum(sapply(1:length(data_Hans_5),
+                                                                                                       function(m) ncol(data_Hans_5[[m]]))))
 
 
 added_noise_vi$binomial <- variation_info(unlist(hans_binomial_reorder_replicated$allocation),
-                                           unlist(hans_binomial_reorder_added_noise$allocation))/log(base = 2, x = sum(sapply(1:length(data_Hans),
-                                                                                                       function(m) ncol(data_Hans[[m]]))))
+                                           unlist(hans_binomial_reorder_added_noise$allocation))/log(base = 2, x = sum(sapply(1:length(data_Hans_5),
+                                                                                                       function(m) ncol(data_Hans_5[[m]]))))

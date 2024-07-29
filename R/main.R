@@ -68,6 +68,7 @@ source('R/find_large_cluster.R')
 source('R/projection_by_EVI.R')
 
 source('jinlu/binomial_model.R')
+source('jinlu/binomial_model2.R')
 source('jinlu/added_noise.R')
 source('jinlu/gel_plot.R')
 source('jinlu/pp_by_z_2.R')
