@@ -13,6 +13,9 @@ EC8_subnew_list <- lapply(1:6,
                        function(m) all_brains_set_sub %>%
                          filter(brain == names(digit.list)[m]))
 
+EC_label <- lapply(1:6,
+                   function(m) EC8_subnew_list[[m]]$EC)
+
 EC8_sub_new <- lapply(1:6,
                   function(m) t(round(EC8_subnew_list[[m]][,c(1:8, 11, 10, 9)], 0)))
 
@@ -144,3 +147,17 @@ dev.off()
 
 
 mcmc_unique_EC8_sub$estimated.pp.plot
+
+
+png(file = './plots/EC8_sub/line_graph_pp.png',
+    width = 2000,
+    height = 1500)
+
+
+projection_by_EC(Y = EC8_sub_new,
+                 EC_label = EC_label,
+                 Z = mcmc_unique_EC8_sub$Z,
+                 region_name = rownames(EC8_sub_new[[1]]))
+
+dev.off()
+

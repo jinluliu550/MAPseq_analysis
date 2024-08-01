@@ -51,6 +51,7 @@ projection_by_EC <- function(Y,
     facet_wrap(~cluster)+
     theme_bw()+
     xlab('region')+
-    ylab('projection strengths')
+    ylab('projection strengths')+ 
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
 }
