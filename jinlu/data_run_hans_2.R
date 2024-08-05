@@ -406,21 +406,3 @@ added_noise_vi$binomial <- variation_info(unlist(hans_binomial_reorder_replicate
                                                                                                                              function(m) ncol(data_Hans[[m]]))))
 
 
-# Compare different methods
-
-
-
-
-
-#------------------------------ Binomial ---------------------------------
-
-binomial_difference <- variation_info(unlist(hans_binomial_reorder5$allocation),
-                                      unlist(hans_binomial_reorder1$allocation))/
-  
-  log(base = 2, x = sum(C))
-
-
-binomial_difference_pe <- variation_info(unlist(hans_binomial_reorder5_pe$allocation),
-                                         unlist(hans_binomial_reorder1_pe$allocation))/
-  
-  log(base = 2, x = sum(C))
