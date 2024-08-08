@@ -26,6 +26,7 @@ binomial_model <- function(data,
   si <- sapply(1:nrow(data),
                function(r) length(which(data[r,] >= threshold)))
   
+  
   N_0 <- round(fzero(function(x) Nf - x*(1-prod(1-si/x)), Nf)$x, 0)
   
   p_e <- fzero(function(x) Nf - N_0*(1-(1-x)^nrow(data)), 0.5)$x

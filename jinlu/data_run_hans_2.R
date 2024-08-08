@@ -5,10 +5,17 @@
 evi_hans <- evi.contribution(Zmat = Zmat,
                              Zhat = unlist(mcmc_unique_hans$Z))
 
+
+png(file = './plots/Hans/evi.png',
+    width = 2000,
+    height = 1500)
+
 projection_by_evi(Y = data_Hans,
                   evi = evi_hans,
                   Z = mcmc_unique_hans$Z, 
                   region_name = rownames(data_Hans[[1]]))
+
+dev.off()
 
 #------------------------ Add a 10 percent noise ----------------------------------
 
@@ -73,7 +80,7 @@ mcmc_all_hans_added_noise <- mcmc_run_all(Y = hans_added_noise$noisy_data,
                                           burn_in = 5000,
                                           adaptive_prop = 0.0001,
                                           print_Z = TRUE,
-                                          a_gamma = 30,
+                                          a_gamma = 20,
                                           b_gamma = 1,
                                           a_alpha = 1/5,
                                           b_alpha = 1/2,
@@ -104,7 +111,7 @@ mcmc_all_hans_replicated <- mcmc_run_all(Y = hans_added_noise$replicated_data,
                                          burn_in = 5000,
                                          adaptive_prop = 0.0001,
                                          print_Z = TRUE,
-                                         a_gamma = 30,
+                                         a_gamma = 20,
                                          b_gamma = 1,
                                          a_alpha = 1/5,
                                          b_alpha = 1/2,
@@ -342,10 +349,17 @@ dev.off()
 
 #--------------------------- Binomial clustering ----------------------------------
 
-hans_binomial_added_noise <- binomial_model(data = hans_added_noise$noisy_data)
+# threshold = 1, Binomial model 1
+hans_binomial_added_noise_m1_t1 <- binomial_model(data = hans_added_noise$noisy_data,
+                                                  threshold = 1)
+
+# Note Binomial model does not work when threshold is set to 5 for this set of data
+hans_binomial_added_noise_m1_t5 <- binomial_model(data = hans_added_noise$noisy_data,
+                                                  threshold = 5)
+
 
 hans_binomial_reorder_added_noise <- binom_cluster_reorder(Y = hans_added_noise$noisy_data,
-                                                           binomial_output = hans_binomial_added_noise)
+                                                           binomial_output = hans_binomial_added_noise_m1_t1)
 
 
 png(file = './plots/Hans/binomial_cluster_added_noise.png',
@@ -359,23 +373,49 @@ pp.standard.ordering2(Y = hans_added_noise$noisy_data,
 
 dev.off()
 
+# threshold = 1, Binomial model 1
+hans_binomial_replicated_m1_t1 <- binomial_model(data = hans_added_noise$replicated_data,
+                                                 threshold = 1)
 
-hans_binomial_replicated <- binomial_model(data = hans_added_noise$replicated_data)
-
-hans_binomial_reorder_replicated <- binom_cluster_reorder(Y = hans_added_noise$replicated_data,
-                                                          binomial_output = hans_binomial_replicated)
+hans_binomial_replicated_m1_t5 <- binomial_model(data = hans_added_noise$replicated_data,
+                                                 threshold = 5)
 
 
-png(file = './plots/Hans/binomial_cluster_replicated.png',
+hans_binomial_reorder_replicated_m1_t1 <- binom_cluster_reorder(Y = hans_added_noise$replicated_data,
+                                                                binomial_output = hans_binomial_replicated_m1_t1)
+
+hans_binomial_reorder_replicated_m1_t5 <- binom_cluster_reorder(Y = hans_added_noise$replicated_data,
+                                                                binomial_output = hans_binomial_replicated_m1_t5)
+
+
+
+
+
+
+png(file = './plots/Hans/binomial_cluster_replicated_t1.png',
     width = 600,
     height = 600)
 
 pp.standard.ordering2(Y = hans_added_noise$replicated_data,
-                      Z = hans_binomial_reorder_replicated$allocation,
+                      Z = hans_binomial_reorder_replicated_m1_t1$allocation,
                       regions.name = rownames(hans_added_noise$replicated_data[[1]]),
                       mouse.index = mouse.index)
 
 dev.off()
+
+
+
+png(file = './plots/Hans/binomial_cluster_replicated_t5.png',
+    width = 600,
+    height = 600)
+
+pp.standard.ordering2(Y = hans_added_noise$replicated_data,
+                      Z = hans_binomial_reorder_replicated_m1_t5$allocation,
+                      regions.name = rownames(hans_added_noise$replicated_data[[1]]),
+                      mouse.index = mouse.index)
+
+dev.off()
+
 
 
 
@@ -401,8 +441,8 @@ added_noise_vi$k_mean_40 <- variation_info(unlist(clust40_r_replicated),
                                                                                                        function(m) ncol(data_Hans[[m]]))))
 
 
-added_noise_vi$binomial <- variation_info(unlist(hans_binomial_reorder_replicated$allocation),
-                                          unlist(hans_binomial_reorder_added_noise$allocation))/log(base = 2, x = sum(sapply(1:length(data_Hans),
+added_noise_vi$binomial <- variation_info(unlist(hans_binomial_reorder_replicated_m1_t1$allocation),
+                                          unlist(hans_binomial_added_noise_m1_t1$allocation))/log(base = 2, x = sum(sapply(1:length(data_Hans),
                                                                                                                              function(m) ncol(data_Hans[[m]]))))
 
 
