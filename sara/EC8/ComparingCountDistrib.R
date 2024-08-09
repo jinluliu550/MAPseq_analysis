@@ -86,3 +86,15 @@ ggplot() +
   geom_bar(aes(x=EC8_totalcounts[[m]], fill = EC8_EC_label[[m]])) +
   theme_bw() +
   labs(x = "total neuron counts", fill = "")
+
+#####
+# Compute p-values for comparing proportions between two populations
+n_rm_mec = sum(EC8_new[[2]][1,EC8_EC_label[[2]]=="MEC"]>0)
+n_m_mec =  sum(EC8_EC_label[[2]]=="MEC")
+n_rm_lec = sum(EC8_new[[2]][1,EC8_EC_label[[2]]=="LEC"]>0)
+n_m_lec =  sum(EC8_EC_label[[2]]=="LEC")
+
+p_m = n_rm_mec/n_m_mec
+p_l = n_rm_lec/n_m_lec
+p = (n_rm_mec+ n_rm_lec)/(n_m_mec+ n_m_lec)
+(p_m-p_l)/sqrt(p*(1-p)*(1/n_m_mec+1/n_m_lec)) 
