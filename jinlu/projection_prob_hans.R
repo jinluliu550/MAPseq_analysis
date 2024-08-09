@@ -321,15 +321,49 @@ ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
 dev.off()
 
 
+#Mouse 4
+pp1 = data.frame(pp_m4$pprob_pair, row.names = rownames(data_Hans[[1]]))
+names(pp1) = rownames(data_Hans[[1]])
+print(pp1)
+
+pp1 = data.frame(pp1, "Region B" = factor(rownames(data_Hans[[1]]), levels = rownames(data_Hans[[1]])))
+names(pp1)[1:R] = rownames(data_Hans[[1]])
+pp1 <-  pivot_longer(pp1,
+                     cols = !Region.B,
+                     names_to = "Region.A", 
+                     values_to = "CP"
+)
+pp1$Region.A = factor(pp1$Region.A, levels = rownames(data_Hans[[1]]))
+
+
+
+png(file = './plots/Hans/conditional_mouse4.png',
+    width = 400,
+    height = 400)
+
+
+ggplot(pp1, aes(x = Region.A, y = Region.B, fill = CP)) +
+  geom_tile() +
+  labs(x = "Region A",
+       y = "Region B",
+       fill= "P(A|B)") +
+  theme_bw() +
+  scale_fill_gradient2(high = "red", mid = "yellow", low="white", midpoint = 0.5) +
+  geom_text(aes(label = round(CP,3)), color = "black", size = 4) +
+  coord_fixed()
+
+dev.off()
+
+
 # Projection probability across mice
 
-group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
+group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D", '4' = '#74d42b')
 
-df = data.frame(p = c(pp_m1$pprob,pp_m2$pprob,pp_m3$pprob))
+df = data.frame(p = c(pp_m1$pprob,pp_m2$pprob,pp_m3$pprob,pp_m4$pprob))
 df$Region = factor(rep(rownames(data_Hans[[1]]), M), levels = rownames(data_Hans[[1]]))
-df$Mouse = c(rep('1', R),rep('2', R),rep('3', R))
-df$lower = c(pp_m1$pprob_ci[1,],pp_m2$pprob_ci[1,],pp_m3$pprob_ci[1,])
-df$upper = c(pp_m1$pprob_ci[2,],pp_m2$pprob_ci[2,],pp_m3$pprob_ci[2,])
+df$Mouse = c(rep('1', R),rep('2', R),rep('3', R),rep('4',R))
+df$lower = c(pp_m1$pprob_ci[1,],pp_m2$pprob_ci[1,],pp_m3$pprob_ci[1,],pp_m4$pprob_ci[1,])
+df$upper = c(pp_m1$pprob_ci[2,],pp_m2$pprob_ci[2,],pp_m3$pprob_ci[2,],pp_m4$pprob_ci[2,])
 
 
 png(file = './plots/Hans/projection_probability.png',
@@ -349,13 +383,13 @@ dev.off()
 
 # Projection strength across mice
 
-group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D")
+group.colors <- c('1'= "#FF3000",'2'= "#FF9900",'3'= "#FFDB6D", '4' = '#74d42b')
 
-df = data.frame(p = c(ps_m1$eps,ps_m2$eps,ps_m3$eps))
+df = data.frame(p = c(ps_m1$eps,ps_m2$eps,ps_m3$eps,ps_m4$eps))
 df$Region = factor(rep(rownames(data_Hans[[1]]), M), levels = rownames(data_Hans[[1]]))
-df$Mouse = c(rep('1', R),rep('2', R),rep('3', R))
-df$lower = c(ps_m1$eps_ci[1,],ps_m2$eps_ci[1,],ps_m3$eps_ci[1,])
-df$upper = c(ps_m1$eps_ci[2,],ps_m2$eps_ci[2,],ps_m3$eps_ci[2,])
+df$Mouse = c(rep('1', R),rep('2', R),rep('3', R),rep('4',R))
+df$lower = c(ps_m1$eps_ci[1,],ps_m2$eps_ci[1,],ps_m3$eps_ci[1,],ps_m4$eps_ci[1,])
+df$upper = c(ps_m1$eps_ci[2,],ps_m2$eps_ci[2,],ps_m3$eps_ci[2,],ps_m4$eps_ci[2,])
 
 
 png(file = './plots/Hans/expected_projection_strength.png',

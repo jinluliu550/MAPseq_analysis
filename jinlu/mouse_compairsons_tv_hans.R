@@ -200,7 +200,7 @@ labs = paste0(round(tv_mean$TV,3),' [',round(tv_lower$TV,2),',', round(tv_upper$
 
 
 png(file = './plots/Hans/total_variation.png',
-    width = 420,
+    width = 500,
     height = 300)
 
 
